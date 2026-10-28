@@ -1,0 +1,18 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+.aviso {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.error {
+    background: #fdecec;
+    color: #9b1c1c;
+}
+
+.exito {
+    background: #e8f6ec;
+    color: #1b6b35;
+}

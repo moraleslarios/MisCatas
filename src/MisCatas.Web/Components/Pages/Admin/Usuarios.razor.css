@@ -1,0 +1,256 @@
+/* Estilos provisionales del listado. El diseño definitivo llega en la fase 2. */
+
+h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.25rem, 4.5vw, 1.4rem);
+}
+
+.barra-acciones {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.busqueda {
+    flex: 1;
+    min-width: 14rem;
+    padding: 0.6875rem 0.75rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.inactivos {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--carbon-600, #383133);
+    white-space: nowrap;
+}
+
+.boton {
+    padding: 0.55rem 0.9rem;
+    border-radius: 0.5rem;
+    background: #7b1f3a;
+    color: #fff;
+    font-size: 0.9rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.boton:hover {
+    background: #641830;
+}
+
+.tabla-marco {
+    overflow-x: auto;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tabla th,
+.tabla td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.tabla th {
+    background: #f6f2f3;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.tabla tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.inactivo {
+    opacity: 0.55;
+}
+
+.etiqueta {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.3rem;
+    background: #fff4d6;
+    color: #8a6100;
+    font-size: 0.7rem;
+}
+
+.acciones {
+    white-space: nowrap;
+}
+
+.acciones a,
+.acciones button {
+    margin-right: 0.4rem;
+    padding: 0.3rem 0.55rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.4rem;
+    background: #fff;
+    color: var(--carbon-700, #2B2628);
+    font-size: 0.8rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.acciones .peligro {
+    border-color: #e4b4b1;
+    color: #b3261e;
+}
+
+.cargando,
+.vacio {
+    color: var(--carbon-600, #383133);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 760px) {
+    .tabla thead {
+        display: none;
+    }
+
+    .tabla,
+    .tabla tbody,
+    .tabla tr,
+    .tabla td {
+        display: block;
+        width: 100%;
+    }
+
+    .tabla tr {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .tabla td {
+        border: 0;
+        padding: 0.25rem 0.75rem;
+    }
+
+    .tabla td::before {
+        content: attr(data-etiqueta) ": ";
+        font-weight: 600;
+        color: var(--carbon-600, #383133);
+    }
+
+    .tabla td.acciones::before {
+        content: none;
+    }
+}
+
+/* Móvil: cada fila se lee como una tarjeta independiente y las acciones se
+   convierten en botones pulsables con el dedo. */
+@media (max-width: 560px) {
+    .barra-acciones {
+        gap: 0.6rem;
+    }
+
+    .busqueda {
+        flex: 1 0 100%;
+        min-width: 0;
+        min-height: 3rem;
+        font-size: 1rem;
+    }
+
+    .inactivos {
+        flex: 1;
+        white-space: normal;
+        font-size: 0.9rem;
+    }
+
+    .inactivos ::deep input {
+        width: 1.15rem;
+        height: 1.15rem;
+    }
+
+    .boton {
+        min-height: 3rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tabla tr {
+        /* Separación visible entre tarjetas en lugar de una línea fina. */
+        padding: 0.8rem 0;
+    }
+
+    .tabla td {
+        padding: 0.2rem clamp(0.75rem, 3.5vw, 1rem);
+        overflow-wrap: anywhere;
+    }
+
+    /* El nombre hace de título de la tarjeta, sin etiqueta delante. */
+    .tabla td[data-etiqueta="Nombre"] {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .tabla td[data-etiqueta="Nombre"]::before {
+        content: none;
+    }
+
+    .acciones {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.7rem;
+        white-space: normal;
+    }
+
+    .acciones a,
+    .acciones button {
+        flex: 1 1 auto;
+        margin-right: 0;
+        min-height: 2.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+    }
+}
+
+/* Teléfonos con algo más de resolución (desde ~400 px): los datos secundarios
+   de la tarjeta se reparten en dos columnas, así se ve más de un registro por
+   pantalla y los botones recuperan tamaño proporcional en lugar de estirarse. */
+@media (min-width: 400px) and (max-width: 560px) {
+    .tabla tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.1rem 0.5rem;
+        align-items: start;
+    }
+
+    .tabla td[data-etiqueta="Nombre"],
+    .tabla td.acciones {
+        grid-column: 1 / -1;
+    }
+
+    .acciones a,
+    .acciones button {
+        flex: 0 1 auto;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* Móvil muy estrecho: el buscador y el botón ocupan filas completas. */
+@media (max-width: 360px) {
+    .boton {
+        flex: 1 0 100%;
+    }
+}

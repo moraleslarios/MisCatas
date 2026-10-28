@@ -1,0 +1,90 @@
+@page "/admin/usuarios"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>Usuarios · MisCatas</PageTitle>
+
+<h1>Usuarios</h1>
+
+<Aviso Texto="@Error" EsError="true" />
+<Aviso Texto="@Mensaje" />
+
+<div class="barra-acciones">
+    <input type="search"
+           class="busqueda"
+           placeholder="Buscar por nombre, login o teléfono"
+           value="@Busqueda"
+           @oninput="BuscarAsync" />
+
+    <label class="inactivos">
+        <input type="checkbox" checked="@IncluirInactivos" @onchange="CambiarInactivosAsync" />
+        <span>Ver inactivos</span>
+    </label>
+
+    <a class="boton" href="/admin/usuarios/nuevo">Nuevo usuario</a>
+</div>
+
+@if (Cargando)
+{
+    <p class="cargando">Cargando…</p>
+}
+else if (Datos is null || Datos.Elementos.Count == 0)
+{
+    <p class="vacio">No hay usuarios que coincidan con la búsqueda.</p>
+}
+else
+{
+    <div class="tabla-marco">
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Login</th>
+                    <th>Teléfono</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th class="acciones">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var usuario in Datos.Elementos)
+                {
+                    <tr class="@(usuario.Activo ? null : "inactivo")">
+                        <td data-etiqueta="Nombre">@usuario.NombreCompleto</td>
+                        <td data-etiqueta="Login">@usuario.Login</td>
+                        <td data-etiqueta="Teléfono">@usuario.Telefono</td>
+                        <td data-etiqueta="Rol">@usuario.Rol</td>
+                        <td data-etiqueta="Estado">
+                            @(usuario.Activo ? "Activo" : "Inactivo")
+                            @if (usuario.DebeCambiarPassword)
+                            {
+                                <span class="etiqueta">cambio pendiente</span>
+                            }
+                        </td>
+                        <td data-etiqueta="Acciones" class="acciones">
+                            <a href="@($"/admin/usuarios/{usuario.Id}")">Editar</a>
+                            <button type="button" @onclick="() => ResetearAsync(usuario)">
+                                Resetear
+                            </button>
+                            <button type="button" @onclick="() => CambiarActivoAsync(usuario)">
+                                @(usuario.Activo ? "Desactivar" : "Activar")
+                            </button>
+                            <button type="button" class="peligro" @onclick="() => PedirBorradoAsync(usuario)">
+                                Borrar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <Paginador Pagina="Datos.Pagina"
+               TotalPaginas="Datos.TotalPaginas"
+               TotalElementos="Datos.TotalElementos"
+               AlCambiarPagina="IrAPaginaAsync" />
+}
+
+<DialogoConfirmar @bind-Visible="MostrarBorrado"
+                  Titulo="Borrar usuario"
+                  Mensaje="@MensajeBorrado"
+                  AlConfirmar="BorrarAsync" />

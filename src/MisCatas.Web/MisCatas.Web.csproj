@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\MisCatas.Domain\MisCatas.Domain.csproj" />
+    <ProjectReference Include="..\MisCatas.Application\MisCatas.Application.csproj" />
+    <ProjectReference Include="..\MisCatas.Infrastructure\MisCatas.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <!-- Ruta del CLI standalone de Tailwind. No hace falta Node ni npm. -->
+    <TailwindExe>$(MSBuildThisFileDirectory)..\..\tools\tailwindcss.exe</TailwindExe>
+    <TailwindConfig>$(MSBuildThisFileDirectory)..\..\tailwind.config.js</TailwindConfig>
+    <TailwindEntrada>$(MSBuildThisFileDirectory)Styles\estilos.css</TailwindEntrada>
+    <TailwindSalida>$(MSBuildThisFileDirectory)wwwroot\css\estilos.css</TailwindSalida>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- El CSS fuente no se publica: solo se publica el compilado. -->
+    <Content Remove="Styles\**" />
+    <None Include="Styles\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Claves de Data Protection: se generan en tiempo de ejecución y NO deben
+      formar parte del proyecto ni publicarse.
+    -->
+    <Content Remove="claves\**" />
+    <None Remove="claves\**" />
+  </ItemGroup>
+
+  <!--
+    Compila el CSS de Tailwind antes de cada build. Si el binario no está
+    descargado se avisa y se continúa con el último CSS generado, de modo que
+    el proyecto siga compilando en una máquina recién clonada.
+
+    IMPORTANTE: el comando se lanza desde la RAÍZ del repositorio, porque los
+    globos de `content` de tailwind.config.js son relativos a ella
+    ('./src/MisCatas.Web/**'). Si se ejecutase desde la carpeta del proyecto,
+    esos globos no encontrarían ningún fichero y Tailwind purgaría todas las
+    clases, dejando solo la capa base.
+  -->
+  <Target Name="CompilarTailwind" BeforeTargets="BeforeBuild">
+    <Warning Condition="!Exists('$(TailwindExe)')"
+             Text="No se encontró $(TailwindExe). Descárgalo con tools/descargar-tailwind.ps1. Se usará el CSS ya compilado." />
+    <Exec Condition="Exists('$(TailwindExe)')"
+          WorkingDirectory="$(MSBuildThisFileDirectory)..\.."
+          Command="&quot;$(TailwindExe)&quot; -c &quot;$(TailwindConfig)&quot; -i &quot;$(TailwindEntrada)&quot; -o &quot;$(TailwindSalida)&quot; --minify"
+          StandardOutputImportance="low"
+          ContinueOnError="true" />
+  </Target>
+
+</Project>

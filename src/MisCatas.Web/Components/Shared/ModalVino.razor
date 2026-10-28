@@ -1,0 +1,226 @@
+@* ---------------------------------------------------------------------------
+   Ficha completa de un vino ya destapado, en hoja superpuesta.
+
+   Por qué un modal y no una página: se abre desde la pantalla de resultado,
+   que trae encima la gala, el scroll a medias y el desplegable de votos. Si
+   se navegase a otra ruta se perdería todo eso y volver dejaría al catador
+   arriba del todo. Aquí se mira la ficha, se cierra y se sigue donde estaba.
+
+   Accesibilidad: role="dialog" + aria-modal, título ligado por aria-labelledby,
+   cierre con Escape, con el aspa o tocando fuera, y foco inicial en el aspa.
+   --------------------------------------------------------------------------- *@
+
+@if (Visible && Vino is { } vino)
+{
+    <div class="ficha-fondo" @onclick="CerrarAsync" @onkeydown="AlPulsarTeclaAsync" tabindex="-1">
+        <div class="ficha-caja"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="@($"ficha-titulo-{_id}")"
+             @onclick:stopPropagation="true">
+
+            @* La cabecera se queda fija: la ficha es larga y conviene tener
+               siempre a mano el nombre y el aspa de cerrar. *@
+            <header class="ficha-cabecera">
+                @if (MostrarResultados)
+                {
+                    <span class="@ClasePuesto(vino)">@vino.Posicion</span>
+                }
+                else
+                {
+                    <span class="ficha-puesto">@vino.NumeroOrden</span>
+                }
+
+                <div class="ficha-cabecera-textos">
+                    @if (MostrarResultados && vino.Medalla is { } medalla)
+                    {
+                        <p class="ficha-antetitulo">@medalla</p>
+                    }
+                    <h2 class="ficha-titulo" id="@($"ficha-titulo-{_id}")">@vino.NombreConAnio</h2>
+                </div>
+
+                <button type="button"
+                        class="ficha-cerrar"
+                        aria-label="Cerrar la ficha del vino"
+                        @onclick="CerrarAsync"
+                        @ref="_botonCerrar">
+                    <IconoVino Nombre="Icono.Cerrar" Tamano="TamanoIcono.Pequeno" />
+                </button>
+            </header>
+
+            <div class="ficha-cuerpo">
+                @* Retrato del vino: la etiqueta real manda; la botella virtual
+                   solo entra si no hay ninguna imagen subida. *@
+                <div class="ficha-retrato">
+                    @if (UrlEtiqueta is { } urlEtiqueta)
+                    {
+                        <figure class="ficha-imagen">
+                            <img src="@urlEtiqueta" alt="@($"Etiqueta de {vino.NombreConAnio}")" loading="lazy" />
+                            <figcaption>Etiqueta</figcaption>
+                        </figure>
+                    }
+
+                    @if (UrlFoto is { } urlFoto)
+                    {
+                        <figure class="ficha-imagen">
+                            <img src="@urlFoto" alt="@($"Botella de {vino.NombreConAnio}")" loading="lazy" />
+                            <figcaption>Botella</figcaption>
+                        </figure>
+                    }
+
+                    @if (UrlEtiqueta is null && UrlFoto is null)
+                    {
+                        <BotellaVirtual NumeroOrden="vino.NumeroOrden"
+                                        Tamano="TamanoBotella.Grande"
+                                        Etiqueta="@($"Botella de {vino.NombreConAnio}")" />
+                    }
+                </div>
+
+                @* --- Lo que el vino es, independientemente de la cata ------ *@
+                <section class="ficha-bloque" aria-label="Datos del vino">
+                    <h3 class="ficha-rotulo">La botella</h3>
+
+                    <dl class="ficha-datos">
+                        <div>
+                            <dt>Nombre</dt>
+                            <dd>@vino.Nombre</dd>
+                        </div>
+                        <div>
+                            <dt>Añada</dt>
+                            <dd>@(vino.Anio?.ToString() ?? "Sin añada")</dd>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(vino.Bodega))
+                        {
+                            <div>
+                                <dt>Bodega</dt>
+                                <dd>@vino.Bodega</dd>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(vino.DenominacionOrigen))
+                        {
+                            <div>
+                                <dt>Denominación de origen</dt>
+                                <dd>@vino.DenominacionOrigen</dd>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(vino.Clase))
+                        {
+                            <div>
+                                <dt>Tipo</dt>
+                                <dd>@vino.Clase</dd>
+                            </div>
+                        }
+                        @if (vino.PrecioEstimado is { } precio)
+                        {
+                            <div>
+                                <dt>Precio estimado</dt>
+                                <dd>@precio.ToString("C2")</dd>
+                            </div>
+                        }
+                        <div>
+                            <dt>Lo trajo</dt>
+                            <dd>@vino.Dueno</dd>
+                        </div>
+                        <div>
+                            <dt>Orden en la cata</dt>
+                            <dd>Vino nº @vino.NumeroOrden</dd>
+                        </div>
+                    </dl>
+
+                    @if (!string.IsNullOrWhiteSpace(vino.Comentarios))
+                    {
+                        <div class="ficha-tecnica">
+                            <h4 class="ficha-subrotulo">Notas de la botella</h4>
+                            <p class="ficha-tecnica-texto">@vino.Comentarios</p>
+                        </div>
+                    }
+                </section>
+
+                @* --- Y lo que pasó con él aquella noche ------------------- *@
+                @if (MostrarResultados)
+                {
+                    <section class="ficha-bloque" aria-label="Resultado del vino en la cata">
+                        <h3 class="ficha-rotulo">En esta cata</h3>
+
+                        <div class="ficha-cifras">
+                            <article class="ficha-cifra ficha-cifra--fuerte">
+                                <span class="ficha-cifra-valor">@TextoNota(vino.NotaMedia)</span>
+                                <span class="ficha-cifra-rotulo">Nota media</span>
+                            </article>
+                            <article class="ficha-cifra">
+                                <span class="ficha-cifra-valor">@(vino.MiNota is null ? "—" : vino.MiNota.Value.ToString("0.##"))</span>
+                                <span class="ficha-cifra-rotulo">@(vino.MiNota is null ? "No voté" : "Mi nota")</span>
+                            </article>
+                            <article class="ficha-cifra">
+                                <span class="ficha-cifra-valor">@vino.Posicion</span>
+                                <span class="ficha-cifra-rotulo">Puesto</span>
+                            </article>
+                            <article class="ficha-cifra">
+                                <span class="ficha-cifra-valor">@TextoNota(vino.MejorNota)</span>
+                                <span class="ficha-cifra-rotulo">Mejor nota</span>
+                            </article>
+                            <article class="ficha-cifra">
+                                <span class="ficha-cifra-valor">@TextoNota(vino.PeorNota)</span>
+                                <span class="ficha-cifra-rotulo">Peor nota</span>
+                            </article>
+                            <article class="ficha-cifra">
+                                <span class="ficha-cifra-valor">@vino.VotosContados</span>
+                                <span class="ficha-cifra-rotulo">Votos</span>
+                            </article>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(vino.MiComentario))
+                        {
+                            <div class="ficha-tecnica">
+                                <h4 class="ficha-subrotulo">Lo que escribí yo</h4>
+                                <p class="ficha-mi-comentario">«@vino.MiComentario»</p>
+                            </div>
+                        }
+                    </section>
+
+                    @if (vino.Votos.Count > 0)
+                    {
+                        <section class="ficha-bloque" aria-label="Votos de los catadores">
+                            <h3 class="ficha-rotulo">Qué votó cada uno</h3>
+
+                            <ul class="ficha-votos">
+                                @foreach (var voto in vino.Votos)
+                                {
+                                    <li class="@(voto.NoVoto ? "ficha-voto ficha-voto--sin" : "ficha-voto")">
+                                        <div class="ficha-voto-cabecera">
+                                            <span class="ficha-voto-nombre">@voto.NombreUsuario</span>
+                                            <span class="ficha-voto-nota">@voto.NotaTexto</span>
+                                        </div>
+
+                                        <p class="ficha-voto-meta">
+                                            <span>@voto.TiempoTexto</span>
+                                            @if (voto.FueRectificado)
+                                            {
+                                                <span class="ficha-voto-marca">Rectificado</span>
+                                            }
+                                            @if (voto.NoVoto)
+                                            {
+                                                <span class="ficha-voto-marca">No votó</span>
+                                            }
+                                        </p>
+
+                                        @if (voto.TieneComentario)
+                                        {
+                                            <p class="ficha-voto-comentario">«@voto.Comentario»</p>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </section>
+                    }
+                }
+            </div>
+
+            <footer class="ficha-pie">
+                <button type="button" class="mc-boton mc-boton-secundario ficha-pie-boton" @onclick="CerrarAsync">
+                    Cerrar
+                </button>
+            </footer>
+        </div>
+    </div>
+}

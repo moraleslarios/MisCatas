@@ -1,0 +1,16 @@
+@* Paginador sencillo para los listados de administración. *@
+
+@if (TotalPaginas > 1)
+{
+    <nav class="paginador" aria-label="Paginación">
+        <button type="button" disabled="@(!TieneAnterior)" @onclick="AnteriorAsync">
+            Anterior
+        </button>
+
+        <span class="posicion">Página @Pagina de @TotalPaginas (@TotalElementos)</span>
+
+        <button type="button" disabled="@(!TieneSiguiente)" @onclick="SiguienteAsync">
+            Siguiente
+        </button>
+    </nav>
+}

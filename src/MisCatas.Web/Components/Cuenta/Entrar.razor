@@ -1,0 +1,54 @@
+@page "/cuenta/entrar"
+@attribute [ExcludeFromInteractiveRouting]
+@attribute [AllowAnonymous]
+@layout LayoutVacio
+
+<PageTitle>Entrar · MisCatas</PageTitle>
+
+<div class="pantalla">
+    <div class="tarjeta">
+        <header class="cabecera">
+            <h1>MisCatas</h1>
+            <p>Entra con tu teléfono y contraseña</p>
+        </header>
+
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <p class="error" role="alert">@Error</p>
+        }
+
+        <EditForm Model="Datos" FormName="formulario-entrar" OnValidSubmit="EntrarAsync">
+            <DataAnnotationsValidator />
+
+            <label class="campo">
+                <span>Usuario</span>
+                <InputText @bind-Value="Datos.Login"
+                           autocomplete="username"
+                           inputmode="tel"
+                           autocapitalize="off"
+                           spellcheck="false" />
+                <ValidationMessage For="() => Datos.Login" />
+                <small class="ayuda">Tu número de teléfono.</small>
+            </label>
+
+            <label class="campo">
+                <span>Contraseña</span>
+                <InputText @bind-Value="Datos.Contrasena"
+                           type="password"
+                           autocomplete="current-password" />
+                <ValidationMessage For="() => Datos.Contrasena" />
+            </label>
+
+            <label class="recordarme">
+                <InputCheckbox @bind-Value="Datos.Recordarme" />
+                <span>Mantener la sesión abierta en este dispositivo</span>
+            </label>
+
+            <button type="submit" class="boton">Entrar</button>
+        </EditForm>
+
+        <footer class="pista">
+            <p>La primera vez tu contraseña es tu número de teléfono.</p>
+        </footer>
+    </div>
+</div>

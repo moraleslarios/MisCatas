@@ -1,0 +1,72 @@
+@* ---------------------------------------------------------------------------
+   Tarjeta de cata. Se usa en «Mis catas» (usuario) y en el panel de admin.
+   Acepta los datos sueltos para poder alimentarse tanto de CataUsuarioDto
+   como de CataDto sin acoplar el componente a un DTO concreto.
+   --------------------------------------------------------------------------- *@
+
+<article class="@ClasesFinales">
+    <header class="tarjeta-cata-cabecera">
+        <div class="tarjeta-cata-titulos">
+            @if (!string.IsNullOrWhiteSpace(Antetitulo))
+            {
+                <p class="tarjeta-cata-antetitulo">@Antetitulo</p>
+            }
+            <h3 class="tarjeta-cata-nombre">@Nombre</h3>
+        </div>
+
+        <span class="@ClasePastilla">@NombreEstado</span>
+    </header>
+
+    <dl class="tarjeta-cata-datos">
+        <div class="tarjeta-cata-dato">
+            <dt><IconoVino Nombre="Icono.Calendario" Tamano="TamanoIcono.Pequeno" /><span class="sr-only">Fecha</span></dt>
+            <dd>@Fecha.ToString("dddd d 'de' MMMM 'de' yyyy")</dd>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Lugar))
+        {
+            <div class="tarjeta-cata-dato">
+                <dt><IconoVino Nombre="Icono.Lugar" Tamano="TamanoIcono.Pequeno" /><span class="sr-only">Lugar</span></dt>
+                <dd>@Lugar</dd>
+            </div>
+        }
+
+        <div class="tarjeta-cata-dato">
+            <dt><IconoVino Nombre="Icono.Botella" Tamano="TamanoIcono.Pequeno" /><span class="sr-only">Vinos</span></dt>
+            <dd>@NumeroVinos @(NumeroVinos == 1 ? "vino" : "vinos")</dd>
+        </div>
+
+        @if (NumeroParticipantes is int participantes)
+        {
+            <div class="tarjeta-cata-dato">
+                <dt><IconoVino Nombre="Icono.Personas" Tamano="TamanoIcono.Pequeno" /><span class="sr-only">Participantes</span></dt>
+                <dd>@participantes @(participantes == 1 ? "participante" : "participantes")</dd>
+            </div>
+        }
+    </dl>
+
+    @if (MisVotos is int votos && NumeroVinos > 0)
+    {
+        <p class="tarjeta-cata-progreso">
+            <IconoVino Nombre="Icono.Hecho" Tamano="TamanoIcono.Pequeno" />
+            Has votado @votos de @NumeroVinos
+        </p>
+    }
+
+    @if (Pie is not null)
+    {
+        <div class="tarjeta-cata-extra">@Pie</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Enlace))
+    {
+        <a class="@ClaseBoton" href="@Enlace">
+            @TextoAccion
+            <IconoVino Nombre="Icono.Adelante" Tamano="TamanoIcono.Pequeno" />
+        </a>
+    }
+    else if (Acciones is not null)
+    {
+        <div class="tarjeta-cata-acciones">@Acciones</div>
+    }
+</article>

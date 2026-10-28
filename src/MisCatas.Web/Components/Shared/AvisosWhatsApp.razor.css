@@ -1,0 +1,301 @@
+/* Estilos aislados de AvisosWhatsApp.
+
+   Mismo lenguaje visual que el resto del montaje (tarjeta blanca sobre crema,
+   filas en crema oscuro, iniciales redondas), pero con su propio prefijo
+   porque el CSS aislado de Blazor no se comparte entre componentes.
+
+   El verde de WhatsApp se usa solo en el botón de enviar: es el único elemento
+   que lleva fuera de la aplicación, y así se distingue de los botones propios
+   sin romper la gama burdeos y crema. */
+
+.avisos {
+    padding: 1.1rem 1.2rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem);
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.avisos-cabecera {
+    margin-bottom: 0.9rem;
+}
+
+.avisos-titulo {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    margin: 0 0 0.3rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #2A2325;
+}
+
+.avisos-explicacion {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--carbon-500, #4A4245);
+}
+
+/* --- Selector de tipo de aviso -------------------------------------------- */
+
+.avisos-tipos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.9rem;
+}
+
+.avisos-tipo {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--carbon-500, #4A4245);
+    background: var(--crema-oscuro, #EDE5DB);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.avisos-tipo:hover {
+    background: var(--crema-borde, #DFD4C6);
+}
+
+.avisos-tipo-activo,
+.avisos-tipo-activo:hover {
+    color: #fff;
+    background: var(--burdeos, #6B1F2E);
+    border-color: var(--burdeos, #6B1F2E);
+}
+
+/* --- Aviso de dirección sin configurar ------------------------------------ */
+
+.avisos-sin-url {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin: 0 0 0.9rem;
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--aviso, #8A5A00);
+    background: #FDF6E3;
+    border-left: 3px solid var(--aviso, #8A5A00);
+    border-radius: 0.4rem;
+}
+
+/* El icono no debe achatarse cuando el texto ocupa varias líneas. */
+.avisos-sin-url > ::deep svg {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+}
+
+.avisos-sin-url code {
+    padding: 0.05rem 0.3rem;
+    font-size: 0.82rem;
+    background: rgba(138, 90, 0, 0.1);
+    border-radius: 0.25rem;
+}
+
+/* --- Dirección repartida y código QR -------------------------------------- */
+
+.avisos-direccion {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 0 0 0.9rem;
+    padding: 0.9rem 1rem;
+    background: var(--crema-oscuro, #EDE5DB);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.6rem;
+}
+
+/* El QR lo pinta un componente hijo, así que hace falta ::deep para poder
+   colocarlo desde aquí. */
+.avisos-direccion ::deep .avisos-qr {
+    flex: 0 0 auto;
+}
+
+/* El texto manda y se come el hueco libre; el QR conserva su tamaño. */
+.avisos-direccion-texto {
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+.avisos-direccion-rotulo {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0 0 0.2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--carbon-500, #6B6B6B);
+}
+
+.avisos-direccion-rotulo > ::deep svg {
+    flex-shrink: 0;
+    color: var(--exito, #15803D);
+}
+
+/* Una dirección larga no debe desbordar: se parte por donde haga falta. */
+.avisos-direccion-valor {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--burdeos, #6B1F2E);
+    word-break: break-all;
+}
+
+.avisos-direccion-nota {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--carbon-600, #525252);
+}
+
+/* --- Mensaje editable ----------------------------------------------------- */
+
+.avisos-mensaje {
+    margin-bottom: 1rem;
+}
+
+.avisos-rotulo {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--carbon-400, #6B6165);
+}
+
+.avisos-texto {
+    width: 100%;
+    /* El mensaje lleva emojis y saltos de línea: una tipografía de ancho fijo
+       deja ver exactamente cómo va a quedar en WhatsApp. */
+    font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.avisos-pista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: baseline;
+    margin: 0.4rem 0 0;
+    font-size: 0.8rem;
+    color: var(--carbon-500, #4A4245);
+}
+
+.avisos-pista code {
+    padding: 0.05rem 0.3rem;
+    background: var(--crema-oscuro, #EDE5DB);
+    border-radius: 0.25rem;
+}
+
+.avisos-restaurar {
+    padding: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--burdeos, #6B1F2E);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* --- Lista de participantes ----------------------------------------------- */
+
+.avisos-vacio {
+    margin: 0;
+    color: var(--carbon-500, #4A4245);
+    font-style: italic;
+}
+
+.avisos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.avisos-fila {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.55rem 0.8rem;
+    background: #F7F2EC;
+    border-radius: 0.7rem;
+}
+
+.avisos-inicial {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--burdeos, #6B1F2E);
+    background: var(--crema-oscuro, #EDE5DB);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+}
+
+.avisos-fila-textos {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.05rem;
+    min-width: 0;
+}
+
+.avisos-fila-nombre {
+    overflow: hidden;
+    font-weight: 600;
+    color: #2A2325;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.avisos-fila-pie {
+    font-size: 0.78rem;
+    color: var(--carbon-500, #4A4245);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Verde de WhatsApp, reservado al único botón que sale de la aplicación. */
+.avisos-enviar {
+    flex-shrink: 0;
+    color: #fff;
+    background: #25D366;
+    border-color: #1EBE5B;
+}
+
+.avisos-enviar:hover {
+    color: #fff;
+    background: #1EBE5B;
+    border-color: #17A94F;
+}
+
+.avisos-invalido {
+    flex-shrink: 0;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--carbon-400, #6B6165);
+}

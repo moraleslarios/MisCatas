@@ -1,0 +1,45 @@
+@* ---------------------------------------------------------------------------
+   Cuenta atrás visual de la votación. En Fase 2 solo es presentación: el
+   tiempo restante llega por parámetro y lo gobernará el motor de la Fase 3.
+
+   Accesibilidad: el estado de alerta NO se comunica solo por color, lleva
+   icono y el texto «¡Últimos segundos!». El anuncio al lector de pantalla se
+   hace cada 10 segundos (y en los 5 últimos) para no resultar ruidoso.
+   --------------------------------------------------------------------------- *@
+
+<div class="cuenta @ClaseEstado @(EsEscaparate ? "cuenta--tv" : null) @Clase">
+
+    <div class="cuenta-aro" aria-hidden="true">
+        <svg class="cuenta-svg" viewBox="0 0 120 120">
+            <circle class="cuenta-pista" cx="60" cy="60" r="52" />
+            <circle class="cuenta-arco"
+                    cx="60"
+                    cy="60"
+                    r="52"
+                    stroke-dasharray="@TextoInvariante(Circunferencia)"
+                    stroke-dashoffset="@TextoInvariante(Desplazamiento)" />
+        </svg>
+
+        <div class="cuenta-centro">
+            <span class="cuenta-numero">@TextoReloj</span>
+            @if (!EsEscaparate)
+            {
+                <span class="cuenta-unidad">min:seg</span>
+            }
+        </div>
+    </div>
+
+    <p class="cuenta-rotulo" role="status" aria-live="@(EnAlerta ? "assertive" : "polite")">
+        @if (EnAlerta)
+        {
+            <IconoVino Nombre="Icono.Alerta" Tamano="@TamanoAviso" />
+        }
+        else
+        {
+            <IconoVino Nombre="Icono.Reloj" Tamano="@TamanoAviso" />
+        }
+        <span>@TextoEstado</span>
+    </p>
+
+    <span class="sr-only" aria-live="polite">@TextoAnuncio</span>
+</div>

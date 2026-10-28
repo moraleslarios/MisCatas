@@ -1,0 +1,89 @@
+@page "/admin"
+
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>Panel · MisCatas</PageTitle>
+
+<div class="panel">
+    <header class="panel-cabecera">
+        <p class="mc-antetitulo">Administración</p>
+        <h1 class="mc-titulo-marca">Panel</h1>
+    </header>
+
+    @if (CataActivaDto is { } activa)
+    {
+        <section class="panel-vivo @(CataActivaEnCurso ? null : "panel-vivo--abierta")" role="status">
+            <p class="panel-vivo-rotulo">
+                @if (CataActivaEnCurso)
+                {
+                    <span class="panel-vivo-punto" aria-hidden="true"></span>
+                    <text>Cata en directo</text>
+                }
+                else
+                {
+                    <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Pequeno" />
+                    <text>Cata activa sin empezar</text>
+                }
+            </p>
+            <h2 class="panel-vivo-nombre">@activa.Nombre</h2>
+            <p class="panel-vivo-datos">
+                @activa.NumeroVinos vinos · @activa.NumeroParticipantes participantes
+            </p>
+            <p class="panel-vivo-aviso">
+                @(CataActivaEnCurso
+                    ? "Esta cata sigue en marcha desde antes. Vuelve al mando para continuar donde la dejaste."
+                    : "Esta cata ya está abierta y ocupa el único hueco activo. Empiézala o devuélvela a borrador para activar otra.")
+            </p>
+            <a class="mc-boton mc-boton-dorado mc-boton-grande"
+               href="@RutasApp.AdminControlar(activa.Id)">
+                <IconoVino Nombre="Icono.Grafico" Tamano="TamanoIcono.Pequeno" />
+                @(CataActivaEnCurso ? "Volver al control" : "Ir al control")
+            </a>
+        </section>
+    }
+
+    <section class="panel-cifras" aria-label="Resumen">
+        @foreach (var cifra in Cifras)
+        {
+            <article class="panel-cifra">
+                <span class="panel-cifra-icono">
+                    <IconoVino Nombre="@cifra.Icono" Tamano="TamanoIcono.Medio" />
+                </span>
+                <span class="panel-cifra-valor">@cifra.Valor</span>
+                <span class="panel-cifra-rotulo">@cifra.Rotulo</span>
+            </article>
+        }
+    </section>
+
+    <section class="panel-accesos" aria-label="Accesos rápidos">
+        @foreach (var acceso in Accesos)
+        {
+            <a class="panel-acceso" href="@acceso.Ruta">
+                <span class="panel-acceso-icono">
+                    <IconoVino Nombre="@acceso.Icono" Tamano="TamanoIcono.Grande" />
+                </span>
+                <span class="panel-acceso-textos">
+                    <span class="panel-acceso-titulo">@acceso.Titulo</span>
+                    <span class="panel-acceso-pie">@acceso.Pie</span>
+                </span>
+                <IconoVino Nombre="Icono.Adelante" Tamano="TamanoIcono.Pequeno" Clase="panel-acceso-flecha" />
+            </a>
+        }
+    </section>
+
+    <section class="panel-escaparate">
+        <div class="panel-escaparate-textos">
+            <p class="panel-escaparate-titulo">Pantalla de escaparate</p>
+            <p class="panel-escaparate-pie">
+                Ábrela en la televisión para proyectar la cata en directo.
+            </p>
+        </div>
+        <a class="mc-boton mc-boton-secundario"
+           href="@RutasApp.Escaparate"
+           target="_blank"
+           rel="noopener">
+            <IconoVino Nombre="Icono.Television" Tamano="TamanoIcono.Pequeno" />
+            Abrir
+        </a>
+    </section>
+</div>

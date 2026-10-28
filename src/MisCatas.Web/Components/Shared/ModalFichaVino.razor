@@ -1,0 +1,166 @@
+@* ---------------------------------------------------------------------------
+   Ficha de reconocimiento de un vino, para el organizador.
+
+   Para qué sirve: en la mesa de control los vinos se muestran a ciegas (solo
+   nombre y añada). Antes de lanzar uno, el organizador necesita saber qué
+   botella es en realidad para poder servirla. Esta hoja se lo enseña sin
+   sacarle de la pantalla de control, que es la que lleva el reloj y el mando.
+
+   Por qué un modal y no un enlace: navegar a otra ruta tiraría la conexión en
+   vivo de la mesa y le devolvería arriba del todo al volver.
+
+   Accesibilidad: role="dialog" + aria-modal, título ligado con
+   aria-labelledby, cierre con Escape, con el aspa o tocando fuera, y foco
+   inicial en el aspa.
+   --------------------------------------------------------------------------- *@
+
+@if (Visible && Vino is { } vino)
+{
+    <div class="reconocer-fondo" @onclick="CerrarAsync" @onkeydown="AlPulsarTeclaAsync" tabindex="-1">
+        <div class="reconocer-caja"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="@($"reconocer-titulo-{_id}")"
+             @onclick:stopPropagation="true">
+
+            <header class="reconocer-cabecera">
+                @if (NumeroOrden is { } numero)
+                {
+                    <span class="reconocer-numero">@numero</span>
+                }
+
+                <div class="reconocer-cabecera-textos">
+                    <p class="reconocer-antetitulo">
+                        @(NumeroOrden is { } orden ? $"Vino nº {orden} · solo lo ves tú" : "Solo lo ves tú")
+                    </p>
+                    <h2 class="reconocer-titulo" id="@($"reconocer-titulo-{_id}")">@vino.NombreConAnio</h2>
+                </div>
+
+                <button type="button"
+                        class="reconocer-cerrar"
+                        aria-label="Cerrar la ficha del vino"
+                        @onclick="CerrarAsync"
+                        @ref="_botonCerrar">
+                    <IconoVino Nombre="Icono.Cerrar" Tamano="TamanoIcono.Pequeno" />
+                </button>
+            </header>
+
+            <div class="reconocer-cuerpo">
+                @* Aviso de discreción: esta hoja destapa el vino, así que no
+                   debe quedarse abierta delante de los catadores. *@
+                <p class="reconocer-aviso">
+                    <IconoVino Nombre="Icono.Oculto" Tamano="TamanoIcono.Pequeno" />
+                    <span>Cuidado: aquí se ve la botella real. Ciérrala antes de girar la pantalla.</span>
+                </p>
+
+                @* Retrato: manda la etiqueta real; la botella virtual solo
+                   entra si no se subió ninguna imagen. *@
+                <div class="reconocer-retrato">
+                    @if (UrlEtiqueta is { } urlEtiqueta)
+                    {
+                        <figure class="reconocer-imagen">
+                            <img src="@urlEtiqueta" alt="@($"Etiqueta de {vino.NombreConAnio}")" loading="lazy" />
+                            <figcaption>Etiqueta</figcaption>
+                        </figure>
+                    }
+
+                    @if (UrlFoto is { } urlFoto)
+                    {
+                        <figure class="reconocer-imagen">
+                            <img src="@urlFoto" alt="@($"Botella de {vino.NombreConAnio}")" loading="lazy" />
+                            <figcaption>Botella</figcaption>
+                        </figure>
+                    }
+
+                    @if (UrlEtiqueta is null && UrlFoto is null)
+                    {
+                        <BotellaVirtual NumeroOrden="@(NumeroOrden ?? 0)"
+                                        Tamano="TamanoBotella.Grande"
+                                        Etiqueta="@($"Botella de {vino.NombreConAnio}")" />
+                    }
+                </div>
+
+                <section class="reconocer-bloque" aria-label="Datos del vino">
+                    <h3 class="reconocer-rotulo">La botella</h3>
+
+                    <dl class="reconocer-datos">
+                        <div>
+                            <dt>Nombre</dt>
+                            <dd>@vino.Nombre</dd>
+                        </div>
+                        <div>
+                            <dt>Añada</dt>
+                            <dd>@(vino.Anio?.ToString() ?? "Sin añada")</dd>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(vino.Bodega))
+                        {
+                            <div>
+                                <dt>Bodega</dt>
+                                <dd>@vino.Bodega</dd>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(vino.DenominacionOrigen))
+                        {
+                            <div>
+                                <dt>Denominación de origen</dt>
+                                <dd>@vino.DenominacionOrigen</dd>
+                            </div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(vino.Clase))
+                        {
+                            <div>
+                                <dt>Tipo</dt>
+                                <dd>@vino.Clase</dd>
+                            </div>
+                        }
+                        @if (vino.PrecioEstimado is { } precio)
+                        {
+                            <div>
+                                <dt>Precio estimado</dt>
+                                <dd>@precio.ToString("C2")</dd>
+                            </div>
+                        }
+                        <div>
+                            <dt>Lo trajo</dt>
+                            <dd>@vino.Dueno</dd>
+                        </div>
+                        @if (NumeroOrden is { } puesto)
+                        {
+                            <div>
+                                <dt>Orden en la cata</dt>
+                                <dd>Vino nº @puesto</dd>
+                            </div>
+                        }
+                    </dl>
+
+                    @if (!string.IsNullOrWhiteSpace(vino.Comentarios))
+                    {
+                        <div class="reconocer-tecnica">
+                            <h4 class="reconocer-subrotulo">Notas de la botella</h4>
+                            <p class="reconocer-tecnica-texto">@vino.Comentarios</p>
+                        </div>
+                    }
+                </section>
+            </div>
+
+            <footer class="reconocer-pie">
+                @if (Acciones is not null)
+                {
+                    @Acciones
+                }
+
+                <a class="mc-boton mc-boton-fantasma reconocer-pie-boton"
+                   href="@($"/admin/vinos/{vino.Id}")"
+                   target="_blank"
+                   rel="noopener">
+                    <IconoVino Nombre="Icono.Lapiz" Tamano="TamanoIcono.Pequeno" />
+                    <span>Abrir su ficha completa</span>
+                </a>
+
+                <button type="button" class="mc-boton mc-boton-secundario reconocer-pie-boton" @onclick="CerrarAsync">
+                    Cerrar
+                </button>
+            </footer>
+        </div>
+    </div>
+}

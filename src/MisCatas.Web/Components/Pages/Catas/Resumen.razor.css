@@ -1,0 +1,351 @@
+/* Resumen en vivo de una cata, para el rol Usuario (móvil vertical). */
+
+.resumen {
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+}
+
+.resumen-cargando {
+    padding: 2.5rem 0;
+    color: var(--carbon-600, #383133);
+    text-align: center;
+}
+
+/* Aviso de circuito caído: sin conexión el progreso deja de refrescarse. */
+.resumen-reconectando {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6E4800;
+    background: #FDF2DC;
+    border-left: 3px solid #8A5A00;
+    border-radius: 0.5rem;
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.resumen-cabecera {
+    display: flex;
+    gap: 0.625rem;
+    align-items: flex-start;
+}
+
+.resumen-atras {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--burdeos, #6B1F2E);
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+}
+
+.resumen-titulos {
+    flex: 1;
+    min-width: 0;
+}
+
+.resumen-titulo {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.375rem, 6.2vw, 1.875rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--burdeos, #6B1F2E);
+}
+
+/* --- Cifras --------------------------------------------------------------- */
+
+.resumen-cifras {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.resumen-cifra {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    align-items: center;
+    padding: 0.75rem 0.375rem;
+    text-align: center;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem);
+}
+
+.resumen-cifra-valor {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1rem, 4.4vw, 1.25rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--burdeos, #6B1F2E);
+    font-variant-numeric: tabular-nums;
+}
+
+.resumen-cifra-rotulo {
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: var(--carbon-600, #383133);
+    text-transform: uppercase;
+}
+
+/* --- Barra de avance ------------------------------------------------------ */
+
+.resumen-barra-pista {
+    height: 0.625rem;
+    overflow: hidden;
+    background: var(--crema-oscuro, #EDE5DB);
+    border-radius: 9999px;
+}
+
+.resumen-barra-relleno {
+    height: 100%;
+    background: linear-gradient(90deg, #6B1F2E, #C9A227);
+    border-radius: 9999px;
+    transition: width 0.4s ease;
+}
+
+.resumen-barra-texto {
+    margin: 0.375rem 0 0;
+    font-size: 0.75rem;
+    color: var(--carbon-600, #383133);
+    text-align: center;
+}
+
+.resumen-lugar {
+    display: flex;
+    gap: 0.375rem;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--carbon-600, #383133);
+}
+
+/* --- Lista de votos ------------------------------------------------------- */
+
+.resumen-rotulo {
+    margin: 0 0 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--carbon-500, #4A4245);
+    text-transform: uppercase;
+}
+
+.resumen-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.resumen-fila {
+    display: flex;
+    gap: 0.625rem;
+    align-items: center;
+    padding: 0.625rem 0.75rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.875rem;
+}
+
+.resumen-fila--votado {
+    border-color: rgb(21 128 61 / 35%);
+}
+
+.resumen-fila--abierta {
+    box-shadow: 0 0 0 2px rgb(201 162 39 / 45%);
+}
+
+.resumen-fila-numero {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--burdeos, #6B1F2E);
+    background: var(--crema-oscuro, #EDE5DB);
+    border-radius: 9999px;
+    font-variant-numeric: tabular-nums;
+}
+
+.resumen-fila-textos {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.resumen-fila-titulo {
+    font-weight: 600;
+    color: #2A2325;
+}
+
+.resumen-fila-pie {
+    font-size: 0.75rem;
+    color: var(--carbon-600, #383133);
+}
+
+/* Mi propio comentario, en cursiva y recortado a dos líneas: sirve de
+   recordatorio sin comerse la fila. */
+.resumen-fila-comentario {
+    display: -webkit-box;
+    margin-top: 0.1875rem;
+    overflow: hidden;
+    font-size: 0.75rem;
+    font-style: italic;
+    line-height: 1.3;
+    color: var(--carbon-600, #383133);
+    opacity: 0.85;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow-wrap: anywhere;
+}
+
+.resumen-fila-nota {
+    flex-shrink: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--burdeos, #6B1F2E);
+    font-variant-numeric: tabular-nums;
+}
+
+.resumen-accion {
+    width: 100%;
+}
+
+/* --- Pastilla de estado de la cata ---------------------------------------- */
+
+.resumen-pastilla {
+    flex-shrink: 0;
+    align-self: center;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+}
+
+.resumen-pastilla--borrador {
+    color: #4A4240;
+    background: #F1ECE5;
+    border-color: #D8CEC2;
+}
+
+.resumen-pastilla--abierta {
+    color: #6E5508;
+    background: var(--dorado-suave, #F5E9BC);
+    border-color: var(--dorado, #C9A227);
+}
+
+.resumen-pastilla--encurso {
+    color: #fff;
+    background: var(--burdeos, #6B1F2E);
+    border-color: #4E1420;
+}
+
+.resumen-pastilla--finalizada {
+    color: #14532D;
+    background: #DCFCE7;
+    border-color: rgb(21 128 61 / 40%);
+}
+
+/* --- Cifra de aviso (gente que falta por votar) --------------------------- */
+
+.resumen-cifra--aviso {
+    color: #6E4800;
+    background: #FDF2DC;
+    border-color: #E0BE7A;
+}
+
+/* --- Mi participación ----------------------------------------------------- */
+
+.resumen-marcador {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.resumen-marcador-datos {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+}
+
+.resumen-marcador-dato {
+    padding: 0.5rem 0.625rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.75rem;
+}
+
+.resumen-marcador-dato dt {
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--carbon-600, #383133);
+    opacity: 0.75;
+}
+
+.resumen-marcador-dato dd {
+    margin: 0.125rem 0 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #2A2325;
+    font-variant-numeric: tabular-nums;
+}
+
+.resumen-marcador-dato--fuerte {
+    font-family: 'Playfair Display', Georgia, serif;
+    color: var(--burdeos, #6B1F2E) !important;
+}
+
+.resumen-marcador-dato--flojo {
+    background: #FDF2DC;
+    border-color: #E0BE7A;
+}
+
+.resumen-marcador-de {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--carbon-600, #383133);
+    opacity: 0.7;
+}
+
+/* --- Aviso según el estado de la cata ------------------------------------- */
+
+.resumen-nota-estado {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin: 0;
+    padding: 0.75rem 0.875rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--carbon-700, #2B2628);
+    background: var(--crema, #FBF6EE);
+    border: 1px dashed var(--crema-borde, #DFD4C6);
+    border-radius: 0.75rem;
+}
+
+/* --- Vitrina -------------------------------------------------------------- */
+
+/* La clase viaja como parámetro al componente hijo, por lo que no recibe el
+   atributo de ámbito de esta página: hay que cruzarlo con ::deep. */
+.resumen ::deep .resumen-vitrina {
+    margin-top: 0.25rem;
+}

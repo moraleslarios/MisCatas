@@ -1,0 +1,147 @@
+/* Estilos aislados de PanelVotantes. */
+
+.mural {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.mural-titulo {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--carbon-600, #383133);
+    text-transform: uppercase;
+}
+
+.mural-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+/* --- Ficha de cada invitado ----------------------------------------------- */
+
+.mural-ficha {
+    display: grid;
+    grid-template-columns: 1.25em 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: rgb(247 242 236 / 6%);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.625rem;
+    transition: background 400ms ease, border-color 400ms ease, transform 400ms ease;
+}
+
+/* Ya ha votado: se enciende en oro. El color NO es la única señal, va
+   acompañado del icono de verificación y del tiempo que tardó. */
+.mural-ficha--votado {
+    background: rgb(201 162 39 / 16%);
+    border-color: var(--dorado, #C9A227);
+}
+
+.mural-marca {
+    display: grid;
+    place-items: center;
+    font-size: 1.125em;
+    line-height: 1;
+    color: var(--dorado-texto, #6E5508);
+}
+
+.mural-nombre {
+    overflow: hidden;
+    font-weight: 600;
+    color: var(--carbon-700, #383234);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mural-tiempo {
+    font-weight: 700;
+    color: var(--carbon-600, #383133);
+    font-variant-numeric: tabular-nums;
+}
+
+.mural-ficha--votado .mural-nombre,
+.mural-ficha--votado .mural-tiempo {
+    color: var(--dorado-texto, #6E5508);
+}
+
+/* --- Variante escaparate -------------------------------------------------- */
+
+/* En la televisión se lee desde el fondo de la sala, pero el escaparate NO
+   tiene scroll: el mural debe caber siempre, tanto con 4 invitados como con
+   30. La solución es que la letra se calcule a partir del número de personas
+   (`--mural-personas`, que pone el componente) y que todo lo demás —huecos,
+   relleno, ancho mínimo de columna— se mida en `em`, es decir, relativo a esa
+   letra. Así, cuantos más invitados haya, más pequeña es la ficha y más
+   columnas entran por fila, de modo que el alto total apenas cambia. */
+.mural--tv {
+    /* Con 6 o menos se usa el tamaño grande de siempre (2.4vmin); a partir de
+       ahí baja sola, con un suelo para que nunca deje de leerse. */
+    --mural-letra: clamp(1.15vmin, calc(15vmin / var(--mural-personas, 6)), 2.4vmin);
+
+    gap: 1.2vmin;
+    min-height: 0;
+}
+
+.mural--tv .mural-titulo {
+    font-size: 2vmin;
+    letter-spacing: 0.16em;
+    color: rgb(247 242 236 / 82%);
+}
+
+.mural--tv .mural-lista {
+    /* La letra vive en la lista, no en la ficha: así el `minmax` en `em` se
+       encoge con ella y caben más columnas automáticamente. */
+    font-size: var(--mural-letra);
+    grid-template-columns: repeat(auto-fit, minmax(12em, 1fr));
+    gap: 0.55em;
+    min-height: 0;
+}
+
+.mural--tv .mural-ficha {
+    gap: 0.6em;
+    padding: 0.45em 0.8em;
+    font-size: 1em;
+    background: rgb(247 242 236 / 7%);
+    border-color: rgb(247 242 236 / 18%);
+    border-radius: 0.55em;
+}
+
+.mural--tv .mural-nombre {
+    color: rgb(247 242 236 / 72%);
+}
+
+.mural--tv .mural-tiempo {
+    color: rgb(247 242 236 / 60%);
+}
+
+.mural--tv .mural-ficha--votado {
+    background: rgb(201 162 39 / 22%);
+    border-color: #E8C765;
+    box-shadow: 0 0 2.4vmin rgb(232 199 101 / 35%);
+    transform: scale(1.02);
+}
+
+.mural--tv .mural-ficha--votado .mural-nombre,
+.mural--tv .mural-ficha--votado .mural-tiempo,
+.mural--tv .mural-marca {
+    color: #F3D97A;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mural-ficha {
+        transition: none;
+    }
+
+    .mural--tv .mural-ficha--votado {
+        transform: none;
+    }
+}

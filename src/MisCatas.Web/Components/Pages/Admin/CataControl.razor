@@ -1,0 +1,449 @@
+@page "/admin/catas/{Id:int}/control"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>Control de cata · MisCatas</PageTitle>
+
+<Aviso Texto="@Error" EsError="true" />
+<Aviso Texto="@Mensaje" />
+
+@if (Cargando)
+{
+    <p class="control-cargando" role="status">Cargando la mesa de control…</p>
+}
+else if (Detalle is null)
+{
+    <EstadoVacio Icono="Icono.Alerta"
+                 Titulo="No existe esa cata"
+                 Mensaje="Puede que se haya borrado o que el enlace esté equivocado.">
+        <Acciones>
+            <a class="mc-boton mc-boton-primario" href="@RutasApp.AdminCatas">Volver al listado</a>
+        </Acciones>
+    </EstadoVacio>
+}
+else
+{
+    <div class="control">
+        <header class="control-cabecera">
+            <div class="control-titulos">
+                <p class="mc-antetitulo">Mesa de control</p>
+                <h1 class="control-titulo">@Detalle.Cata.Nombre</h1>
+                <p class="control-subtitulo">
+                    @Detalle.Cata.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy")
+                    @if (!string.IsNullOrWhiteSpace(Detalle.Cata.Lugar))
+                    {
+                        <span> · @Detalle.Cata.Lugar</span>
+                    }
+                </p>
+            </div>
+
+            <div class="control-cabecera-acciones">
+                <span class="@ClasePastillaEstado(Detalle.Cata.Estado)">
+                    @NombreEstado(Detalle.Cata.Estado)
+                </span>
+                <a class="mc-boton mc-boton-secundario"
+                   href="@RutasApp.Escaparate"
+                   target="_blank"
+                   rel="noopener">
+                    <IconoVino Nombre="Icono.Television" Tamano="TamanoIcono.Pequeno" />
+                    Escaparate
+                </a>
+                <a class="mc-boton mc-boton-secundario" href="@($"{RutasApp.AdminCatas}/{Id}/montar")">
+                    <IconoVino Nombre="Icono.Ajustes" Tamano="TamanoIcono.Pequeno" />
+                    Montaje
+                </a>
+            </div>
+        </header>
+
+        @if (!Vivo.Conectado)
+        {
+            <p class="control-nota control-nota--aviso" role="status">
+                <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Pequeno" />
+                Reconectando con la mesa… el mando volverá en cuanto se restablezca el enlace.
+            </p>
+        }
+        else if (SoloLectura)
+        {
+            <p class="control-nota control-nota--aviso" role="status">
+                <IconoVino Nombre="Icono.Candado" Tamano="TamanoIcono.Pequeno" />
+                Otro administrador está al mando de esta cata. Puedes seguirla en directo,
+                pero los controles están desactivados para evitar órdenes cruzadas.
+            </p>
+        }
+        else if (Detalle.Cata.Estado == EstadoCata.Finalizada)
+        {
+            <p class="control-nota" role="status">
+                <IconoVino Nombre="Icono.Medalla" Tamano="TamanoIcono.Pequeno" />
+                La cata está finalizada: los datos de los vinos ya están destapados.
+                Puedes reabrirla si quieres seguir votando.
+            </p>
+        }
+        else if (Detalle.Cata.Estado == EstadoCata.Borrador)
+        {
+            <p class="control-nota" role="status">
+                <IconoVino Nombre="Icono.Alerta" Tamano="TamanoIcono.Pequeno" />
+                La cata está en borrador. Ábrela para que los participantes puedan entrar.
+            </p>
+        }
+
+        <section class="control-marcadores" aria-label="Marcadores en directo">
+            <article class="control-marcador">
+                <span class="control-marcador-rotulo">Vino en juego</span>
+                <span class="control-marcador-valor">
+                    @(VinoActual?.Orden.ToString() ?? "—")
+                    <span class="control-marcador-de">/ @Detalle.Vinos.Count</span>
+                </span>
+                <span class="control-marcador-pie">@TextoEstadoVinoActual</span>
+            </article>
+
+            <article class="control-marcador">
+                <span class="control-marcador-rotulo">Votos recibidos</span>
+                <span class="control-marcador-valor">
+                    @Progreso.HanVotado
+                    <span class="control-marcador-de">/ @Progreso.TotalParticipantes</span>
+                </span>
+                <div class="control-barra" role="presentation">
+                    <div class="control-barra-relleno" style="width: @(Progreso.PorcentajeVotado)%"></div>
+                </div>
+            </article>
+
+            <article class="control-marcador">
+                <span class="control-marcador-rotulo">Vinos cerrados</span>
+                <span class="control-marcador-valor">
+                    @Progreso.VinosCerrados
+                    <span class="control-marcador-de">/ @Progreso.TotalVinos</span>
+                </span>
+                <div class="control-barra" role="presentation">
+                    <div class="control-barra-relleno" style="width: @(Progreso.PorcentajeCata)%"></div>
+                </div>
+            </article>
+
+            <article class="control-marcador">
+                <span class="control-marcador-rotulo">Tiempo medio</span>
+                <span class="control-marcador-valor">@Progreso.TiempoMedioTexto</span>
+                <span class="control-marcador-pie">por voto emitido</span>
+            </article>
+        </section>
+
+        @if (Estado is { } vivo && Fase is FaseVotacion.Preparacion or FaseVotacion.Abierta or FaseVotacion.Pausada)
+        {
+            <section class="@ClaseReloj" aria-label="Tiempo de votación">
+                <p class="control-reloj-fase">@TextoFase</p>
+                <p class="control-reloj-cifra" role="timer" aria-live="off">
+                    @CifraReloj<span class="control-reloj-unidad">s</span>
+                </p>
+                <div class="control-reloj-barra" role="presentation">
+                    <div class="control-reloj-relleno" style="width: @(PorcentajeTiempo)%"></div>
+                </div>
+                <p class="control-reloj-pie">
+                    @if (Fase == FaseVotacion.Preparacion)
+                    {
+                        <span>Cuenta atrás en las pantallas. La votación se abre al llegar a cero.</span>
+                    }
+                    else if (Fase == FaseVotacion.Pausada)
+                    {
+                        <span>
+                            Reloj congelado: nadie puede votar hasta que reanudes.
+                            Vino nº @vivo.NumeroVinoActual ·
+                            @Progreso.HanVotado de @Progreso.TotalParticipantes ya han votado
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            Vino nº @vivo.NumeroVinoActual · @vivo.SegundosTotales s en total ·
+                            @Progreso.HanVotado de @Progreso.TotalParticipantes ya han votado
+                        </span>
+                    }
+                </p>
+            </section>
+        }
+
+        <section class="control-mando" aria-label="Mando de la votación">
+            <h2 class="control-rotulo">Mando</h2>
+
+            <div class="control-botones">
+                @if (Detalle.Cata.Estado == EstadoCata.Borrador)
+                {
+                    <button type="button"
+                            class="mc-boton mc-boton-dorado mc-boton-grande"
+                            disabled="@(!PuedeAbrir)"
+                            @onclick="AbrirCataAsync">
+                        <IconoVino Nombre="Icono.Descorche" Tamano="TamanoIcono.Pequeno" />
+                        Abrir la cata
+                    </button>
+                }
+
+                @if (PuedePausar)
+                {
+                    <button type="button"
+                            class="mc-boton mc-boton-secundario mc-boton-grande"
+                            disabled="@Trabajando"
+                            @onclick="PausarVotacionAsync">
+                        <IconoVino Nombre="Icono.Pausa" Tamano="TamanoIcono.Pequeno" />
+                        Pausar la votación
+                    </button>
+                }
+
+                @if (PuedeReanudar)
+                {
+                    <button type="button"
+                            class="mc-boton mc-boton-dorado mc-boton-grande"
+                            disabled="@Trabajando"
+                            @onclick="ReanudarVotacionAsync">
+                        <IconoVino Nombre="Icono.Reanudar" Tamano="TamanoIcono.Pequeno" />
+                        Reanudar la votación
+                    </button>
+                }
+
+                @if (PuedeCerrar)
+                {
+                    <button type="button"
+                            class="mc-boton mc-boton-primario mc-boton-grande"
+                            disabled="@Trabajando"
+                            @onclick="CerrarVotacionAsync">
+                        <IconoVino Nombre="Icono.Candado" Tamano="TamanoIcono.Pequeno" />
+                        Cerrar la votación
+                    </button>
+                }
+                else if (Detalle.Cata.Estado is EstadoCata.Abierta or EstadoCata.EnCurso)
+                {
+                    <button type="button"
+                            class="mc-boton mc-boton-dorado mc-boton-grande"
+                            disabled="@(!PuedeLanzar)"
+                            @onclick="LanzarSiguienteAsync">
+                        <IconoVino Nombre="Icono.Adelante" Tamano="TamanoIcono.Pequeno" />
+                        @TextoLanzar
+                    </button>
+
+                    @if (PuedeLanzar && SiguienteVino is not null)
+                    {
+                        <button type="button"
+                                class="mc-boton mc-boton-fantasma mc-boton-grande"
+                                disabled="@Trabajando"
+                                @onclick="AbrirFichaSiguienteAsync">
+                            <IconoVino Nombre="Icono.Ojo" Tamano="TamanoIcono.Pequeno" />
+                            Ver qué vino es antes de lanzarlo
+                        </button>
+                    }
+                }
+
+                @if (PuedeResetearVino)
+                {
+                    <button type="button"
+                            class="mc-boton mc-boton-peligro mc-boton-grande"
+                            disabled="@Trabajando"
+                            @onclick="PedirResetearVino">
+                        <IconoVino Nombre="Icono.Papelera" Tamano="TamanoIcono.Pequeno" />
+                        Resetear vino nº @OrdenActual
+                    </button>
+                }
+
+                @if (Detalle.Cata.Estado is EstadoCata.Abierta or EstadoCata.EnCurso)
+                {
+                    <button type="button"
+                            class="mc-boton mc-boton-secundario mc-boton-grande"
+                            disabled="@(!PuedeFinalizar)"
+                            @onclick="PedirFinalizar">
+                        <IconoVino Nombre="Icono.Medalla" Tamano="TamanoIcono.Pequeno" />
+                        Finalizar la cata
+                    </button>
+                }
+
+                @if (Detalle.Cata.Estado == EstadoCata.Finalizada)
+                {
+                    @if (PuedeOcultarRevelacion)
+                    {
+                        <button type="button"
+                                class="mc-boton mc-boton-secundario mc-boton-grande"
+                                disabled="@Trabajando"
+                                @onclick="OcultarRevelacionAsync">
+                            <IconoVino Nombre="Icono.Oculto" Tamano="TamanoIcono.Pequeno" />
+                            Ocultar la revelación
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="mc-boton mc-boton-dorado mc-boton-grande"
+                                disabled="@(!PuedeRevelar)"
+                                @onclick="ActivarRevelacionAsync">
+                            <IconoVino Nombre="Icono.Laurel" Tamano="TamanoIcono.Pequeno" />
+                            Revelar en pantalla
+                        </button>
+                    }
+
+                    <button type="button"
+                            class="mc-boton mc-boton-peligro mc-boton-grande"
+                            disabled="@(!PuedeReabrir)"
+                            @onclick="PedirReabrir">
+                        <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Pequeno" />
+                        Reabrir la cata
+                    </button>
+                }
+            </div>
+
+            <p class="control-mando-pie">
+                @if (SoloLectura)
+                {
+                    <span>Mando desactivado: lo tiene otro administrador.</span>
+                }
+                else if (Fase == FaseVotacion.Abierta)
+                {
+                    <span>
+                        La votación se cierra sola al agotarse el tiempo; ciérrala a mano solo
+                        si quieres acortarla.
+                    </span>
+                }
+                else
+                {
+                    <span>
+                        La cata nunca se cierra sola: lanza los vinos a tu ritmo y finalízala
+                        cuando quieras destapar los resultados.
+                    </span>
+                }
+            </p>
+        </section>
+
+        <section class="control-vinos" aria-label="Recorrido de los vinos">
+            <div class="control-vinos-cabecera">
+                <h2 class="control-rotulo">Recorrido</h2>
+
+                @if (PuedeOrdenarAlAzar)
+                {
+                    <button type="button"
+                            class="mc-boton mc-boton-secundario"
+                            disabled="@Trabajando"
+                            @onclick="PedirOrdenarAlAzar">
+                        <IconoVino Nombre="Icono.Barajar" Tamano="TamanoIcono.Pequeno" />
+                        Ordenar al azar
+                    </button>
+                }
+            </div>
+
+            @if (Detalle.Vinos.Count == 0)
+            {
+                <p class="control-vacio">Esta cata todavía no tiene vinos.</p>
+            }
+            else
+            {
+                <ol class="control-lista">
+                    @foreach (var vino in Detalle.Vinos)
+                    {
+                        <li class="@ClaseHito(vino)">
+                            <span class="control-hito-numero">@vino.Orden</span>
+                            <span class="control-hito-textos">
+                                <span class="control-hito-nombre">
+                                    @vino.NombreVino
+                                    @if (vino.Anio is { } anio)
+                                    {
+                                        <span class="control-hito-anio">(@anio)</span>
+                                    }
+                                </span>
+                                <span class="control-hito-pie">@TextoEstadoVotacion(vino.EstadoVotacion)</span>
+                            </span>
+                            <span class="@ClasePastillaVotacion(vino.EstadoVotacion)">
+                                @TextoEstadoVotacion(vino.EstadoVotacion)
+                            </span>
+
+                            @if (Mandable)
+                            {
+                                <button type="button"
+                                        class="mc-boton mc-boton-fantasma control-hito-boton"
+                                        disabled="@Trabajando"
+                                        title="@($"Ver qué botella es el vino nº {vino.Orden}")"
+                                        @onclick="() => AbrirFichaAsync(vino)">
+                                    <IconoVino Nombre="Icono.Ojo" Tamano="TamanoIcono.Pequeno" />
+                                    <span class="sr-only">Ver qué botella es el vino nº @vino.Orden</span>
+                                </button>
+                            }
+
+                            @if (PuedeSaltarA(vino))
+                            {
+                                <button type="button"
+                                        class="mc-boton mc-boton-fantasma control-hito-boton"
+                                        disabled="@Trabajando"
+                                        title="@($"Lanzar la votación del vino nº {vino.Orden}")"
+                                        @onclick="() => LanzarVinoAsync(vino.Orden)">
+                                    <IconoVino Nombre="Icono.Descorche" Tamano="TamanoIcono.Pequeno" />
+                                    <span class="sr-only">Lanzar el vino nº @vino.Orden</span>
+                                </button>
+                            }
+                        </li>
+                    }
+                </ol>
+            }
+        </section>
+
+        <section class="control-participantes" aria-label="Participantes">
+            <h2 class="control-rotulo">Participantes (@Detalle.Participantes.Count)</h2>
+
+            @if (Detalle.Participantes.Count == 0)
+            {
+                <p class="control-vacio">Nadie invitado todavía.</p>
+            }
+            else
+            {
+                <ul class="control-fichas">
+                    @foreach (var participante in Detalle.Participantes)
+                    {
+                        <li class="control-ficha">
+                            <IconoVino Nombre="Icono.Personas" Tamano="TamanoIcono.Pequeno" />
+                            <span class="control-ficha-nombre">@participante.NombreCompleto</span>
+                            <span class="control-ficha-login">@participante.Login</span>
+
+                            @if (PuedeResetearVino)
+                            {
+                                <button type="button"
+                                        class="mc-boton mc-boton-fantasma control-ficha-boton"
+                                        disabled="@Trabajando"
+                                        title="@($"Borrar el voto de {participante.NombreCompleto} en el vino nº {OrdenActual}")"
+                                        @onclick="() => PedirResetearVoto(participante.UsuarioId, participante.NombreCompleto)">
+                                    <IconoVino Nombre="Icono.Papelera" Tamano="TamanoIcono.Pequeno" />
+                                    <span class="sr-only">
+                                        Borrar el voto de @participante.NombreCompleto
+                                    </span>
+                                </button>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+
+        @if (Detalle.Cata.Estado == EstadoCata.Finalizada)
+        {
+            <a class="mc-boton mc-boton-primario mc-boton-grande control-ver-resultado"
+               href="@RutasApp.Resultado(Id)">
+                <IconoVino Nombre="Icono.Medalla" Tamano="TamanoIcono.Pequeno" />
+                Ver el resultado
+            </a>
+        }
+    </div>
+
+    <ModalConfirmacion Visible="@(Confirmacion is not null)"
+                       Titulo="@(Confirmacion?.Titulo ?? string.Empty)"
+                       Mensaje="@(Confirmacion?.Mensaje ?? string.Empty)"
+                       TextoConfirmar="@(Confirmacion?.TextoConfirmar ?? "Confirmar")"
+                       EsPeligro="@(Confirmacion?.EsPeligro ?? false)"
+                       Icono="Icono.Alerta"
+                       AlConfirmar="ConfirmarAsync"
+                       AlCancelar="CancelarConfirmacion" />
+
+    <ModalFichaVino Visible="@FichaVisible"
+                    Vino="@FichaVino"
+                    NumeroOrden="@FichaOrden"
+                    AlCerrar="CerrarFicha">
+        <Acciones>
+            @if (FichaOrden is { } orden && PuedeSaltarAOrden(orden))
+            {
+                <button type="button"
+                        class="mc-boton mc-boton-dorado mc-boton-grande"
+                        disabled="@Trabajando"
+                        @onclick="LanzarDesdeFichaAsync">
+                    <IconoVino Nombre="Icono.Descorche" Tamano="TamanoIcono.Pequeno" />
+                    Lanzar este vino
+                </button>
+            }
+        </Acciones>
+    </ModalFichaVino>
+}

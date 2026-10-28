@@ -1,0 +1,90 @@
+@page "/admin/vinos"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>Vinos · MisCatas</PageTitle>
+
+<h1>Vinos</h1>
+
+<Aviso Texto="@Error" EsError="true" />
+<Aviso Texto="@Mensaje" />
+
+<div class="barra-acciones">
+    <input type="search"
+           class="busqueda"
+           placeholder="Buscar por nombre, dueño, bodega o clase"
+           value="@Busqueda"
+           @oninput="BuscarAsync" />
+
+    <a class="boton" href="/admin/vinos/nuevo">Nuevo vino</a>
+</div>
+
+@if (Cargando)
+{
+    <p class="cargando">Cargando…</p>
+}
+else if (Datos is null || Datos.Elementos.Count == 0)
+{
+    <p class="vacio">No hay vinos que coincidan con la búsqueda.</p>
+}
+else
+{
+    <div class="rejilla">
+        @foreach (var vino in Datos.Elementos)
+        {
+            <article class="ficha">
+                <div class="miniatura">
+                    @if (vino.TieneFoto)
+                    {
+                        <img src="@($"/imagenes/vinos/{vino.Id}/foto")"
+                             alt="@($"Foto de {vino.Nombre}")"
+                             loading="lazy" />
+                    }
+                    else
+                    {
+                        <span class="sin-foto">Sin foto</span>
+                    }
+                </div>
+
+                <div class="datos">
+                    <h2>@vino.NombreConAnio</h2>
+                    <p class="dueno">Dueño: @vino.Dueno</p>
+
+                    <dl>
+                        @if (!string.IsNullOrWhiteSpace(vino.Bodega))
+                        {
+                            <dt>Bodega</dt>
+                            <dd>@vino.Bodega</dd>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(vino.DenominacionOrigen))
+                        {
+                            <dt>D.O.</dt>
+                            <dd>@vino.DenominacionOrigen</dd>
+                        }
+                        @if (vino.PrecioEstimado.HasValue)
+                        {
+                            <dt>Precio</dt>
+                            <dd>@vino.PrecioEstimado.Value.ToString("C2")</dd>
+                        }
+                    </dl>
+
+                    <div class="acciones">
+                        <a href="@($"/admin/vinos/{vino.Id}")">Editar</a>
+                        <button type="button" class="peligro" @onclick="() => PedirBorrado(vino)">
+                            Borrar
+                        </button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+
+    <Paginador Pagina="Datos.Pagina"
+               TotalPaginas="Datos.TotalPaginas"
+               TotalElementos="Datos.TotalElementos"
+               AlCambiarPagina="IrAPaginaAsync" />
+}
+
+<DialogoConfirmar @bind-Visible="MostrarBorrado"
+                  Titulo="Borrar vino"
+                  Mensaje="@MensajeBorrado"
+                  AlConfirmar="BorrarAsync" />

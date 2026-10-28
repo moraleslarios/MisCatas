@@ -1,0 +1,96 @@
+@page "/admin/ajustes"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>Ajustes · MisCatas</PageTitle>
+
+<h1>Ajustes generales</h1>
+<p class="intro">
+    Valores que se aplican a todas las catas. Cada cata puede sobrescribir
+    su tiempo de voto.
+</p>
+
+<Aviso Texto="@Error" EsError="true" />
+<Aviso Texto="@Mensaje" />
+
+@if (Datos is null)
+{
+    <p class="cargando">Cargando…</p>
+}
+else
+{
+    <EditForm Model="Datos" OnValidSubmit="GuardarAsync" class="formulario">
+        <DataAnnotationsValidator />
+
+        <fieldset>
+            <legend>Tiempos</legend>
+
+            <label class="campo">
+                <span>Tiempo de voto por vino (segundos)</span>
+                <InputNumber @bind-Value="Datos.TiempoVotoSegundos" min="10" max="3600" />
+                <ValidationMessage For="() => Datos.TiempoVotoSegundos" />
+            </label>
+
+            <label class="campo">
+                <span>Alerta roja del cronómetro (% restante)</span>
+                <InputNumber @bind-Value="Datos.PorcentajeAlertaRoja" min="1" max="100" />
+                <ValidationMessage For="() => Datos.PorcentajeAlertaRoja" />
+                <small>Por debajo de este porcentaje el cronómetro se pone en rojo.</small>
+            </label>
+
+            <label class="campo">
+                <span>Duración de la revelación final (segundos)</span>
+                <InputNumber @bind-Value="Datos.SegundosRevelacionFinal" min="1" max="300" />
+                <ValidationMessage For="() => Datos.SegundosRevelacionFinal" />
+            </label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Votación</legend>
+
+            <label class="campo">
+                <span>Paso decimal de la nota</span>
+                <InputNumber @bind-Value="Datos.PasoDecimalNota" step="0.1" min="0.1" max="5" />
+                <ValidationMessage For="() => Datos.PasoDecimalNota" />
+                <small>Incremento mínimo al puntuar. Por ejemplo 0,5.</small>
+            </label>
+
+            <label class="interruptor">
+                <InputCheckbox @bind-Value="Datos.PermitirAvanzarSinTodosLosVotos" />
+                <span>Permitir pasar al siguiente vino sin que hayan votado todos</span>
+            </label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Si alguien no vota a tiempo</legend>
+
+            <label class="campo">
+                <span>Política</span>
+                <InputSelect @bind-Value="Datos.PoliticaNoVoto">
+                    <option value="@PoliticaNoVoto.NoCuenta">No cuenta en la media</option>
+                    <option value="@PoliticaNoVoto.NotaFija">Se le asigna una nota fija</option>
+                </InputSelect>
+            </label>
+
+            @if (Datos.PoliticaNoVoto == PoliticaNoVoto.NotaFija)
+            {
+                <label class="campo">
+                    <span>Nota asignada</span>
+                    <InputNumber @bind-Value="Datos.NotaPorDefectoNoVoto" step="0.1" min="0" max="10" />
+                    <ValidationMessage For="() => Datos.NotaPorDefectoNoVoto" />
+                </label>
+            }
+
+            <label class="campo">
+                <span>Comentario automático</span>
+                <InputText @bind-Value="Datos.ComentarioAutomaticoNoVoto" />
+                <ValidationMessage For="() => Datos.ComentarioAutomaticoNoVoto" />
+            </label>
+        </fieldset>
+
+        <div class="botones">
+            <button type="submit" class="principal" disabled="@Guardando">
+                @(Guardando ? "Guardando…" : "Guardar ajustes")
+            </button>
+        </div>
+    </EditForm>
+}

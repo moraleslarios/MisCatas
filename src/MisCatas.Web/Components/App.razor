@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#6B1F2E" />
+    <meta name="description" content="MisCatas: catas de vino a ciegas con votación en directo." />
+    <base href="/" />
+    <ResourcePreloader />
+    <title>MisCatas</title>
+    @* Fuentes autoalojadas (sin CDN: la app corre en red local).
+       Las descarga tools\descargar-fuentes.ps1. Van antes de estilos.css. *@
+    <link rel="preload" href="fuentes/inter-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fuentes/playfair-display-latin-400-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="fuentes/fuentes.css" />
+    <link rel="stylesheet" href="@Assets["css/estilos.css"]" />
+    <link rel="stylesheet" href="@Assets["MisCatas.Web.styles.css"]" />
+    <ImportMap />
+    <HeadOutlet @rendermode="ModoRenderPagina" />
+</head>
+
+<body>
+    <Routes @rendermode="ModoRenderPagina" />
+    <ReconnectModal />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>
+
+@code {
+    [CascadingParameter]
+    private HttpContext ContextoHttp { get; set; } = default!;
+
+    // Las páginas marcadas con [ExcludeFromInteractiveRouting] (login, logout,
+    // cambio de contraseña) se renderizan en modo estático para poder usar
+    // HttpContext.SignInAsync y escribir la cookie. El resto va interactivo.
+    private IComponentRenderMode? ModoRenderPagina =>
+        ContextoHttp.AcceptsInteractiveRouting() ? RenderMode.InteractiveServer : null;
+}

@@ -1,0 +1,37 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+.pantalla {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: clamp(0.75rem, 4vw, 1.5rem);
+}
+
+.tarjeta {
+    width: 100%;
+    max-width: 24rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: clamp(1.25rem, 5.5vw, 1.75rem);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.75rem;
+    background: #fff;
+    text-align: center;
+}
+
+.tarjeta h1 {
+    margin: 0;
+    font-size: clamp(1.2rem, 4.5vw, 1.35rem);
+}
+
+.tarjeta p {
+    margin: 0;
+    color: var(--carbon-600, #383133);
+}
+
+.enlace {
+    display: inline-block;
+    padding: 0.5rem 0;
+    color: #7b1f3a;
+}

@@ -1,0 +1,162 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+h1 {
+    margin: 0;
+    font-size: clamp(1.25rem, 4.5vw, 1.4rem);
+}
+
+.intro {
+    margin: 0.3rem 0 1.25rem;
+    color: var(--carbon-600, #383133);
+    font-size: 0.9rem;
+}
+
+.formulario {
+    max-width: 34rem;
+}
+
+fieldset {
+    margin: 0 0 1.25rem;
+    padding: 1rem clamp(0.9rem, 4vw, 1.25rem) clamp(1rem, 4vw, 1.25rem);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+legend {
+    padding: 0 0.4rem;
+    color: #7b1f3a;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.campo {
+    display: block;
+    margin-bottom: 0.9rem;
+}
+
+.campo:last-child {
+    margin-bottom: 0;
+}
+
+.campo > span {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--carbon-600, #383133);
+}
+
+.campo ::deep input,
+.campo ::deep select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.campo ::deep input:focus,
+.campo ::deep select:focus {
+    outline: 2px solid #7b1f3a;
+    outline-offset: 1px;
+    border-color: #7b1f3a;
+}
+
+.campo small {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--carbon-500, #4A4245);
+    font-size: 0.78rem;
+}
+
+.campo ::deep .validation-message {
+    display: block;
+    margin-top: 0.25rem;
+    color: #b3261e;
+    font-size: 0.8rem;
+}
+
+.interruptor {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    /* Zona tactil completa: antes la fila medía 29 px de alto y era muy
+       difícil acertar con el dedo en un móvil. */
+    min-height: 2.75rem;
+    padding: 0.625rem 0;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    color: var(--carbon-700, #2B2628);
+    cursor: pointer;
+}
+
+.interruptor ::deep input {
+    margin-top: 0.1875rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 auto;
+    accent-color: #7b1f3a;
+}
+
+.botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.principal {
+    padding: 0.55rem 1rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #7b1f3a;
+    color: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.principal:hover:not(:disabled) {
+    background: #641830;
+}
+
+.principal:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.cargando {
+    color: var(--carbon-600, #383133);
+    font-size: 0.9rem;
+}
+
+/* Móvil: controles y botón de guardar con 44 px de alto. */
+@media (max-width: 560px) {
+    .campo ::deep input,
+    .campo ::deep select {
+        min-height: 3rem;
+        /* 16 px evita que iOS haga zoom automático al enfocar el campo. */
+        font-size: 1rem;
+    }
+
+    .interruptor {
+        padding: 0.25rem 0;
+        font-size: 0.92rem;
+    }
+
+    .interruptor ::deep input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin: 0.0625rem 0 0;
+        flex: 0 0 auto;
+    }
+
+    .principal {
+        flex: 1 1 auto;
+        min-height: 3rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}

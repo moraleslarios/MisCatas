@@ -1,0 +1,154 @@
+@page "/admin/vinos/nuevo"
+@page "/admin/vinos/{Id:int}"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>@(EsNuevo ? "Nuevo vino" : "Editar vino") · MisCatas</PageTitle>
+
+<h1>@(EsNuevo ? "Nuevo vino" : "Editar vino")</h1>
+
+<Aviso Texto="@Error" EsError="true" />
+<Aviso Texto="@Mensaje" />
+
+@if (NoEncontrado)
+{
+    <p class="vacio">No existe ese vino.</p>
+    <a class="enlace" href="/admin/vinos">Volver al listado</a>
+}
+else
+{
+    <EditForm Model="Datos" OnValidSubmit="GuardarAsync" class="formulario">
+        <DataAnnotationsValidator />
+
+        <label class="campo">
+            <span>Nombre</span>
+            <InputText @bind-Value="Datos.Nombre" />
+            <ValidationMessage For="() => Datos.Nombre" />
+        </label>
+
+        <div class="fila">
+            <label class="campo">
+                <span>Añada</span>
+                <InputNumber @bind-Value="Datos.Anio" min="1900" max="2100" />
+                <ValidationMessage For="() => Datos.Anio" />
+            </label>
+
+            <label class="campo">
+                <span>Clase</span>
+                <InputText @bind-Value="Datos.Clase" placeholder="Crianza, reserva, joven…" />
+            </label>
+        </div>
+
+        <label class="campo">
+            <span>Dueño</span>
+            <InputText @bind-Value="Datos.Dueno" />
+            <ValidationMessage For="() => Datos.Dueno" />
+            <small>Quien aporta el vino: gana la cata si su vino gana.</small>
+        </label>
+
+        <div class="fila">
+            <label class="campo">
+                <span>Bodega</span>
+                <InputText @bind-Value="Datos.Bodega" />
+            </label>
+
+            <label class="campo">
+                <span>Precio estimado (€)</span>
+                <InputNumber @bind-Value="Datos.PrecioEstimado" step="0.01" min="0" />
+                <ValidationMessage For="() => Datos.PrecioEstimado" />
+            </label>
+        </div>
+
+        <label class="campo">
+            <span>Denominación de Origen</span>
+            <InputText @bind-Value="Datos.DenominacionOrigen"
+                       placeholder="Rioja, Ribera del Duero, Rueda…" />
+            <small>Texto libre: déjalo vacío si el vino no tiene D.O.</small>
+        </label>
+
+        <label class="campo">
+            <span>Comentarios</span>
+            <InputTextArea @bind-Value="Datos.Comentarios" rows="3" />
+        </label>
+
+        <div class="botones">
+            <a class="secundario" href="/admin/vinos">Volver</a>
+            <button type="submit" class="principal" disabled="@Guardando">
+                @(Guardando ? "Guardando…" : "Guardar")
+            </button>
+        </div>
+
+        @if (EsNuevo)
+        {
+            <p class="ayuda">
+                Al guardar volverás al listado. Las imágenes se añaden entrando
+                luego a editar el vino.
+            </p>
+        }
+    </EditForm>
+
+    @if (!EsNuevo)
+    {
+        <section class="imagenes">
+            <h2>Imágenes</h2>
+            <p class="ayuda">
+                Se redimensionan y recomprimen en el servidor. Máximo
+                @(IServicioImagenes.TamanoMaximoBytes / (1024 * 1024)) MB por archivo.
+            </p>
+
+            <div class="pareja">
+                @foreach (var hueco in Huecos)
+                {
+                    var procesando = Subiendo && SubiendoTipo == hueco.Tipo;
+
+                    <div class="hueco">
+                        <h3>@hueco.Titulo</h3>
+
+                        <div class="vista">
+                            @if (hueco.Existe)
+                            {
+                                <img src="@hueco.Url" alt="@hueco.Titulo" />
+                            }
+                            else
+                            {
+                                <span class="sin-foto">Sin imagen</span>
+                            }
+
+                            @if (procesando)
+                            {
+                                <div class="procesando" role="status" aria-live="polite">
+                                    <span class="aro" aria-hidden="true"></span>
+                                    <span class="texto">Procesando la imagen…</span>
+                                    @if (!string.IsNullOrWhiteSpace(ArchivoEnCurso))
+                                    {
+                                        <span class="archivo">@ArchivoEnCurso</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <InputFile OnChange="e => SubirAsync(hueco.Tipo, e)"
+                                   accept="image/*"
+                                   disabled="@Subiendo" />
+
+                        @if (procesando)
+                        {
+                            <p class="nota-proceso">
+                                Se está subiendo y recomprimiendo. Puede tardar unos segundos.
+                            </p>
+                        }
+
+                        @if (hueco.Existe)
+                        {
+                            <button type="button"
+                                    class="peligro"
+                                    disabled="@Subiendo"
+                                    @onclick="() => BorrarImagenAsync(hueco.Tipo)">
+                                Quitar imagen
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+    }
+}

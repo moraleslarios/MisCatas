@@ -1,0 +1,275 @@
+@page "/admin/catas/{Id:int}/montar"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>Montar cata · MisCatas</PageTitle>
+
+<Aviso Texto="@Error" EsError="true" />
+<Aviso Texto="@Mensaje" />
+
+@if (Cargando)
+{
+    <p class="montar-cargando" role="status">Cargando el montaje de la cata…</p>
+}
+else if (Detalle is null)
+{
+    <EstadoVacio Icono="Icono.Alerta"
+                 Titulo="No existe esa cata"
+                 Mensaje="Puede que se haya borrado o que el enlace esté equivocado.">
+        <Acciones>
+            <a class="mc-boton mc-boton-primario" href="@RutasApp.AdminCatas">
+                <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Pequeno" />
+                Volver al listado
+            </a>
+        </Acciones>
+    </EstadoVacio>
+}
+else
+{
+    <div class="montar">
+        <header class="montar-cabecera">
+            <div class="montar-titulos">
+                <p class="mc-antetitulo">Montaje de la cata</p>
+                <h1 class="montar-titulo">@Detalle.Cata.Nombre</h1>
+                <p class="montar-subtitulo">
+                    @FechaLarga
+                    @if (!string.IsNullOrWhiteSpace(Detalle.Cata.Lugar))
+                    {
+                        <span> · @Detalle.Cata.Lugar</span>
+                    }
+                </p>
+            </div>
+
+            <div class="montar-cabecera-acciones">
+                <span class="@ClasePastillaEstado(Detalle.Cata.Estado)">
+                    @NombreEstado(Detalle.Cata.Estado)
+                </span>
+
+                @if (Detalle.Cata.Estado is EstadoCata.EnCurso or EstadoCata.Finalizada)
+                {
+                    <a class="mc-boton mc-boton-secundario"
+                       href="@RutasApp.AdminControlar(Id)">
+                        <IconoVino Nombre="Icono.Grafico" Tamano="TamanoIcono.Pequeno" />
+                        Mesa de control
+                    </a>
+                }
+
+                <a class="mc-boton mc-boton-fantasma" href="@($"{RutasApp.AdminCatas}/{Id}")">
+                    <IconoVino Nombre="Icono.Lapiz" Tamano="TamanoIcono.Pequeno" />
+                    Editar datos
+                </a>
+
+                <a class="mc-boton mc-boton-fantasma" href="@RutasApp.AdminCatas">
+                    <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Pequeno" />
+                    Volver
+                </a>
+            </div>
+        </header>
+
+        <section class="montar-resumen" aria-label="Resumen del montaje">
+            <article class="montar-dato">
+                <p class="montar-dato-rotulo">Vinos</p>
+                <p class="montar-dato-valor">@Detalle.Vinos.Count</p>
+            </article>
+            <article class="montar-dato">
+                <p class="montar-dato-rotulo">Participantes</p>
+                <p class="montar-dato-valor">@Detalle.Participantes.Count</p>
+            </article>
+            <article class="montar-dato">
+                <p class="montar-dato-rotulo">Tiempo por voto</p>
+                <p class="montar-dato-valor">
+                    @(Detalle.Cata.TiempoVotoSegundos?.ToString() ?? "—")
+                    <span class="montar-dato-unidad">s</span>
+                </p>
+            </article>
+        </section>
+
+        <section class="montar-ciclo" aria-label="Estado de la cata">
+            <h2 class="mc-antetitulo">Ciclo de la cata</h2>
+
+            @if (EstadosDestino.Any())
+            {
+                <div class="montar-transiciones">
+                    @foreach (var destino in EstadosDestino)
+                    {
+                        <button type="button"
+                                class="@ClaseTransicion(destino)"
+                                disabled="@Trabajando"
+                                @onclick="() => CambiarEstadoAsync(destino)">
+                            @TextoTransicion(destino)
+                        </button>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="montar-nota">
+                    <IconoVino Nombre="Icono.Hecho" Tamano="TamanoIcono.Pequeno" />
+                    La cata está finalizada: no admite más cambios.
+                </p>
+            }
+
+            @if (!Editable && Detalle.Cata.Estado != EstadoCata.Finalizada)
+            {
+                <p class="montar-nota">
+                    <IconoVino Nombre="Icono.Alerta" Tamano="TamanoIcono.Pequeno" />
+                    La cata ya está en curso: el montaje se muestra solo de lectura.
+                </p>
+            }
+        </section>
+
+        <div class="montar-columnas">
+            <section class="montar-panel" aria-label="Vinos de la cata">
+                <h2 class="montar-panel-titulo">
+                    <IconoVino Nombre="Icono.Botella" Tamano="TamanoIcono.Pequeno" />
+                    Vinos (@Detalle.Vinos.Count)
+                </h2>
+
+                @if (Editable)
+                {
+                    <div class="montar-anadir">
+                        <select class="mc-control" @bind="VinoSeleccionado"
+                                aria-label="Vino que se añade a la cata">
+                            <option value="0">— Elige un vino —</option>
+                            @foreach (var vino in VinosDisponibles)
+                            {
+                                <option value="@vino.Id">@vino.NombreConAnio — @vino.Dueno</option>
+                            }
+                        </select>
+                        <button type="button"
+                                class="mc-boton mc-boton-primario"
+                                disabled="@(Trabajando || VinoSeleccionado == 0)"
+                                @onclick="AgregarVinoAsync">
+                            <IconoVino Nombre="Icono.Mas" Tamano="TamanoIcono.Pequeno" />
+                            Añadir
+                        </button>
+                    </div>
+                }
+
+                @if (Detalle.Vinos.Count == 0)
+                {
+                    <p class="montar-vacio">Todavía no hay vinos en esta cata.</p>
+                }
+                else
+                {
+                    <ol class="montar-lista">
+                        @foreach (var (vino, indice) in Detalle.Vinos.Select((v, i) => (v, i)))
+                        {
+                            <li class="montar-fila">
+                                <span class="montar-orden">@vino.Orden</span>
+
+                                <span class="montar-fila-textos">
+                                    <span class="montar-fila-nombre">@vino.NombreVino</span>
+                                    @if (vino.Anio.HasValue)
+                                    {
+                                        <span class="montar-fila-pie">@vino.Anio</span>
+                                    }
+                                </span>
+
+                                @if (Editable)
+                                {
+                                    <span class="montar-controles">
+                                        <button type="button"
+                                                class="mc-boton-icono"
+                                                title="Subir"
+                                                aria-label="@($"Subir el vino {vino.Orden}")"
+                                                disabled="@(Trabajando || indice == 0)"
+                                                @onclick="() => MoverVinoAsync(indice, -1)">
+                                            <IconoVino Nombre="Icono.Arriba" Tamano="TamanoIcono.Pequeno" />
+                                        </button>
+                                        <button type="button"
+                                                class="mc-boton-icono"
+                                                title="Bajar"
+                                                aria-label="@($"Bajar el vino {vino.Orden}")"
+                                                disabled="@(Trabajando || indice == Detalle.Vinos.Count - 1)"
+                                                @onclick="() => MoverVinoAsync(indice, 1)">
+                                            <IconoVino Nombre="Icono.Abajo" Tamano="TamanoIcono.Pequeno" />
+                                        </button>
+                                        <button type="button"
+                                                class="mc-boton-icono montar-quitar"
+                                                title="Quitar"
+                                                aria-label="@($"Quitar el vino {vino.NombreVino}")"
+                                                disabled="@Trabajando"
+                                                @onclick="() => QuitarVinoAsync(vino.VinoId)">
+                                            <IconoVino Nombre="Icono.Papelera" Tamano="TamanoIcono.Pequeno" />
+                                        </button>
+                                    </span>
+                                }
+                            </li>
+                        }
+                    </ol>
+                }
+            </section>
+
+            <section class="montar-panel" aria-label="Participantes de la cata">
+                <h2 class="montar-panel-titulo">
+                    <IconoVino Nombre="Icono.Personas" Tamano="TamanoIcono.Pequeno" />
+                    Participantes (@Detalle.Participantes.Count)
+                </h2>
+
+                @if (Editable)
+                {
+                    <div class="montar-anadir">
+                        <select class="mc-control" @bind="UsuarioSeleccionado"
+                                aria-label="Usuario que se invita a la cata">
+                            <option value="0">— Elige un usuario —</option>
+                            @foreach (var usuario in UsuariosDisponibles)
+                            {
+                                <option value="@usuario.Id">
+                                    @usuario.NombreCompleto (@usuario.Login)
+                                </option>
+                            }
+                        </select>
+                        <button type="button"
+                                class="mc-boton mc-boton-primario"
+                                disabled="@(Trabajando || UsuarioSeleccionado == 0)"
+                                @onclick="AgregarParticipanteAsync">
+                            <IconoVino Nombre="Icono.Mas" Tamano="TamanoIcono.Pequeno" />
+                            Invitar
+                        </button>
+                    </div>
+                }
+
+                @if (Detalle.Participantes.Count == 0)
+                {
+                    <p class="montar-vacio">Todavía no hay participantes invitados.</p>
+                }
+                else
+                {
+                    <ul class="montar-lista">
+                        @foreach (var participante in Detalle.Participantes)
+                        {
+                            <li class="montar-fila">
+                                <span class="montar-inicial" aria-hidden="true">
+                                    @Iniciales(participante.NombreCompleto)
+                                </span>
+
+                                <span class="montar-fila-textos">
+                                    <span class="montar-fila-nombre">@participante.NombreCompleto</span>
+                                    <span class="montar-fila-pie">@participante.Login</span>
+                                </span>
+
+                                @if (Editable)
+                                {
+                                    <span class="montar-controles">
+                                        <button type="button"
+                                                class="mc-boton-icono montar-quitar"
+                                                title="Quitar"
+                                                aria-label="@($"Retirar a {participante.NombreCompleto}")"
+                                                disabled="@Trabajando"
+                                                @onclick="() => QuitarParticipanteAsync(participante.UsuarioId)">
+                                            <IconoVino Nombre="Icono.Papelera" Tamano="TamanoIcono.Pequeno" />
+                                        </button>
+                                    </span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        </div>
+
+        @* Avisos: va al final porque es el último paso del montaje, cuando ya
+           están los vinos y la gente invitada. *@
+        <AvisosWhatsApp Detalle="Detalle" />
+    </div>
+}

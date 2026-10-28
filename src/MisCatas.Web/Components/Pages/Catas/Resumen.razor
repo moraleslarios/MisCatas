@@ -1,0 +1,160 @@
+@page "/catas/{Id:int}/resumen"
+
+@attribute [Authorize(Policy = Politicas.Votantes)]
+
+<PageTitle>Resumen · MisCatas</PageTitle>
+
+@if (Cargando)
+{
+    <p class="resumen-cargando" role="status">Cargando el resumen…</p>
+}
+else if (Datos is null)
+{
+    <EstadoVacio Icono="Icono.Oculto"
+                 Titulo="No hay nada que ver aquí"
+                 Mensaje="O no estás invitado a esta cata, o ya no existe.">
+        <Acciones>
+            <a class="mc-boton mc-boton-secundario" href="@RutasApp.MisCatas">Volver a mis catas</a>
+        </Acciones>
+    </EstadoVacio>
+}
+else
+{
+    <div class="resumen">
+        <header class="resumen-cabecera">
+            <a class="resumen-atras" href="@RutasApp.MisCatas" aria-label="Volver a mis catas">
+                <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Pequeno" />
+            </a>
+            <div class="resumen-titulos">
+                <p class="mc-antetitulo">@TextoFecha</p>
+                <h1 class="resumen-titulo">@Datos.Nombre</h1>
+            </div>
+            <span class="@ClasePastilla">@NombreEstado</span>
+        </header>
+
+        @if (SinConexion)
+        {
+            <p class="resumen-reconectando" role="status">
+                <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Pequeno" />
+                Reconectando con la mesa…
+            </p>
+        }
+
+        <section class="resumen-cifras" aria-label="Progreso de la cata">
+            <article class="resumen-cifra">
+                <span class="resumen-cifra-valor">@Progreso.VinosCerrados / @Progreso.TotalVinos</span>
+                <span class="resumen-cifra-rotulo">Vinos catados</span>
+            </article>
+            <article class="resumen-cifra">
+                <span class="resumen-cifra-valor">@Progreso.HanVotado / @Progreso.TotalParticipantes</span>
+                <span class="resumen-cifra-rotulo">Han votado</span>
+            </article>
+            <article class="resumen-cifra">
+                <span class="resumen-cifra-valor">@Progreso.TiempoMedioTexto</span>
+                <span class="resumen-cifra-rotulo">Tiempo medio</span>
+            </article>
+            @if (Datos.Estado == EstadoCata.EnCurso && Progreso.Faltan > 0)
+            {
+                <article class="resumen-cifra resumen-cifra--aviso">
+                    <span class="resumen-cifra-valor">@Progreso.Faltan</span>
+                    <span class="resumen-cifra-rotulo">@(Progreso.Faltan == 1 ? "Falta por votar" : "Faltan por votar")</span>
+                </article>
+            }
+        </section>
+
+        <section class="resumen-barra" aria-label="Avance de la cata">
+            <div class="resumen-barra-pista">
+                <div class="resumen-barra-relleno" style="width: @Progreso.PorcentajeCata%"></div>
+            </div>
+            <p class="resumen-barra-texto">@Progreso.PorcentajeCata % de la cata completada</p>
+        </section>
+
+        @* Mi marcador personal: lo que he hecho YO, separado del grupo. *@
+        <section class="resumen-marcador" aria-label="Mi participación">
+            <h2 class="resumen-rotulo">Mi participación</h2>
+            <dl class="resumen-marcador-datos">
+                <div class="resumen-marcador-dato">
+                    <dt>Vinos votados</dt>
+                    <dd>@MisVotos <span class="resumen-marcador-de">de @Datos.Vinos.Count</span></dd>
+                </div>
+                <div class="resumen-marcador-dato">
+                    <dt>Mi nota media</dt>
+                    <dd class="resumen-marcador-dato--fuerte">@TextoMiMedia</dd>
+                </div>
+                <div class="resumen-marcador-dato">
+                    <dt>Comentarios escritos</dt>
+                    <dd>@MisComentarios</dd>
+                </div>
+                @if (MisVotosPerdidos > 0)
+                {
+                    <div class="resumen-marcador-dato resumen-marcador-dato--flojo">
+                        <dt>Sin votar a tiempo</dt>
+                        <dd>@MisVotosPerdidos</dd>
+                    </div>
+                }
+            </dl>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(Datos.Lugar))
+        {
+            <p class="resumen-lugar">
+                <IconoVino Nombre="Icono.Lugar" Tamano="TamanoIcono.Pequeno" />
+                @Datos.Lugar
+            </p>
+        }
+
+        @* La vitrina: cada vino es una botella con su número y MI nota de
+           sello. No se pasa UrlEtiqueta porque aquí la cata sigue a ciegas. *@
+        @if (PiezasVitrina.Count > 0)
+        {
+            <VitrinaBotellas Piezas="PiezasVitrina"
+                             Titulo="La mesa"
+                             Densidad="DensidadVitrina.Media"
+                             Clase="resumen-vitrina" />
+        }
+
+        <section class="resumen-lista" aria-label="Mis votos">
+            <h2 class="resumen-rotulo">Mis votos</h2>
+
+            @foreach (var vino in Datos.Vinos)
+            {
+                <article class="@ClaseFila(vino)">
+                    <span class="resumen-fila-numero">@vino.NumeroOrden</span>
+                    <span class="resumen-fila-textos">
+                        <span class="resumen-fila-titulo">@vino.Titulo</span>
+                        <span class="resumen-fila-pie">@TextoEstado(vino)</span>
+                        @if (!string.IsNullOrWhiteSpace(vino.MiComentario))
+                        {
+                            <span class="resumen-fila-comentario">«@vino.MiComentario»</span>
+                        }
+                    </span>
+                    <span class="resumen-fila-nota">@TextoNota(vino)</span>
+                </article>
+            }
+        </section>
+
+        @if (Datos.Estado == EstadoCata.Borrador)
+        {
+            <p class="resumen-nota-estado" role="status">
+                <IconoVino Nombre="Icono.Ajustes" Tamano="TamanoIcono.Pequeno" />
+                El anfitrión todavía está montando esta cata. Vuelve cuando la abra.
+            </p>
+        }
+        else if (Datos.Estado == EstadoCata.Abierta)
+        {
+            <p class="resumen-nota-estado" role="status">
+                <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Pequeno" />
+                Todo listo. En cuanto el anfitrión abra el primer vino entrarás
+                solo en la pantalla de votar.
+            </p>
+        }
+        else if (Finalizada)
+        {
+            <a class="mc-boton mc-boton-dorado mc-boton-grande resumen-accion"
+               href="@RutasApp.Resultado(Datos.CataId)">
+                <IconoVino Nombre="Icono.Medalla" Tamano="TamanoIcono.Pequeno" />
+                Ver resultados
+            </a>
+        }
+    </div>
+}

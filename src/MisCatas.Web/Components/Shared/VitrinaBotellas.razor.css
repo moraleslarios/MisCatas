@@ -1,0 +1,237 @@
+/* Estilos aislados de VitrinaBotellas.
+
+   La rejilla es fluida: auto-fill + minmax deja que el navegador decida el
+   número de columnas según el ancho real. Así la misma vitrina se ve con una
+   columna en un móvil estrecho y con seis en la TV, sin media queries.
+
+   La altura de cada hueco sí se fija por densidad, porque la botella usa el
+   tamaño Elastica y necesita un contenedor con altura conocida. */
+
+.vitrina {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.vitrina-titulo {
+    margin: 0;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--carbon-700, #2B2628);
+}
+
+.vitrina-rejilla {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    grid-template-columns: repeat(auto-fill, minmax(var(--vitrina-columna, 7.5rem), 1fr));
+}
+
+.vitrina-pieza {
+    display: flex;
+    min-width: 0;
+}
+
+/* Las piezas destacadas se comen dos columnas. Si solo cabe una, el
+   span se degrada solo porque la rejilla es implícita. */
+.vitrina-pieza--destacada {
+    grid-column: span 2;
+}
+
+.vitrina-hueco {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    padding: 0.75rem 0.5rem 0.625rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.85rem;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 140ms ease, transform 140ms ease;
+}
+
+/* Cuando el hueco es un <button> hay que deshacer los estilos del navegador:
+   la tipografía y la alineación deben salir iguales que en el <a>. */
+button.vitrina-hueco {
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.vitrina-hueco--pulsable:hover,
+.vitrina-hueco--pulsable:focus-visible {
+    border-color: var(--burdeos, #6B1F2E);
+    transform: translateY(-2px);
+}
+
+.vitrina-hueco--pulsable:active {
+    transform: translateY(0);
+}
+
+/* Fondo cálido para el podio: la jerarquía también se nota sin leer. */
+.vitrina-pieza--puesto1 .vitrina-hueco {
+    background: linear-gradient(180deg, #FFFDF4 0%, #FBF3DA 100%);
+    border-color: var(--dorado, #C9A227);
+}
+
+.vitrina-pieza--puesto2 .vitrina-hueco {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F2F2F4 100%);
+    border-color: #C7C9CE;
+}
+
+.vitrina-pieza--puesto3 .vitrina-hueco {
+    background: linear-gradient(180deg, #FFFCF9 0%, #F6E8DB 100%);
+    border-color: #C98B5A;
+}
+
+/* El hueco de la botella es el que manda: la botella Elastica lo rellena. */
+.vitrina-botella {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+    height: var(--vitrina-alto, 8rem);
+}
+
+/* La clase llega por parámetro al hijo, así que hay que cruzar el ámbito. */
+.vitrina-botella ::deep .botella {
+    width: 100%;
+}
+
+.vitrina-textos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+}
+
+.vitrina-pieza-titulo {
+    margin: 0;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--carbon-700, #2B2628);
+    overflow-wrap: anywhere;
+}
+
+.vitrina-pieza-subtitulo {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.25;
+    color: var(--carbon-600, #383133);
+    opacity: 0.82;
+    overflow-wrap: anywhere;
+}
+
+.vitrina-pieza-nota {
+    margin: 0.125rem 0 0;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--burdeos, #6B1F2E);
+}
+
+.vitrina-pieza-detalle {
+    margin: 0;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--carbon-600, #383133);
+    opacity: 0.65;
+}
+
+/* --- Densidades --- */
+
+.vitrina--compacta {
+    --vitrina-columna: 5.5rem;
+    --vitrina-alto: 5.5rem;
+}
+
+.vitrina--compacta .vitrina-pieza-titulo {
+    font-size: 0.8125rem;
+}
+
+.vitrina--media {
+    --vitrina-columna: 7.5rem;
+    --vitrina-alto: 8rem;
+}
+
+.vitrina--amplia {
+    --vitrina-columna: 10rem;
+    --vitrina-alto: 11rem;
+}
+
+.vitrina--amplia .vitrina-pieza-titulo {
+    font-size: 1.0625rem;
+}
+
+/* En la TV el tamaño se mide en unidades de viewport: la sala está lejos. */
+.vitrina--escaparate {
+    --vitrina-columna: min(14vw, 13rem);
+    --vitrina-alto: min(26vh, 16rem);
+    gap: 1.25rem;
+}
+
+.vitrina--escaparate .vitrina-rejilla {
+    gap: 1.25rem;
+}
+
+.vitrina--escaparate .vitrina-hueco {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(201, 162, 39, 0.35);
+    border-radius: 1.1rem;
+    padding: 1rem 0.75rem;
+}
+
+.vitrina--escaparate .vitrina-titulo,
+.vitrina--escaparate .vitrina-pieza-titulo {
+    color: #FBF6EE;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+}
+
+.vitrina--escaparate .vitrina-pieza-subtitulo,
+.vitrina--escaparate .vitrina-pieza-detalle {
+    color: #E7DCCB;
+    opacity: 0.8;
+    font-size: clamp(0.75rem, 1vw, 1rem);
+}
+
+.vitrina--escaparate .vitrina-pieza-nota {
+    color: var(--dorado, #C9A227);
+    font-size: clamp(1.25rem, 2vw, 2rem);
+}
+
+.vitrina--escaparate .vitrina-pieza--puesto1 .vitrina-hueco {
+    background: rgba(201, 162, 39, 0.16);
+    border-color: var(--dorado, #C9A227);
+}
+
+.vitrina--escaparate .vitrina-pieza--puesto2 .vitrina-hueco,
+.vitrina--escaparate .vitrina-pieza--puesto3 .vitrina-hueco {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vitrina-hueco {
+        transition: none;
+    }
+
+    .vitrina-hueco--pulsable:hover,
+    .vitrina-hueco--pulsable:focus-visible {
+        transform: none;
+    }
+}

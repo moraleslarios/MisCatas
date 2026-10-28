@@ -1,0 +1,6 @@
+/* Layout sin navegación, para las pantallas de cuenta. */
+
+.lienzo {
+    min-height: 100dvh;
+    background: #faf7f8;
+}

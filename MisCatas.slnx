@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MisCatas.Application/MisCatas.Application.csproj" />
+    <Project Path="src/MisCatas.Domain/MisCatas.Domain.csproj" />
+    <Project Path="src/MisCatas.Infrastructure/MisCatas.Infrastructure.csproj" />
+    <Project Path="src/MisCatas.Web/MisCatas.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MisCatas.Tests/MisCatas.Tests.csproj" />
+  </Folder>
+</Solution>

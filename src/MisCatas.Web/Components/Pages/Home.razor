@@ -1,0 +1,130 @@
+﻿@page "/"
+
+@attribute [Authorize]
+
+<PageTitle>Mis catas · MisCatas</PageTitle>
+
+<div class="mis-catas">
+    <header class="mis-catas-cabecera">
+        <p class="mc-antetitulo">@Saludo</p>
+        <h1 class="mc-titulo-marca">Mis catas</h1>
+    </header>
+
+    @if (Cargando)
+    {
+        <div class="mis-catas-cargando" role="status">
+            <IconoVino Nombre="Icono.Copa" Tamano="TamanoIcono.Grande" Clase="mis-catas-copa" />
+            <p>Buscando tus catas…</p>
+        </div>
+    }
+    else if (!EsCatador)
+    {
+        <EstadoVacio Icono="Icono.Ajustes"
+                     Titulo="Esta cuenta no cata"
+                     Mensaje="Los perfiles de administración y de pantalla no participan en las catas, así que no tienen catas pendientes ni históricas." />
+    }
+    else if (Datos.NoHayNada)
+    {
+        <EstadoVacio Icono="Icono.Barrica"
+                     Titulo="Todavía no tienes catas"
+                     Mensaje="Cuando el organizador te invite a una cata, aparecerá aquí lista para votar." />
+    }
+    else
+    {
+        @if (Datos.EnCurso.Count > 0)
+        {
+            <section class="mis-catas-bloque" aria-labelledby="bloque-encurso">
+                <h2 class="mis-catas-rotulo mis-catas-rotulo--vivo" id="bloque-encurso">
+                    <span class="mis-catas-punto" aria-hidden="true"></span>
+                    En directo ahora
+                </h2>
+
+                <div class="mis-catas-llamada" role="status">
+                    <IconoVino Nombre="Icono.Alerta" Tamano="TamanoIcono.Pequeno" Clase="mis-catas-llamada-icono" />
+                    <p class="mis-catas-llamada-texto">
+                        @TextoCataEnCurso
+                    </p>
+                </div>
+
+                @foreach (var cata in Datos.EnCurso)
+                {
+                    <TarjetaCata Nombre="@cata.Nombre"
+                                 Antetitulo="Votación abierta"
+                                 Lugar="@cata.Lugar"
+                                 Fecha="cata.Fecha"
+                                 Estado="cata.Estado"
+                                 NumeroVinos="cata.NumeroVinos"
+                                 NumeroParticipantes="cata.NumeroParticipantes"
+                                 MisVotos="cata.MisVotos"
+                                 Enlace="@RutasApp.Votar(cata.Id)"
+                                 TextoAccion="Entrar a votar"
+                                 Destacada="true" />
+                }
+            </section>
+        }
+
+        @if (Datos.Proximas.Count > 0)
+        {
+            <section class="mis-catas-bloque" aria-labelledby="bloque-proximas">
+                <h2 class="mis-catas-rotulo" id="bloque-proximas">Próximas</h2>
+
+                @if (CataAbierta is { } abierta)
+                {
+                    <div class="mis-catas-llamada" role="status">
+                        <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Pequeno" Clase="mis-catas-llamada-icono" />
+                        <p class="mis-catas-llamada-texto">
+                            Ya tienes una cata en curso: «@abierta.Nombre». Todavía no se vota;
+                            entra en «Ver detalles» y espera a que el anfitrión la arranque.
+                        </p>
+                    </div>
+                }
+
+                @foreach (var cata in Datos.Proximas)
+                {
+                    <TarjetaCata Nombre="@cata.Nombre"
+                                 Antetitulo="Pendiente de empezar"
+                                 Lugar="@cata.Lugar"
+                                 Fecha="cata.Fecha"
+                                 Estado="cata.Estado"
+                                 NumeroVinos="cata.NumeroVinos"
+                                 NumeroParticipantes="cata.NumeroParticipantes"
+                                 Enlace="@RutasApp.Resumen(cata.Id)"
+                                 TextoAccion="Ver detalles"
+                                 Destacada="@(cata.Estado == EstadoCata.Abierta)" />
+                }
+            </section>
+        }
+
+        @if (Datos.Historico.Count > 0)
+        {
+            <section class="mis-catas-bloque" aria-labelledby="bloque-historico">
+                <h2 class="mis-catas-rotulo" id="bloque-historico">Ya catadas</h2>
+
+                @foreach (var cata in Datos.Historico)
+                {
+                    <TarjetaCata Nombre="@cata.Nombre"
+                                 Antetitulo="Resultado disponible"
+                                 Lugar="@cata.Lugar"
+                                 Fecha="cata.Fecha"
+                                 Estado="cata.Estado"
+                                 NumeroVinos="cata.NumeroVinos"
+                                 NumeroParticipantes="cata.NumeroParticipantes"
+                                 Enlace="@RutasApp.Resultado(cata.Id)"
+                                 TextoAccion="Ver resultados" />
+                }
+            </section>
+        }
+    }
+
+    <AuthorizeView Policy="@Politicas.SoloAdmin" Context="admin">
+        <Authorized>
+            <section class="mis-catas-atajo">
+                <p class="mis-catas-atajo-texto">Tienes permisos de administración.</p>
+                <a class="mc-boton mc-boton-secundario" href="@RutasApp.AdminInicio">
+                    <IconoVino Nombre="Icono.Ajustes" Tamano="TamanoIcono.Pequeno" />
+                    Ir al panel
+                </a>
+            </section>
+        </Authorized>
+    </AuthorizeView>
+</div>

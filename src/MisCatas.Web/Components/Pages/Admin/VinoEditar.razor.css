@@ -1,0 +1,254 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.25rem, 4.5vw, 1.4rem);
+}
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 1.375rem;
+    max-width: 36rem;
+    padding: clamp(1.125rem, 4vw, 1.625rem);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+.fila {
+    display: grid;
+    gap: 1rem;
+    /* Con 9rem de mínimo, un teléfono de 430 px aún coloca dos campos por
+       fila donde uno de 360 px solo cabría uno. */
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4375rem;
+    font-size: 0.9rem;
+}
+
+.campo > span {
+    font-weight: 600;
+}
+
+.campo ::deep input,
+.campo ::deep select,
+.campo ::deep textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6875rem 0.75rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.campo ::deep .validation-message {
+    color: #b3261e;
+    font-size: 0.8rem;
+}
+
+.campo small {
+    color: var(--carbon-600, #383133);
+    font-size: 0.78rem;
+}
+
+.botones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding-top: 0.25rem;
+}
+
+.principal {
+    padding: 0.75rem 1.25rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #7b1f3a;
+    color: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.principal:hover:not(:disabled) {
+    background: #641830;
+}
+
+.principal:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.secundario {
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: var(--carbon-700, #2B2628);
+    font-size: 0.95rem;
+    text-decoration: none;
+}
+
+.imagenes {
+    max-width: 36rem;
+    margin-top: 1.5rem;
+    padding: clamp(0.9rem, 4vw, 1.25rem);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+.imagenes h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.1rem;
+}
+
+.ayuda {
+    margin: 0 0 1rem;
+    color: var(--carbon-600, #383133);
+    font-size: 0.8rem;
+}
+
+.pareja {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+.hueco {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.hueco h3 {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.vista {
+    display: grid;
+    place-items: center;
+    /* La altura de la vista previa crece con el ancho del dispositivo. */
+    height: clamp(7.5rem, 32vw, 10rem);
+    border-radius: 0.5rem;
+    background: #f3eeef;
+    overflow: hidden;
+    /* Ancla del overlay de "Procesando…". */
+    position: relative;
+}
+
+.vista img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.sin-foto {
+    color: var(--carbon-500, #4A4245);
+    font-size: 0.8rem;
+}
+
+/* --- Indicador de proceso ---------------------------------------------------
+   Elegir una foto de la galería y recomprimirla tarda varios segundos. Sin
+   este aviso el usuario no sabe si está pasando algo y vuelve a pulsar.
+   ------------------------------------------------------------------------- */
+.procesando {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(2px);
+}
+
+.procesando .aro {
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid var(--crema-borde, #DFD4C6);
+    border-top-color: var(--burdeos, #6B1F2E);
+    border-radius: 50%;
+    animation: girar-aro 0.8s linear infinite;
+}
+
+.procesando .texto {
+    color: var(--burdeos, #6B1F2E);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.procesando .archivo {
+    max-width: 100%;
+    color: var(--carbon-600, #383133);
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
+}
+
+.nota-proceso {
+    margin: 0;
+    color: var(--carbon-600, #383133);
+    font-size: 0.75rem;
+}
+
+@keyframes girar-aro {
+    to { transform: rotate(360deg); }
+}
+
+/* Si el usuario ha pedido menos movimiento, el aro no gira: solo late. */
+@media (prefers-reduced-motion: reduce) {
+    .procesando .aro {
+        animation: none;
+        border-top-color: var(--crema-borde, #DFD4C6);
+        border-color: var(--burdeos, #6B1F2E);
+    }
+}
+
+/* Móvil: controles y botones con 44 px de alto. */
+@media (max-width: 560px) {
+    .campo ::deep input,
+    .campo ::deep select {
+        min-height: 3rem;
+    }
+
+    .campo ::deep input[type="file"] {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .principal,
+    .secundario {
+        flex: 1 1 auto;
+        min-height: 3rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .peligro {
+        min-height: 2.5rem;
+        padding: 0.4rem 0.9rem;
+    }
+}
+
+/* Móvil muy estrecho: un campo y un botón por fila. */
+@media (max-width: 360px) {
+    .fila,
+    .pareja {
+        grid-template-columns: 1fr;
+    }
+
+    .botones {
+        flex-direction: column-reverse;
+    }
+}

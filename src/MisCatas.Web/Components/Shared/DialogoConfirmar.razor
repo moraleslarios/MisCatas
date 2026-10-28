@@ -1,0 +1,20 @@
+@* Diálogo modal de confirmación para acciones destructivas. *@
+
+@if (Visible)
+{
+    <div class="fondo" @onclick="CancelarAsync">
+        <div class="caja" role="dialog" aria-modal="true" @onclick:stopPropagation="true">
+            <h2>@Titulo</h2>
+            <p>@Mensaje</p>
+
+            <div class="botones">
+                <button type="button" class="secundario" @onclick="CancelarAsync">
+                    @TextoCancelar
+                </button>
+                <button type="button" class="peligro" @onclick="ConfirmarAsync">
+                    @TextoConfirmar
+                </button>
+            </div>
+        </div>
+    </div>
+}

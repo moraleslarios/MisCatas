@@ -1,0 +1,7 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+.aviso {
+    padding: 2rem;
+    color: var(--carbon-600, #383133);
+    text-align: center;
+}

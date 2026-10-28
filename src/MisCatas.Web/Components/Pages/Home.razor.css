@@ -1,0 +1,171 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+h1 {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.3rem, 5vw, 1.5rem);
+}
+
+.intro {
+    margin: 0 0 1rem;
+    color: var(--carbon-600, #383133);
+}
+
+.accesos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    /* Con 9rem de mínimo, un teléfono de 390 px ya muestra dos accesos por
+       fila; uno de 360 px se queda en uno solo. */
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+}
+
+.accesos a {
+    display: flex;
+    align-items: center;
+    min-height: 3.25rem;
+    padding: clamp(0.8rem, 3.5vw, 1rem);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.6rem;
+    background: #fff;
+    color: #7b1f3a;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.accesos a:hover {
+    border-color: #7b1f3a;
+}
+
+/* Pantalla «Mis catas» del rol Usuario. Móvil primero. */
+
+.mis-catas {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.mis-catas-cabecera {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.mis-catas-cabecera h1 {
+    margin: 0;
+}
+
+/* --- Carga ---------------------------------------------------------------- */
+
+.mis-catas-cargando {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 2.5rem 1rem;
+    color: var(--carbon-600, #383133);
+}
+
+.mis-catas-copa {
+    color: var(--burdeos, #6B1F2E);
+    animation: mis-catas-servir 1.4s ease-in-out infinite;
+}
+
+@keyframes mis-catas-servir {
+    0%, 100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+}
+
+/* --- Bloques -------------------------------------------------------------- */
+
+.mis-catas-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mis-catas-rotulo {
+    display: flex;
+    gap: 0.4375rem;
+    align-items: center;
+    margin: 0;
+    font-family: var(--fuente-texto, Inter, sans-serif);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--carbon-600, #383133);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+}
+
+.mis-catas-rotulo--vivo {
+    color: var(--peligro-texto, #8A1C1C);
+}
+
+.mis-catas-punto {
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--peligro, #B42318);
+    border-radius: 9999px;
+    animation: mis-catas-latido 1.6s ease-in-out infinite;
+}
+
+@keyframes mis-catas-latido {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.75); }
+}
+
+/* --- Atajo de administración --------------------------------------------- */
+
+.mis-catas-atajo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    margin-top: 0.5rem;
+    background: var(--crema-oscuro, #EDE5DB);
+    border: 1px dashed var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio, 0.75rem);
+}
+
+.mis-catas-atajo-texto {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--carbon-600, #383133);
+}
+
+/* --- Llamada de vuelta a la cata viva ------------------------------------ */
+
+.mis-catas-llamada {
+    display: flex;
+    gap: 0.625rem;
+    align-items: flex-start;
+    padding: 0.75rem 0.875rem;
+    margin-bottom: 0.75rem;
+    background: var(--aviso-suave, #FDF2DC);
+    border: 1px solid var(--dorado, #C9A227);
+    border-left-width: 0.25rem;
+    border-radius: var(--radio, 0.75rem);
+}
+
+.mis-catas-llamada-icono {
+    flex: 0 0 auto;
+    margin-top: 0.0625rem;
+    color: var(--aviso-texto, #6E4800);
+}
+
+.mis-catas-llamada-texto {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--aviso-texto, #6E4800);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mis-catas-copa,
+    .mis-catas-punto {
+        animation: none;
+    }
+}

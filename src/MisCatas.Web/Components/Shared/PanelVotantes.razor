@@ -1,0 +1,46 @@
+@* ---------------------------------------------------------------------------
+   Mural de votantes. Durante la votación la sala quiere saber QUIÉN ha votado
+   ya y en cuánto tiempo, no solo cuántos van: cada invitado tiene su ficha y
+   se enciende en oro en el momento en que entra su papeleta.
+
+   Es deliberadamente CIEGO: muestra el tiempo, nunca la nota. Saber quién ha
+   votado no revela nada de lo que ha puntuado.
+
+   Accesibilidad: el estado «ya ha votado» no se transmite solo con el color,
+   lleva icono de verificación y el tiempo visible al lado del nombre.
+   --------------------------------------------------------------------------- *@
+
+@if (Participantes.Count > 0)
+{
+    <div class="mural @(EsEscaparate ? "mural--tv" : null) @Clase" style="@EstiloMural">
+
+        @if (!string.IsNullOrWhiteSpace(Titulo))
+        {
+            <p class="mural-titulo">@Titulo</p>
+        }
+
+        <ul class="mural-lista" role="list">
+            @foreach (var persona in Participantes)
+            {
+                <li class="@ClaseFicha(persona)" @key="persona.UsuarioId">
+                    <span class="mural-marca" aria-hidden="true">
+                        @if (persona.HaVotado)
+                        {
+                            <IconoVino Nombre="Icono.Hecho" Tamano="TamanoIcono.Heredado" />
+                        }
+                    </span>
+
+                    <span class="mural-nombre">@persona.Nombre</span>
+
+                    <span class="mural-tiempo">@persona.TiempoTexto</span>
+
+                    <span class="sr-only">
+                        @(persona.HaVotado
+                            ? $"ya ha votado en {persona.TiempoTexto}"
+                            : "todavía no ha votado")
+                    </span>
+                </li>
+            }
+        </ul>
+    </div>
+}

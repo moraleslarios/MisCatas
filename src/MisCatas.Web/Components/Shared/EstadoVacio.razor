@@ -1,0 +1,24 @@
+@* ---------------------------------------------------------------------------
+   Estado vacío: lo que se ve cuando una lista no tiene nada que mostrar.
+   Siempre con texto en español, nunca solo un icono.
+   --------------------------------------------------------------------------- *@
+
+<div class="estado-vacio @Clase" role="status">
+    <span class="estado-vacio-icono">
+        <IconoVino Nombre="Icono" Tamano="TamanoIcono.Enorme" Grosor="1.3" />
+    </span>
+
+    <p class="estado-vacio-titulo">@Titulo</p>
+
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <p class="estado-vacio-mensaje">@Mensaje</p>
+    }
+
+    @if (Acciones is not null)
+    {
+        <div class="estado-vacio-acciones">
+            @Acciones
+        </div>
+    }
+</div>

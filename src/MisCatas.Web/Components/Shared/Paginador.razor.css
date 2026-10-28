@@ -1,0 +1,48 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+.paginador {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+}
+
+.paginador button {
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.4rem;
+    background: #fff;
+    cursor: pointer;
+}
+
+.paginador button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.posicion {
+    color: var(--carbon-600, #383133);
+}
+
+/* Móvil: los botones crecen hasta un tamaño pulsable y se reparten el ancho,
+   dejando el indicador de posición centrado entre ambos. */
+@media (max-width: 560px) {
+    .paginador {
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .paginador button {
+        flex: 1 1 auto;
+        min-height: 3rem;
+        max-width: 9rem;
+        padding: 0.4rem 0.9rem;
+    }
+
+    .posicion {
+        order: 0;
+    }
+}

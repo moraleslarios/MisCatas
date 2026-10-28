@@ -1,0 +1,26 @@
+## Compilados de .NET
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+
+## Salida de "dotnet publish" que usa tools/arrancar-produccion.ps1
+publicado/
+
+## CLI standalone de Tailwind (38 MB, se descarga con tools/descargar-tailwind.ps1)
+tools/tailwindcss.exe
+
+## CSS generado por Tailwind (se regenera en cada build)
+src/MisCatas.Web/wwwroot/css/estilos.css
+
+## Claves de cifrado de ASP.NET Core (antiforgery y cookies). Son secretas y
+## propias de cada máquina: se regeneran solas en el primer arranque.
+src/MisCatas.Web/claves/
+
+## Imágenes y volcados locales
+*.bak
+*.mdf
+*.ldf

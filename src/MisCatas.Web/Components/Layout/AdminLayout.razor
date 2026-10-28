@@ -1,0 +1,78 @@
+@* Layout del rol Admin. Responsivo de verdad: en móvil, barra inferior de
+   pestañas al alcance del pulgar; en escritorio, navegación horizontal densa
+   en la propia cabecera. *@
+
+@inherits LayoutComponentBase
+
+<AuthorizeView>
+    <Authorized>
+        <GuardianPassword />
+
+        <div class="marco-admin">
+            <header class="cabecera-admin">
+                <a class="marca-admin" href="@RutasApp.AdminInicio">
+                    <IconoVino Nombre="Icono.Barrica" Tamano="TamanoIcono.Medio" Clase="marca-admin-icono" />
+                    <span class="marca-admin-textos">
+                        <span class="marca-admin-nombre">MisCatas</span>
+                        <span class="marca-admin-rol">Administración</span>
+                    </span>
+                </a>
+
+                <nav class="nav-escritorio" aria-label="Secciones de administración">
+                    @foreach (var enlace in Enlaces)
+                    {
+                        <NavLink class="nav-escritorio-enlace"
+                                 href="@enlace.Ruta"
+                                 Match="@enlace.Coincidencia">
+                            <IconoVino Nombre="@enlace.Icono" Tamano="TamanoIcono.Pequeno" />
+                            <span>@enlace.Titulo</span>
+                        </NavLink>
+                    }
+                </nav>
+
+                <div class="cabecera-admin-derecha">
+                    <span class="cabecera-admin-nombre">@context.User.ObtenerNombreCompleto()</span>
+                    @* El escaparate no es una de las cinco pestañas, así que en
+                       móvil este botón es su único acceso. *@
+                    <a class="cabecera-admin-accion"
+                       href="@RutasApp.Escaparate"
+                       target="_blank"
+                       rel="noopener"
+                       aria-label="Abrir el escaparate en una pestaña nueva">
+                        <IconoVino Nombre="Icono.Television" Tamano="TamanoIcono.Pequeno" />
+                    </a>
+                    <a class="cabecera-admin-salir" href="@RutasCuenta.Logout" aria-label="Salir de la sesión">
+                        <IconoVino Nombre="Icono.Salir" Tamano="TamanoIcono.Pequeno" />
+                    </a>
+                </div>
+            </header>
+
+            <main class="contenido-admin">
+                @Body
+            </main>
+
+            <nav class="nav-movil" aria-label="Secciones de administración">
+                @foreach (var enlace in Enlaces)
+                {
+                    <NavLink class="nav-movil-enlace"
+                             href="@enlace.Ruta"
+                             Match="@enlace.Coincidencia">
+                        <IconoVino Nombre="@enlace.Icono" Tamano="TamanoIcono.Medio" />
+                        <span class="nav-movil-texto">@enlace.TituloCorto</span>
+                    </NavLink>
+                }
+            </nav>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <main class="contenido-admin contenido-admin--suelto">
+            @Body
+        </main>
+    </NotAuthorized>
+</AuthorizeView>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Se ha producido un error inesperado.
+    <a href="." class="reload">Recargar</a>
+    <span class="dismiss">🗙</span>
+</div>

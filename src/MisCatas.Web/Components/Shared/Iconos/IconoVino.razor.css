@@ -1,0 +1,9 @@
+/* Estilos aislados de IconoVino.
+   El icono se alinea con el texto y nunca se deforma ni se encoge dentro de
+   un contenedor flex. */
+
+.icono-vino {
+    display: inline-block;
+    flex-shrink: 0;
+    vertical-align: middle;
+}

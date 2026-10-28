@@ -1,0 +1,173 @@
+@* ---------------------------------------------------------------------------
+   Panel para avisar a los participantes de una cata por WhatsApp.
+
+   Qué hace y qué NO hace: aquí no se envía nada. Se prepara el mensaje y, por
+   cada participante, un enlace que abre WhatsApp con ese texto y ese contacto
+   ya puestos. El organizador da a «enviar» en su propio WhatsApp.
+
+   Por qué un botón por persona: WhatsApp solo permite abrir una conversación
+   por enlace. No hay forma legítima y gratuita de mandar un envío masivo, así
+   que se recorre la lista pulsando uno detrás de otro.
+   --------------------------------------------------------------------------- *@
+
+@if (Detalle is { } detalle)
+{
+    <section class="avisos" aria-label="Avisar a los participantes por WhatsApp">
+        <header class="avisos-cabecera">
+            <h2 class="avisos-titulo">
+                <IconoVino Nombre="Icono.WhatsApp" Tamano="TamanoIcono.Pequeno" />
+                Avisar por WhatsApp
+            </h2>
+            <p class="avisos-explicacion">
+                La aplicación no envía nada por su cuenta: al pulsar en una persona se
+                abre tu WhatsApp con el mensaje ya escrito y solo tienes que darle a
+                enviar.
+            </p>
+        </header>
+
+        @* El texto varía mucho entre convocar y dar resultados, así que se
+           elige a mano aunque venga propuesto según el estado de la cata. *@
+        <div class="avisos-tipos" role="group" aria-label="Tipo de aviso">
+            @foreach (var opcion in Tipos)
+            {
+                <button type="button"
+                        class="@ClaseTipo(opcion)"
+                        aria-pressed="@(Tipo == opcion ? "true" : "false")"
+                        @onclick="() => CambiarTipo(opcion)">
+                    @NombreTipo(opcion)
+                </button>
+            }
+        </div>
+
+        @if (Destino is { } destinoQr)
+        {
+            @* La dirección ya se sabe. Se enseña cuál se está repartiendo (por
+               si hiciera falta dictarla) y, al lado, el mismo enlace en código
+               QR para quien prefiera apuntar la cámara.
+
+               Ojo: el QR no puede viajar DENTRO del mensaje de WhatsApp. Un
+               enlace «wa.me» solo admite texto, nunca imágenes. Este código
+               está aquí para enseñarlo en la pantalla o en la tele, o para
+               guardarlo y adjuntarlo a mano si se quiere. *@
+            <div class="avisos-direccion">
+                <div class="avisos-direccion-texto">
+                    <p class="avisos-direccion-rotulo">
+                        <IconoVino Nombre="Icono.Hecho" Tamano="TamanoIcono.Pequeno" />
+                        <span>El mensaje llevará este enlace:</span>
+                    </p>
+                    <p class="avisos-direccion-valor">@destinoQr</p>
+
+                    @if (Sitio.Origen == OrigenDireccionSitio.RedLocal)
+                    {
+                        <p class="avisos-direccion-nota">
+                            Tú estás entrando por <strong>localhost</strong>, que solo funciona
+                            en este ordenador, así que se reparte la dirección de este equipo
+                            en la red. Si tus invitados están en la misma wifi, les valdrá.
+                        </p>
+                    }
+                    else if (Sitio.Origen == OrigenDireccionSitio.Configurada)
+                    {
+                        <p class="avisos-direccion-nota">
+                            Es la dirección fija que hay puesta en los ajustes de la aplicación.
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="avisos-direccion-nota">
+                            Es la misma dirección por la que estás entrando tú ahora mismo.
+                        </p>
+                    }
+                </div>
+
+                <CodigoQr Texto="@destinoQr"
+                          Tamano="TamanoQr.Grande"
+                          Pie="Apunta con la cámara"
+                          TextoAlternativo="@($"Código QR con la dirección {destinoQr}")"
+                          Clase="avisos-qr" />
+            </div>
+        }
+        else
+        {
+            @* Ni dirección puesta a mano, ni forma de deducirla. Pasa cuando el
+               equipo no tiene ninguna tarjeta de red activa. *@
+            <p class="avisos-sin-url">
+                <IconoVino Nombre="Icono.Alerta" Tamano="TamanoIcono.Pequeno" />
+                <span>
+                    El mensaje saldrá sin enlace: no se ha podido averiguar por qué
+                    dirección pueden entrar tus invitados, porque este ordenador no
+                    parece estar conectado a ninguna red.
+                </span>
+            </p>
+        }
+
+        <div class="avisos-mensaje">
+            <label class="avisos-rotulo" for="@($"avisos-texto-{_id}")">
+                Mensaje que se enviará
+            </label>
+            <textarea id="@($"avisos-texto-{_id}")"
+                      class="mc-control avisos-texto"
+                      rows="10"
+                      @bind="Texto"
+                      @bind:event="oninput"></textarea>
+            <p class="avisos-pista">
+                Puedes retocarlo. Donde dice <code>@IServicioAvisosWhatsApp.HuecoUsuario</code>
+                se pondrá el usuario de cada persona.
+                <button type="button" class="avisos-restaurar" @onclick="RestaurarTexto">
+                    Volver al texto propuesto
+                </button>
+            </p>
+        </div>
+
+        @if (detalle.Participantes.Count == 0)
+        {
+            <p class="avisos-vacio">
+                Todavía no hay nadie invitado a esta cata, así que no hay a quién avisar.
+            </p>
+        }
+        else
+        {
+            <ul class="avisos-lista">
+                @foreach (var participante in detalle.Participantes)
+                {
+                    var enlace = EnlaceDe(participante);
+
+                    <li class="avisos-fila">
+                        <span class="avisos-inicial" aria-hidden="true">
+                            @Iniciales(participante.NombreCompleto)
+                        </span>
+
+                        <span class="avisos-fila-textos">
+                            <span class="avisos-fila-nombre">@participante.NombreCompleto</span>
+                            <span class="avisos-fila-pie">
+                                @(string.IsNullOrWhiteSpace(participante.Telefono)
+                                    ? "sin teléfono"
+                                    : participante.Telefono)
+                            </span>
+                        </span>
+
+                        @if (enlace is { } destino)
+                        {
+                            @* target="_blank" para no perder la pantalla de montaje,
+                               y rel="noopener" por seguridad al abrir fuera. *@
+                            <a class="mc-boton mc-boton-secundario avisos-enviar"
+                               href="@destino"
+                               target="_blank"
+                               rel="noopener"
+                               aria-label="@($"Avisar a {participante.NombreCompleto} por WhatsApp")">
+                                <IconoVino Nombre="Icono.WhatsApp" Tamano="TamanoIcono.Pequeno" />
+                                Avisar
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="avisos-invalido">
+                                <IconoVino Nombre="Icono.Alerta" Tamano="TamanoIcono.Pequeno" />
+                                Teléfono no válido
+                            </span>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+}

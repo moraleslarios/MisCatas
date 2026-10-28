@@ -1,0 +1,342 @@
+/* Estilos aislados de ModalFichaVino.
+
+   Misma estructura que ModalVino (hoja inferior en el móvil, tarjeta centrada
+   en pantallas anchas) pero con su propio prefijo, porque el CSS aislado de
+   Blazor no se comparte entre componentes y aquí sobran los bloques de votos.
+
+   La cabecera tira a dorado en lugar de burdeos: así se distingue de un
+   vistazo que esta hoja es la vista privada del organizador. */
+
+.reconocer-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: grid;
+    place-items: end center;
+    padding: 0;
+    background-color: rgba(23, 5, 10, 0.62);
+    backdrop-filter: blur(3px);
+    animation: reconocer-aparecer 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.reconocer-caja {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 34rem;
+    max-height: 92dvh;
+    overflow: hidden;
+    background-color: var(--crema, #FBF6EE);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem) var(--radio-copa, 1.25rem) 0 0;
+    box-shadow: 0 -18px 56px rgba(23, 5, 10, 0.38);
+    animation: reconocer-subir 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* --- Cabecera fija -------------------------------------------------------- */
+
+.reconocer-cabecera {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.7rem;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 1.15rem 1rem 0.9rem;
+    background: #fff;
+    border-bottom: 1px solid var(--crema-borde, #DFD4C6);
+}
+
+/* Asa visual de hoja inferior: avisa de que esto se cierra hacia abajo. */
+.reconocer-cabecera::before {
+    content: "";
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    width: 2.5rem;
+    height: 0.25rem;
+    background: var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+    transform: translateX(-50%);
+}
+
+.reconocer-numero {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    background: var(--dorado-suave, #F5E9BC);
+    border-radius: 9999px;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--dorado-texto, #6E5508);
+}
+
+.reconocer-cabecera-textos {
+    min-width: 0;
+}
+
+.reconocer-antetitulo {
+    margin: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dorado-texto, #6E5508);
+}
+
+.reconocer-titulo {
+    margin: 0;
+    font-family: var(--fuente-titulo, 'Playfair Display', Georgia, serif);
+    font-size: clamp(1.05rem, 4.4vw, 1.3rem);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--burdeos-oscuro, #561826);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+}
+
+.reconocer-cerrar {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    background: var(--crema, #FBF6EE);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+    color: var(--carbon-700, #2B2628);
+    cursor: pointer;
+    transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.reconocer-cerrar:hover,
+.reconocer-cerrar:focus-visible {
+    background: var(--crema-oscuro, #EDE5DB);
+    border-color: var(--burdeos, #6B1F2E);
+}
+
+/* --- Cuerpo con scroll ---------------------------------------------------- */
+
+.reconocer-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.9rem 1rem 1.1rem;
+    overscroll-behavior: contain;
+}
+
+/* Recordatorio de que la hoja destapa el vino. */
+.reconocer-aviso {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    margin: 0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--dorado-texto, #6E5508);
+    background: var(--dorado-suave, #F5E9BC);
+    border: 1px solid #E3D08A;
+    border-radius: 0.7rem;
+}
+
+.reconocer-retrato {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.reconocer-imagen {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: center;
+    flex: 1 1 8rem;
+    max-width: 12rem;
+    margin: 0;
+}
+
+.reconocer-imagen img {
+    width: 100%;
+    max-height: 13rem;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.8rem;
+}
+
+.reconocer-imagen figcaption {
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--carbon-600, #383133);
+}
+
+.reconocer-bloque {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.85rem 0.9rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.9rem;
+}
+
+.reconocer-rotulo {
+    margin: 0;
+    font-family: var(--fuente-titulo, 'Playfair Display', Georgia, serif);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--burdeos, #6B1F2E);
+}
+
+.reconocer-subrotulo {
+    margin: 0 0 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--carbon-600, #383133);
+}
+
+/* --- Datos de la botella -------------------------------------------------- */
+
+/* Una columna en el móvil: bodega y D.O. son largos y en dos columnas
+   estrechas quedan ilegibles. */
+.reconocer-datos {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem 0.9rem;
+    margin: 0;
+}
+
+.reconocer-datos dt {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--carbon-500, #5A5154);
+}
+
+.reconocer-datos dd {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--carbon-700, #2B2628);
+    overflow-wrap: anywhere;
+}
+
+.reconocer-tecnica {
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--crema-borde, #DFD4C6);
+}
+
+.reconocer-tecnica-texto {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--carbon-600, #383133);
+    text-wrap: pretty;
+    white-space: pre-line;
+}
+
+/* --- Pie fijo ------------------------------------------------------------- */
+
+.reconocer-pie {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+    padding: 0.7rem 1rem;
+    /* Respeta la zona del gesto de inicio en los móviles sin botones. */
+    padding-bottom: calc(0.7rem + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid var(--crema-borde, #DFD4C6);
+}
+
+.reconocer-pie-boton,
+.reconocer-pie ::deep .mc-boton {
+    width: 100%;
+}
+
+/* --- Pantallas anchas ----------------------------------------------------- */
+
+@media (min-width: 34rem) {
+    .reconocer-fondo {
+        place-items: center;
+        padding: 1.25rem;
+    }
+
+    .reconocer-caja {
+        max-height: 88dvh;
+        border-radius: var(--radio-copa, 1.25rem);
+        box-shadow: 0 24px 56px rgba(23, 5, 10, 0.38);
+    }
+
+    /* Con el diálogo centrado el asa de hoja inferior ya no tiene sentido. */
+    .reconocer-cabecera::before {
+        content: none;
+    }
+
+    .reconocer-cabecera {
+        padding-top: 0.9rem;
+    }
+
+    .reconocer-datos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .reconocer-pie {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .reconocer-pie-boton,
+    .reconocer-pie ::deep .mc-boton {
+        width: auto;
+        min-width: 9rem;
+    }
+}
+
+@keyframes reconocer-aparecer {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes reconocer-subir {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reconocer-fondo,
+    .reconocer-caja {
+        animation: none;
+    }
+
+    .reconocer-fondo {
+        backdrop-filter: none;
+    }
+}

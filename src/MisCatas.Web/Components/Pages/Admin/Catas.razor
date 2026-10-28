@@ -1,0 +1,88 @@
+@page "/admin/catas"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>Catas · MisCatas</PageTitle>
+
+<h1>Catas</h1>
+
+<Aviso Texto="@Error" EsError="true" />
+<Aviso Texto="@Mensaje" />
+
+<div class="barra-acciones">
+    <input type="search"
+           class="busqueda"
+           placeholder="Buscar por nombre o lugar"
+           value="@Busqueda"
+           @oninput="BuscarAsync" />
+
+    <select class="filtro" @onchange="FiltrarEstadoAsync">
+        <option value="">Todos los estados</option>
+        <option value="@EstadoCata.Borrador">Borrador</option>
+        <option value="@EstadoCata.Abierta">Abierta</option>
+        <option value="@EstadoCata.EnCurso">En curso</option>
+        <option value="@EstadoCata.Finalizada">Finalizada</option>
+    </select>
+
+    <a class="boton" href="/admin/catas/nueva">Nueva cata</a>
+</div>
+
+@if (Cargando)
+{
+    <p class="cargando">Cargando…</p>
+}
+else if (Datos is null || Datos.Elementos.Count == 0)
+{
+    <p class="vacio">No hay catas que coincidan con la búsqueda.</p>
+}
+else
+{
+    <div class="tabla-marco">
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Nombre</th>
+                    <th>Lugar</th>
+                    <th>Estado</th>
+                    <th>Vinos</th>
+                    <th>Participantes</th>
+                    <th class="acciones">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cata in Datos.Elementos)
+                {
+                    <tr>
+                        <td data-etiqueta="Fecha">@cata.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td data-etiqueta="Nombre">@cata.Nombre</td>
+                        <td data-etiqueta="Lugar">@(cata.Lugar ?? "—")</td>
+                        <td data-etiqueta="Estado">
+                            <span class="estado @cata.Estado.ToString().ToLowerInvariant()">
+                                @NombreEstado(cata.Estado)
+                            </span>
+                        </td>
+                        <td data-etiqueta="Vinos">@cata.NumeroVinos</td>
+                        <td data-etiqueta="Participantes">@cata.NumeroParticipantes</td>
+                        <td data-etiqueta="Acciones" class="acciones">
+                            <a href="@($"/admin/catas/{cata.Id}/montar")">Montar</a>
+                            <a href="@($"/admin/catas/{cata.Id}")">Editar</a>
+                            <button type="button" class="peligro" @onclick="() => PedirBorrado(cata)">
+                                Borrar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <Paginador Pagina="Datos.Pagina"
+               TotalPaginas="Datos.TotalPaginas"
+               TotalElementos="Datos.TotalElementos"
+               AlCambiarPagina="IrAPaginaAsync" />
+}
+
+<DialogoConfirmar @bind-Visible="MostrarBorrado"
+                  Titulo="Borrar cata"
+                  Mensaje="@MensajeBorrado"
+                  AlConfirmar="BorrarAsync" />

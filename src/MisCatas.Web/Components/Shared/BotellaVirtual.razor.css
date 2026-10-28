@@ -1,0 +1,109 @@
+/* Estilos aislados de BotellaVirtual.
+   La altura la manda el contenedor y el SVG se adapta por viewBox, así que la
+   misma pieza sirve de miniatura y de protagonista a pantalla completa. */
+
+.botella {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.botella-svg {
+    display: block;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 12px 22px rgba(23, 5, 10, 0.3));
+}
+
+.botella--pequena {
+    height: 7rem;
+}
+
+.botella--diminuta {
+    height: 3.25rem;
+}
+
+.botella--media {
+    height: clamp(11rem, 38vw, 15rem);
+}
+
+.botella--grande {
+    height: clamp(15rem, 56vw, 22rem);
+}
+
+/* En el escaparate la botella ocupa buena parte del alto de la TV,
+   nunca del ancho: así nunca provoca scroll. */
+.botella--escaparate {
+    height: min(62vh, 34rem);
+}
+
+/* Elástica: no impone altura, se estira hasta llenar el hueco que le deje la
+   rejilla que la contiene. Es la que usan las vitrinas de varios vinos. */
+.botella--elastica {
+    height: 100%;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.botella--elastica .botella-svg {
+    height: 100%;
+    min-height: 0;
+}
+
+/* --- Sello de nota --- */
+.botella-sello-nota {
+    font-family: var(--fuente-titulo, 'Playfair Display', Georgia, serif);
+    font-size: 26px;
+    font-weight: 700;
+    fill: #6B1F2E;
+}
+
+/* --- Medallón de puesto --- */
+.botella-medallon-numero {
+    font-family: var(--fuente-titulo, 'Playfair Display', Georgia, serif);
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.botella-pie {
+    font-family: var(--fuente-texto, 'Inter', system-ui, sans-serif);
+    font-size: 0.8125rem;
+    color: var(--carbon-600, #383133);
+    text-align: center;
+    text-wrap: balance;
+}
+
+/* Texto dentro de la etiqueta cuando el vino sigue siendo ciego.
+   Va aquí y no en Tailwind porque son atributos SVG. */
+.etiqueta-antetitulo {
+    font-family: var(--fuente-texto, 'Inter', system-ui, sans-serif);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    fill: #6E5508;
+}
+
+.etiqueta-numero {
+    font-family: var(--fuente-titulo, 'Playfair Display', Georgia, serif);
+    font-size: 42px;
+    font-weight: 700;
+    fill: #6B1F2E;
+}
+
+/* El reflejo del vidrio es un adorno: si el usuario pide menos movimiento,
+   no hay nada que animar aquí, pero la sombra pesada sí se aligera. */
+@media (prefers-reduced-motion: reduce) {
+    .botella-svg {
+        filter: drop-shadow(0 6px 12px rgba(23, 5, 10, 0.22));
+    }
+}
+
+@media print {
+    .botella-svg {
+        filter: none;
+    }
+}

@@ -1,0 +1,329 @@
+@page "/escaparate"
+@layout EscaparateLayout
+
+@attribute [Authorize(Policy = Politicas.Pantalla)]
+
+<PageTitle>Escaparate · MisCatas</PageTitle>
+
+@if (EnPreparacion)
+{
+    @* Cuenta atrás 5 → 0 sincronizada por el servidor, a pantalla completa. *@
+    <div class="tv-preparacion" role="status" aria-live="assertive">
+        <p class="tv-preparacion-rotulo">Preparados</p>
+        <p class="tv-preparacion-cifra">@SegundosPreparacion</p>
+        <p class="tv-preparacion-pie">Vino nº @NumeroVinoActual · copas en la mano</p>
+    </div>
+}
+else
+{
+    switch (Pantalla)
+    {
+        case PantallaEscaparate.Votacion:
+            <div class="tv-votacion">
+                <div class="tv-votacion-izquierda">
+                    <p class="tv-rotulo">@Datos.Nombre</p>
+                    <p class="tv-vino-rotulo">Vino</p>
+                    <p class="tv-vino-numero">@NumeroVinoActual</p>
+                    <p class="tv-vino-de">de @Datos.TotalVinos</p>
+
+                    @* El reloj baja a esta columna: así puede ser mucho más
+                       grande sin robarle sitio al mural de votantes. *@
+                    <CuentaAtras SegundosRestantes="SegundosRestantes"
+                                 SegundosTotales="SegundosTotales"
+                                 PorcentajeAlerta="PorcentajeAlerta"
+                                 Pausada="!VotacionAbierta"
+                                 Tamano="TamanoCuentaAtras.Escaparate" />
+                </div>
+
+                <div class="tv-votacion-centro">
+                    <BotellaVirtual NumeroOrden="NumeroVinoActual"
+                                    Tamano="TamanoBotella.Escaparate" />
+                </div>
+
+                <div class="tv-votacion-derecha">
+                    <p class="tv-votos">
+                        <span class="tv-votos-numero">@Progreso.HanVotado</span>
+                        <span class="tv-votos-de">/ @Progreso.TotalParticipantes</span>
+                    </p>
+                    <p class="tv-votos-rotulo">votos recibidos</p>
+
+                    <div class="tv-barra tv-barra--ancha">
+                        <div class="tv-barra-relleno" style="width: @Progreso.PorcentajeVotado%"></div>
+                    </div>
+
+                    @* Nombres que se encienden según llegan las papeletas, con
+                       el tiempo que tardó cada uno. Nunca la nota. *@
+                    <PanelVotantes Participantes="Progreso.Votantes"
+                                   Titulo="@TituloMural"
+                                   Tamano="TamanoCuentaAtras.Escaparate" />
+                </div>
+
+                @if (EnPausa)
+                {
+                    @* Banda semitransparente: no tapa la botella, pero se ve desde el fondo de la sala. *@
+                    <div class="tv-pausa" role="status" aria-live="assertive">
+                        <IconoVino Nombre="Icono.Pausa" Tamano="TamanoIcono.Gigante" />
+                        <p class="tv-pausa-rotulo">Votación en pausa</p>
+                        <p class="tv-pausa-cifra">@SegundosRestantes<span class="tv-pausa-unidad">s</span></p>
+                    </div>
+                }
+            </div>
+            break;
+
+        case PantallaEscaparate.Resumen:
+            <div class="tv-resumen">
+                <p class="tv-rotulo">@Datos.Nombre</p>
+                <h1 class="tv-titulo">Votación cerrada</h1>
+
+                <div class="tv-cifras">
+                    <article class="tv-cifra">
+                        <span class="tv-cifra-valor">@Progreso.VinosCerrados<span class="tv-cifra-de">/@Progreso.TotalVinos</span></span>
+                        <span class="tv-cifra-rotulo">Vinos catados</span>
+                    </article>
+                    <article class="tv-cifra">
+                        <span class="tv-cifra-valor">@Progreso.HanVotado<span class="tv-cifra-de">/@Progreso.TotalParticipantes</span></span>
+                        <span class="tv-cifra-rotulo">Han votado</span>
+                    </article>
+                    <article class="tv-cifra">
+                        <span class="tv-cifra-valor">@Progreso.TiempoMedioTexto</span>
+                        <span class="tv-cifra-rotulo">Tiempo medio</span>
+                    </article>
+                </div>
+
+                <div class="tv-barra tv-barra--ancha">
+                    <div class="tv-barra-relleno" style="width: @Progreso.PorcentajeCata%"></div>
+                </div>
+
+                @* Marcador final del vino: quién votó y en cuánto tiempo. Es
+                   el momento en que la sala comenta quién se lo pensó más. *@
+                <PanelVotantes Participantes="Progreso.Votantes"
+                               Titulo="Tiempos de este vino"
+                               Tamano="TamanoCuentaAtras.Escaparate" />
+
+                @* Recorrido de la noche, todavía a ciegas: una botellita por
+                   vino con su número, para que la sala vea cuánto queda. *@
+                @if (PiezasRecorrido.Count > 0)
+                {
+                    <VitrinaBotellas Piezas="PiezasRecorrido"
+                                     Titulo="El recorrido de la cata"
+                                     MostrarSello="false"
+                                     Densidad="DensidadVitrina.Compacta"
+                                     Clase="tv-vitrina" />
+                }
+
+                @* Entre vino y vino es el único hueco tranquilo de la noche:
+                   aprovechamos para dejar la puerta abierta a quien llegue
+                   tarde, sin robarle protagonismo al marcador. *@
+                <div class="tv-resumen-pie">
+                    <p class="tv-pie">Preparando el siguiente vino…</p>
+
+                    @if (UrlEntrada is { } urlResumen)
+                    {
+                        <CodigoQr Texto="@urlResumen"
+                                  Tamano="TamanoQr.Normal"
+                                  Pie="@($"¿Te incorporas? {DireccionEntrada}")"
+                                  TextoAlternativo="@($"Código QR para entrar en {DireccionEntrada}")"
+                                  Clase="tv-resumen-qr" />
+                    }
+                </div>
+            </div>
+            break;
+
+        case PantallaEscaparate.Revelacion:
+            @if (EnGala && Datos.Resultado?.Ganador is { } estrella)
+            {
+                @* Primer acto: la botella a pantalla completa con la etiqueta
+                   real pegada a un lado. Es el momento de «¡ah, era ese!». *@
+                <div class="tv-gala" role="status" aria-live="polite">
+                    <div class="tv-gala-botella">
+                        <BotellaVirtual NumeroOrden="estrella.NumeroOrden"
+                                        Tamano="TamanoBotella.Escaparate"
+                                        Etiqueta="@($"Botella de {estrella.NombreConAnio}")" />
+                    </div>
+
+                    @if (UrlEtiqueta(estrella) is { } urlGala)
+                    {
+                        <figure class="tv-gala-etiqueta">
+                            <img src="@urlGala" alt="@($"Etiqueta de {estrella.NombreConAnio}")" />
+                        </figure>
+                    }
+
+                    <div class="tv-gala-textos">
+                        <IconoVino Nombre="Icono.Laurel" Tamano="TamanoIcono.Heredado" Clase="tv-gala-laurel" />
+                        <p class="tv-gala-rotulo">Vino ganador</p>
+                        <h1 class="tv-gala-nombre">@estrella.NombreConAnio</h1>
+                        @if (!string.IsNullOrWhiteSpace(estrella.Bodega))
+                        {
+                            <p class="tv-gala-bodega">@estrella.Bodega</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(estrella.DenominacionOrigen))
+                        {
+                            <p class="tv-gala-do">D.O. @estrella.DenominacionOrigen</p>
+                        }
+                        <p class="tv-gala-nota">@TextoMedia(estrella)</p>
+                        <p class="tv-gala-dueno-rotulo">Lo trajo</p>
+                        <p class="tv-gala-dueno">@estrella.Dueno</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="tv-revelacion">
+                    <p class="tv-rotulo">@Datos.Nombre</p>
+
+                    @if (Datos.Resultado?.Ganador is { } ganador)
+                    {
+                        <div class="tv-ganador">
+                            @* La botella se queda, ya en pequeño, para que la
+                               etiqueta siga a la vista junto a las notas. *@
+                            <BotellaVirtual NumeroOrden="ganador.NumeroOrden"
+                                            UrlEtiqueta="@UrlEtiqueta(ganador)"
+                                            Tamano="TamanoBotella.Grande"
+                                            Etiqueta="@($"Botella de {ganador.NombreConAnio}")"
+                                            Clase="tv-ganador-botella" />
+
+                            <p class="tv-ganador-rotulo">Vino ganador</p>
+                            <h1 class="tv-ganador-nombre">@ganador.NombreConAnio</h1>
+                            <p class="tv-ganador-nota">@TextoMedia(ganador)</p>
+
+                            @* El dueño es el titular de la noche: tipografía serif y oro. *@
+                            <p class="tv-ganador-dueno-rotulo">Lo trajo</p>
+                            <p class="tv-ganador-dueno">@ganador.Dueno</p>
+                        </div>
+                    }
+
+                    <ol class="tv-podio">
+                        @foreach (var vino in Clasificacion)
+                        {
+                            <li class="@ClasePodio(vino)">
+                                <span class="tv-podio-puesto">@vino.Posicion</span>
+                                <span class="tv-podio-textos">
+                                    <span class="tv-podio-nombre">@vino.NombreConAnio</span>
+                                    @* Quién lo trajo, también en los demás puestos:
+                                       es la mitad de la conversación de la sobremesa. *@
+                                    <span class="tv-podio-dueno">Lo trajo @vino.Dueno</span>
+                                </span>
+                                <span class="tv-podio-nota">@TextoMedia(vino)</span>
+                            </li>
+                        }
+                    </ol>
+
+                    @* Las tres cifras que resumen la noche, en grande para que
+                       se lean desde el fondo de la sala. *@
+                    <div class="tv-cifras tv-cifras--veredicto">
+                        <article class="tv-cifra">
+                            <span class="tv-cifra-valor">@TextoMediaCata</span>
+                            <span class="tv-cifra-rotulo">Nota media de la cata</span>
+                        </article>
+                        <article class="tv-cifra">
+                            <span class="tv-cifra-valor">@Datos.TotalVinos</span>
+                            <span class="tv-cifra-rotulo">Vinos catados</span>
+                        </article>
+                        <article class="tv-cifra">
+                            <span class="tv-cifra-valor">@TotalVotos</span>
+                            <span class="tv-cifra-rotulo">Votos contados</span>
+                        </article>
+                    </div>
+
+                    @* La estantería completa, ya con las etiquetas reales y el
+                       medallón del puesto: la foto de familia de la cata. *@
+                    @if (PiezasVeredicto.Count > 0)
+                    {
+                        <VitrinaBotellas Piezas="PiezasVeredicto"
+                                         Titulo="Todas las botellas de la noche"
+                                         Densidad="DensidadVitrina.Escaparate"
+                                         Clase="tv-vitrina" />
+                    }
+
+                    <div class="tv-revelacion-acciones">
+                        <button type="button" class="tv-boton" @onclick="VolverAlInicio">
+                            <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Heredado" />
+                            <span>Volver al inicio</span>
+                        </button>
+                        <button type="button" class="tv-boton tv-boton--suave" @onclick="RepetirGala">
+                            <IconoVino Nombre="Icono.Reanudar" Tamano="TamanoIcono.Heredado" />
+                            <span>Repetir la botella</span>
+                        </button>
+                    </div>
+                </div>
+            }
+            break;
+
+        default:
+            <div class="tv-espera">
+                <IconoVino Nombre="Icono.Copa" Tamano="TamanoIcono.Heredado" Clase="tv-espera-copa" />
+                <h1 class="tv-espera-titulo">MisCatas</h1>
+                <p class="tv-espera-lema">Catas a ciegas, veredicto en directo</p>
+
+                @if (HayVeredictoApartado)
+                {
+                    @* Puente de vuelta: el veredicto sigue guardado y aquí no
+                       hay teclado para teclear una dirección. *@
+                    <button type="button" class="tv-boton tv-boton--suave" @onclick="RepetirGala">
+                        <IconoVino Nombre="Icono.Laurel" Tamano="TamanoIcono.Heredado" />
+                        <span>Ver otra vez el veredicto</span>
+                    </button>
+                }
+
+                @if (Datos.ProximaCata is { } proxima)
+                {
+                    <div class="tv-espera-proxima">
+                        <p class="tv-rotulo">@(Datos.CataAnunciadaActiva ? "Cata en marcha" : "Próxima cata")</p>
+                        <p class="tv-espera-proxima-nombre">@proxima.Nombre</p>
+                        <p class="tv-espera-proxima-datos">
+                            @proxima.Fecha.ToString("dddd d 'de' MMMM")
+                            @if (!string.IsNullOrWhiteSpace(proxima.Lugar))
+                            {
+                                <span> · @proxima.Lugar</span>
+                            }
+                        </p>
+
+                        @if (Datos.CataAnunciadaActiva)
+                        {
+                            @* Dos caminos para entrar: teclear la dirección o
+                               apuntar la cámara al código. En una tele, lo
+                               segundo es mucho más cómodo. *@
+                            <div class="tv-espera-acceso">
+                                <p class="tv-espera-entrar">
+                                    Ya puedes entrar: abre <strong>@DireccionEntrada</strong> en el móvil
+                                    y accede con tu teléfono.
+                                </p>
+
+                                @if (UrlEntrada is { } urlQr)
+                                {
+                                    <CodigoQr Texto="@urlQr"
+                                              Tamano="TamanoQr.Escaparate"
+                                              Pie="O apunta con la cámara del móvil"
+                                              TextoAlternativo="@($"Código QR para entrar en {DireccionEntrada}")"
+                                              Clase="tv-espera-qr" />
+                                }
+                            </div>
+                        }
+
+                        @* Anticipo de lo que hay sobre la mesa: cuántas
+                           botellas y cuántos catadores esperan. *@
+                        <div class="tv-espera-cifras">
+                            <article class="tv-cifra">
+                                <span class="tv-cifra-valor">@proxima.NumeroVinos</span>
+                                <span class="tv-cifra-rotulo">Vinos a ciegas</span>
+                            </article>
+                            <article class="tv-cifra">
+                                <span class="tv-cifra-valor">@proxima.NumeroParticipantes</span>
+                                <span class="tv-cifra-rotulo">Catadores</span>
+                            </article>
+                        </div>
+                    </div>
+                }
+            </div>
+            break;
+    }
+}
+
+@if (SinConexion)
+{
+    @* Sin circuito la television se queda congelada: hay que avisar en sala. *@
+    <p class="tv-reconectando" role="status">
+        <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Medio" />
+        Reconectando con la mesa...
+    </p>
+}

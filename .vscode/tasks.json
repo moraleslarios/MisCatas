@@ -1,0 +1,133 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "▶ Arrancar la web",
+            "detail": "Levanta http://localhost:5080 y abre el navegador (script Arrancar.ps1)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/Arrancar.ps1"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "■ Parar la web",
+            "detail": "Cierra la app y libera el puerto 5080 (script Parar.ps1)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/Parar.ps1"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Compilar solución",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/MisCatas.slnx"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Arrancar MisCatas",
+            "detail": "Levanta la web en http://localhost:5080 y abre el navegador",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/src/MisCatas.Web"
+            ],
+            "options": {
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Development"
+                }
+            },
+            "isBackground": true,
+            // Con $msCompile la tarea nunca se marcaba como "lista" y se quedaba
+            // colgada: un servidor que no termina necesita un matcher de fondo.
+            "problemMatcher": {
+                "owner": "dotnet-run",
+                "pattern": {
+                    "regexp": "^\\s*(.*)error(.*)$",
+                    "message": 0
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^\\s*(Building|Compilando|Restoring)",
+                    "endsPattern": "Now listening on:"
+                }
+            }
+        },
+        {
+            "label": "Arrancar en Producción",
+            "detail": "Publica en Release y levanta la app como en la cata real (accesible desde los móviles)",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/arrancar-produccion.ps1"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "dotnet-run",
+                "pattern": {
+                    "regexp": "^\\s*(.*)error(.*)$",
+                    "message": 0
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "arranque en modo produccion",
+                    "endsPattern": "Now listening on:"
+                }
+            }
+        },
+        {
+            "label": "Vigilar CSS (Tailwind)",
+            "detail": "Recompila wwwroot/css/estilos.css en cada cambio",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/vigilar-css.ps1"
+            ],
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "Descargar Tailwind CLI",
+            "detail": "Solo hace falta la primera vez tras clonar",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/descargar-tailwind.ps1"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}

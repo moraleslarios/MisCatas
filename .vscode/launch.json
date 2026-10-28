@@ -1,0 +1,55 @@
+{
+    // F5 arranca la web y abre el navegador solo. Ojo: el "launchBrowser" de
+    // Properties/launchSettings.json lo respeta Visual Studio, pero no VS Code
+    // ni "dotnet run": aquí el navegador lo abre "serverReadyAction".
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "MisCatas (depurar)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Compilar solución",
+            "program": "${workspaceFolder}/src/MisCatas.Web/bin/Debug/net10.0/MisCatas.Web.dll",
+            "cwd": "${workspaceFolder}/src/MisCatas.Web",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            // La consola integrada deja ver los logs de Kestrel y SignalR.
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                // Kestrel escucha en 0.0.0.0:5080 para que entren los móviles de
+                // la red, pero esa dirección no es navegable: forzamos localhost.
+                "uriFormat": "http://localhost:5080"
+            }
+        },
+        {
+            "name": "MisCatas (sin depurar, recarga en caliente)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "dotnet",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/MisCatas.Web"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                // Evita que "dotnet watch" abra su propio navegador y salgan dos.
+                "DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER": "1"
+            },
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "http://localhost:5080"
+            }
+        }
+    ]
+}

@@ -1,0 +1,50 @@
+@* ---------------------------------------------------------------------------
+   Modal de confirmación propio. Se usa para cualquier decisión que no se
+   pueda deshacer y, sobre todo, para el aviso de salir de una cata activa.
+
+   Accesibilidad: role="dialog" + aria-modal, título ligado por aria-labelledby,
+   cierre con Escape, foco inicial en el botón de confirmar y foco devuelto al
+   cerrar (lo hace confirmar.js).
+   --------------------------------------------------------------------------- *@
+
+@if (Visible)
+{
+    <div class="modal-fondo" @onclick="CancelarAsync" @onkeydown="AlPulsarTeclaAsync" tabindex="-1">
+        <div class="modal-caja @(EsPeligro ? "modal-caja--peligro" : null)"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="@($"modal-titulo-{_id}")"
+             aria-describedby="@($"modal-mensaje-{_id}")"
+             @onclick:stopPropagation="true"
+             @ref="_caja">
+
+            <div class="modal-icono">
+                <IconoVino Nombre="IconoCabecera" Tamano="TamanoIcono.Grande" />
+            </div>
+
+            <h2 class="modal-titulo" id="@($"modal-titulo-{_id}")">@Titulo</h2>
+
+            <p class="modal-mensaje" id="@($"modal-mensaje-{_id}")">@Mensaje</p>
+
+            @if (Detalle is not null)
+            {
+                <div class="modal-detalle">@Detalle</div>
+            }
+
+            <div class="modal-botones">
+                <button type="button"
+                        class="mc-boton mc-boton-fantasma modal-boton"
+                        @onclick="CancelarAsync">
+                    @TextoCancelar
+                </button>
+
+                <button type="button"
+                        class="@ClaseConfirmar"
+                        @onclick="ConfirmarAsync"
+                        @ref="_botonConfirmar">
+                    @TextoConfirmar
+                </button>
+            </div>
+        </div>
+    </div>
+}

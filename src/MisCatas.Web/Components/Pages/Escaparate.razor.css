@@ -1,0 +1,888 @@
+/* Pantalla de escaparate: televisión horizontal, legible a varios metros.
+   Las medidas van en vmin/vw para que escale de 1080p a 4K sin tocar nada. */
+
+.tv-rotulo {
+    margin: 0;
+    font-size: 1.6vmin;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: rgb(232 199 101 / 85%);
+    text-transform: uppercase;
+}
+
+/* --- Espera --------------------------------------------------------------- */
+
+.tv-espera {
+    display: flex;
+    flex-direction: column;
+    gap: 1vmin;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+}
+
+.tv-espera-copa {
+    font-size: 18vmin;
+    color: rgb(232 199 101 / 90%);
+}
+
+.tv-espera-titulo {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 11vmin;
+    font-weight: 700;
+    line-height: 1;
+    color: #F7F2EC;
+}
+
+.tv-espera-lema {
+    margin: 0;
+    font-size: 2.6vmin;
+    letter-spacing: 0.08em;
+    color: rgb(247 242 236 / 86%);
+}
+
+.tv-espera-proxima {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6vmin;
+    align-items: center;
+    margin-top: 5vmin;
+    padding: 2.4vmin 5vmin;
+    border: 1px solid rgb(232 199 101 / 35%);
+    border-radius: 2vmin;
+}
+
+.tv-espera-proxima-nombre {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 4.6vmin;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #F7F2EC;
+}
+
+.tv-espera-proxima-datos {
+    margin: 0;
+    font-size: 2.2vmin;
+    color: rgb(247 242 236 / 88%);
+}
+
+.tv-espera-entrar {
+    margin: 0;
+    max-width: 34vmin;
+    font-size: 2.4vmin;
+    line-height: 1.35;
+    text-align: left;
+    color: #E3C65E;
+}
+
+.tv-espera-entrar strong {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.tv-espera-acceso {
+    display: flex;
+    gap: 3vmin;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2.2vmin;
+}
+
+.tv-espera-acceso ::deep .tv-espera-qr {
+    flex: 0 0 auto;
+}
+
+.tv-espera-acceso ::deep .tv-espera-qr .qr-pie {
+    font-size: 1.7vmin;
+    color: rgb(247 242 236 / 88%);
+}
+
+/* --- Votación ------------------------------------------------------------- */
+
+.tv-votacion {
+    position: relative;
+    display: grid;
+    /* El mural de votantes necesita sitio real, así que las columnas de los
+       lados mandan sobre la botella del centro, que es la que cede. */
+    grid-template-columns: 1.1fr auto 1.4fr;
+    gap: 3vmin;
+    align-items: center;
+    height: 100%;
+}
+
+.tv-votacion-izquierda {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4vmin;
+    align-items: flex-start;
+}
+
+/* El reloj queda bajo el número de vino: se centra en su columna para que el
+   aro no se pegue al borde de la pantalla.
+   Va con ::deep porque la clase viaja al interior de otro componente y, sin
+   eso, el aislamiento de CSS de Blazor no la alcanzaría nunca. */
+.tv-votacion-izquierda ::deep .cuenta {
+    align-self: center;
+    margin-top: 2vmin;
+}
+
+.tv-vino-rotulo {
+    margin: 2vmin 0 0;
+    font-size: 3vmin;
+    letter-spacing: 0.14em;
+    color: rgb(247 242 236 / 82%);
+    text-transform: uppercase;
+}
+
+.tv-vino-numero {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    /* Antes 26vmin: con el reloj debajo en la misma columna hay que dejarle
+       aire para que no se amontonen. */
+    font-size: 16vmin;
+    font-weight: 700;
+    line-height: 0.9;
+    color: #F7F2EC;
+    font-variant-numeric: tabular-nums;
+}
+
+.tv-vino-de {
+    margin: 0;
+    font-size: 2.6vmin;
+    color: rgb(247 242 236 / 80%);
+}
+
+.tv-votacion-centro {
+    display: grid;
+    place-items: center;
+    height: 100%;
+}
+
+.tv-votacion-derecha {
+    display: flex;
+    flex-direction: column;
+    gap: 1vmin;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+}
+
+/* Diez nombres no deben estirar la pantalla: el mural se queda dentro de su
+   columna y, si la cata tuviera más invitados, cede altura en vez de
+   desbordar la televisión. */
+.tv-votacion-derecha ::deep .mural {
+    flex: 0 1 auto;
+    max-height: 52vh;
+    margin-top: 1vmin;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Dentro de la columna derecha la barra se adapta al ancho disponible en vez
+   de usar una medida fija que no cuadra con el mural. */
+.tv-votacion-derecha .tv-barra {
+    width: 100%;
+}
+
+.tv-votos {
+    display: flex;
+    gap: 1vmin;
+    align-items: baseline;
+    margin: 0;
+}
+
+.tv-votos-numero {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 7vmin;
+    font-weight: 700;
+    line-height: 1;
+    color: #E8C765;
+    font-variant-numeric: tabular-nums;
+}
+
+.tv-votos-de {
+    font-size: 3.4vmin;
+    color: rgb(247 242 236 / 80%);
+    font-variant-numeric: tabular-nums;
+}
+
+.tv-votos-rotulo {
+    margin: 0;
+    font-size: 2.2vmin;
+    letter-spacing: 0.1em;
+    color: rgb(247 242 236 / 82%);
+    text-transform: uppercase;
+}
+
+/* --- Barra de progreso ---------------------------------------------------- */
+
+.tv-barra {
+    width: 28vmin;
+    height: 1.4vmin;
+    margin-top: 1.4vmin;
+    overflow: hidden;
+    background: rgb(247 242 236 / 14%);
+    border-radius: 9999px;
+}
+
+.tv-barra--ancha {
+    width: 60vmin;
+}
+
+.tv-barra-relleno {
+    height: 100%;
+    background: linear-gradient(90deg, #C9A227, #F3D97A);
+    border-radius: 9999px;
+    transition: width 0.5s ease;
+}
+
+/* --- Resumen entre vinos -------------------------------------------------- */
+
+/* Aquí hay sitio de sobra a lo ancho, así que el marcador de tiempos se
+   reparte en varias columnas y se lee de un vistazo. */
+.tv-resumen ::deep .mural {
+    width: 84vw;
+    margin-top: 1.5vmin;
+    min-height: 0;
+}
+
+/* Las columnas se miden en `em` (es decir, en función de la letra que el
+   propio mural calcula según cuánta gente haya). Con 4 invitados salen fichas
+   grandes y pocas columnas; con 15 o 30 la letra baja sola y entran muchas más
+   columnas, así que el mural ocupa casi el mismo alto y nunca empuja el resto
+   de la pantalla hacia abajo. */
+.tv-resumen ::deep .mural-lista {
+    grid-template-columns: repeat(auto-fit, minmax(13em, 1fr));
+}
+
+.tv-resumen {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2vmin;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 0;
+    text-align: center;
+}
+
+/* Reparto de alturas del resumen: los rótulos y las cifras mandan, y los dos
+   bloques grandes (mural de tiempos y vitrina de botellas) son los que ceden
+   si falta sitio. Con esto la pantalla cabe entera sin barras de scroll. */
+.tv-resumen > * {
+    flex: 0 0 auto;
+    max-width: 100%;
+}
+
+.tv-resumen > .mural,
+.tv-resumen > ::deep .vitrina {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.tv-titulo {
+    margin: 0 0 1.2vmin;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 7vmin;
+    font-weight: 700;
+    line-height: 1;
+    color: #F7F2EC;
+}
+
+.tv-cifras {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2.4vmin;
+}
+
+.tv-cifra {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4vmin;
+    align-items: center;
+    min-width: 20vmin;
+    padding: 1.8vmin 2vmin;
+    border: 1px solid rgb(247 242 236 / 16%);
+    border-radius: 2vmin;
+}
+
+.tv-cifra-valor {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 6vmin;
+    font-weight: 700;
+    line-height: 1;
+    color: #E8C765;
+    font-variant-numeric: tabular-nums;
+}
+
+.tv-cifra-de {
+    font-size: 3vmin;
+    color: rgb(247 242 236 / 55%);
+}
+
+.tv-cifra-rotulo {
+    font-size: 1.9vmin;
+    letter-spacing: 0.12em;
+    color: rgb(247 242 236 / 82%);
+    text-transform: uppercase;
+}
+
+.tv-pie {
+    margin: 1.6vmin 0 0;
+    font-size: 2.2vmin;
+    font-style: italic;
+    color: rgb(247 242 236 / 55%);
+}
+
+/* Pie del resumen: el aviso de «siguiente vino» y, a su derecha, el QR de
+   acceso para quien llegue tarde. En horizontal caben los dos sin apretar. */
+.tv-resumen-pie {
+    display: flex;
+    gap: 3vmin;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tv-resumen-pie .tv-pie {
+    margin: 0;
+}
+
+/* El QR vive en un componente aparte: hay que cruzar el aislamiento. */
+.tv-resumen-pie ::deep .tv-resumen-qr {
+    flex: 0 0 auto;
+}
+
+.tv-resumen-pie ::deep .tv-resumen-qr .qr-lamina {
+    width: 9vmin;
+    height: 9vmin;
+    padding: 0.7vmin;
+}
+
+.tv-resumen-pie ::deep .tv-resumen-qr .qr-pie {
+    font-size: 1.5vmin;
+    font-weight: 600;
+    color: rgb(247 242 236 / 78%);
+}
+
+/* --- Revelación ----------------------------------------------------------- */
+
+.tv-revelacion {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: 1fr 1fr;
+    gap: 2vmin 5vmin;
+    align-items: center;
+    height: 100%;
+    min-height: 0;
+}
+
+.tv-revelacion > .tv-rotulo {
+    grid-column: 1 / -1;
+    text-align: center;
+}
+
+/* Fila de botones: ocupa el ancho completo bajo las dos columnas. */
+.tv-revelacion-acciones {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 2vmin;
+    justify-content: center;
+}
+
+/* Mando de la televisión. No hay ratón en la sala, pero sí un mando con
+   puntero o una pantalla táctil: por eso los botones son enormes. */
+.tv-boton {
+    display: inline-flex;
+    gap: 1.2vmin;
+    align-items: center;
+    padding: 1.4vmin 3vmin;
+    font-family: inherit;
+    font-size: 2.2vmin;
+    font-weight: 700;
+    color: #1A0E12;
+    background: #E8C765;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.tv-boton:hover,
+.tv-boton:focus-visible {
+    background: #F2D98B;
+    box-shadow: 0 1.2vmin 2.4vmin rgb(0 0 0 / 45%);
+    transform: translateY(-0.3vmin);
+}
+
+.tv-boton--suave {
+    color: #F7F2EC;
+    background: rgb(247 242 236 / 10%);
+    box-shadow: inset 0 0 0 1px rgb(232 199 101 / 45%);
+}
+
+.tv-boton--suave:hover,
+.tv-boton--suave:focus-visible {
+    background: rgb(247 242 236 / 18%);
+}
+
+/* La botella del ganador, ya en formato de ficha, con la etiqueta puesta. */
+.tv-ganador ::deep .botella {
+    filter: drop-shadow(0 1.4vmin 3vmin rgb(0 0 0 / 50%));
+}
+
+.tv-ganador ::deep .botella--grande {
+    height: min(34vh, 20rem);
+}
+
+.tv-ganador {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6vmin;
+    align-items: center;
+    text-align: center;
+}
+
+.tv-ganador-laurel {
+    font-size: 14vmin;
+    color: rgb(232 199 101 / 92%);
+}
+
+.tv-ganador-rotulo {
+    margin: 0;
+    font-size: 2vmin;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: #E8C765;
+    text-transform: uppercase;
+}
+
+.tv-ganador-nombre {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 6.4vmin;
+    font-weight: 700;
+    line-height: 1.05;
+    color: #F7F2EC;
+}
+
+.tv-ganador-nota {
+    margin: 0.6vmin 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 12vmin;
+    font-weight: 700;
+    line-height: 1;
+    color: #E8C765;
+    font-variant-numeric: tabular-nums;
+}
+
+.tv-ganador-pie {
+    margin: 0;
+    font-size: 2.2vmin;
+    color: rgb(247 242 236 / 66%);
+}
+
+.tv-podio {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2vmin;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tv-podio-fila {
+    display: flex;
+    gap: 2vmin;
+    align-items: center;
+    padding: 1.6vmin 2.4vmin;
+    background: rgb(247 242 236 / 6%);
+    border-radius: 1.4vmin;
+}
+
+.tv-podio-fila--oro {
+    background: rgb(232 199 101 / 20%);
+    box-shadow: inset 0 0 0 1px rgb(232 199 101 / 55%);
+}
+
+.tv-podio-fila--plata {
+    background: rgb(230 230 230 / 14%);
+}
+
+.tv-podio-fila--bronce {
+    background: rgb(206 142 82 / 16%);
+}
+
+.tv-podio-puesto {
+    flex-shrink: 0;
+    width: 4.4vmin;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 3.4vmin;
+    font-weight: 700;
+    color: #E8C765;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Dos líneas por puesto: el vino arriba y quién lo trajo debajo. */
+.tv-podio-textos {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.2vmin;
+    min-width: 0;
+}
+
+.tv-podio-nombre {
+    overflow: hidden;
+    font-size: 3vmin;
+    color: #F7F2EC;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tv-podio-dueno {
+    overflow: hidden;
+    font-size: 1.9vmin;
+    color: rgb(247 242 236 / 62%);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tv-podio-nota {
+    flex-shrink: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 3.6vmin;
+    font-weight: 700;
+    color: #E8C765;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Anticipo de la pantalla de espera: dos cifras algo mas discretas que las
+   del resumen, porque todavia no hay nada que celebrar. */
+.tv-espera-cifras {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2vmin;
+    margin-top: 2.4vmin;
+}
+
+.tv-espera-cifras .tv-cifra {
+    min-width: 0;
+    padding: 1.6vmin;
+}
+
+.tv-espera-cifras .tv-cifra-valor {
+    font-size: 5vmin;
+}
+
+/* Las cifras del veredicto comparten rejilla con las del resumen, pero se
+   separan del podio y ocupan todo el ancho. */
+.tv-cifras--veredicto {
+    width: 100%;
+    margin-top: 2.4vmin;
+    grid-column: 1 / -1;
+}
+
+/* --- Vitrina de botellas en la television --------------------------------- */
+
+/* La clase viaja como parametro al componente hijo, asi que no recibe el
+   atributo de ambito de esta pagina: hay que atacarla con ::deep. */
+::deep .tv-vitrina {
+    width: 100%;
+    margin-top: 2.4vmin;
+    grid-column: 1 / -1;
+}
+
+::deep .tv-vitrina .vitrina-titulo {
+    font-size: 1.9vmin;
+    letter-spacing: 0.14em;
+    color: rgb(247 242 236 / 72%);
+    text-transform: uppercase;
+}
+
+::deep .tv-vitrina .vitrina-hueco {
+    background: rgb(247 242 236 / 5%);
+    border-color: rgb(247 242 236 / 14%);
+}
+
+::deep .tv-vitrina .vitrina-pieza-titulo {
+    font-size: 1.9vmin;
+    color: #F7F2EC;
+}
+
+::deep .tv-vitrina .vitrina-pieza-subtitulo,
+::deep .tv-vitrina .vitrina-pieza-detalle,
+::deep .tv-vitrina .vitrina-pieza-nota {
+    font-size: 1.6vmin;
+    color: rgb(247 242 236 / 66%);
+}
+
+/* --- Preparación: cuenta atrás 5 → 0 a pantalla completa ------------------ */
+
+/* Ocupa el hueco que le deja el marco (cabecera + pie), NO la pantalla
+   entera: con `100dvh` se salía siempre por abajo porque el marco ya había
+   descontado la cabecera y el pie. */
+.tv-preparacion {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vmin;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 0;
+    text-align: center;
+}
+
+.tv-preparacion-rotulo {
+    margin: 0;
+    font-size: 4vmin;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: rgb(232 199 101 / 85%);
+    text-transform: uppercase;
+}
+
+.tv-preparacion-cifra {
+    margin: 0;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    /* La cifra es enorme a propósito, pero nunca más alta que el hueco: con
+       `min()` se queda en lo que quepa. */
+    font-size: min(42vmin, 62vh);
+    font-weight: 700;
+    line-height: 1;
+    color: #F5E9BC;
+    text-shadow: 0 0 6vmin rgb(201 162 39 / 45%);
+    font-variant-numeric: tabular-nums;
+    animation: tv-latir 1s var(--copa, ease-out) infinite;
+}
+
+.tv-preparacion-pie {
+    margin: 0;
+    font-size: 3vmin;
+    color: rgb(247 243 238 / 80%);
+}
+
+@keyframes tv-latir {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.06);
+    }
+}
+
+/* --- Aviso de circuito caído ---------------------------------------------- */
+
+.tv-reconectando {
+    position: fixed;
+    bottom: 2vmin;
+    left: 50%;
+    display: flex;
+    gap: 1vmin;
+    align-items: center;
+    padding: 1vmin 2.5vmin;
+    margin: 0;
+    font-size: 2.2vmin;
+    font-weight: 700;
+    color: #FDF2DC;
+    background: rgb(138 90 0 / 92%);
+    border-radius: 999px;
+    box-shadow: 0 0.5vmin 2vmin rgb(0 0 0 / 45%);
+    transform: translateX(-50%);
+}
+
+/* --- Dueño del vino ganador: el titular de la noche ----------------------- */
+
+.tv-ganador-dueno-rotulo {
+    margin: 1.2vmin 0 0;
+    font-size: 1.8vmin;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    color: rgb(232 199 101 / 80%);
+    text-transform: uppercase;
+}
+
+.tv-ganador-dueno {
+    padding: 0.8vmin 3vmin;
+    margin: 0.4vmin 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 7vmin;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #F5E9BC;
+    text-align: center;
+    text-shadow: 0 0 4vmin rgb(201 162 39 / 45%);
+    text-wrap: balance;
+    background: linear-gradient(180deg, rgb(201 162 39 / 16%) 0%, rgb(201 162 39 / 2%) 100%);
+    border: 0.2vmin solid rgb(232 199 101 / 45%);
+    border-radius: 2vmin;
+    overflow-wrap: anywhere;
+}
+
+/* --- Pausa de la votación ------------------------------------------------- */
+
+/* Velo sobre la rejilla de votación, legible desde el fondo de la sala. */
+.tv-pausa {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vmin;
+    align-items: center;
+    justify-content: center;
+    color: #E6DED4;
+    text-align: center;
+    background: rgb(12 6 8 / 82%);
+    backdrop-filter: blur(6px);
+}
+
+.tv-pausa-rotulo {
+    margin: 0;
+    font-size: 3.4vmin;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
+.tv-pausa-cifra {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: min(22vmin, 48vh);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.tv-pausa-unidad {
+    margin-left: 0.08em;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.26em;
+    font-weight: 400;
+}
+
+/* --- Gala: la botella del ganador a pantalla completa --------------------- */
+
+.tv-gala {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 4vmin;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 0;
+    animation: tv-gala-entrar 900ms ease-out both;
+}
+
+.tv-gala-botella {
+    display: grid;
+    place-items: center;
+    filter: drop-shadow(0 2vmin 4vmin rgb(0 0 0 / 55%));
+}
+
+/* La etiqueta real, grande y a un lado de la botella: es la prueba del
+   delito, lo que la sala quiere mirar de cerca. */
+.tv-gala-etiqueta {
+    margin: 0;
+    padding: 1vmin;
+    background: rgb(247 242 236 / 10%);
+    border-radius: 1.4vmin;
+    box-shadow: 0 1.4vmin 3vmin rgb(0 0 0 / 45%), inset 0 0 0 1px rgb(232 199 101 / 45%);
+    transform: rotate(-2deg);
+}
+
+.tv-gala-etiqueta img {
+    display: block;
+    width: min(30vw, 34vmin);
+    max-height: 56vh;
+    object-fit: contain;
+    border-radius: 0.8vmin;
+}
+
+.tv-gala-textos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4vmin;
+    align-items: flex-start;
+    max-width: 40vw;
+    text-align: left;
+}
+
+.tv-gala-laurel {
+    font-size: 8vmin;
+    color: rgb(232 199 101 / 92%);
+}
+
+.tv-gala-rotulo {
+    margin: 0;
+    font-size: 2vmin;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: #E8C765;
+    text-transform: uppercase;
+}
+
+.tv-gala-nombre {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 6vmin;
+    font-weight: 700;
+    line-height: 1.05;
+    color: #F7F2EC;
+}
+
+.tv-gala-bodega,
+.tv-gala-do {
+    margin: 0;
+    font-size: 2.4vmin;
+    color: rgb(247 242 236 / 72%);
+}
+
+.tv-gala-nota {
+    margin: 0.8vmin 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 10vmin;
+    font-weight: 700;
+    line-height: 1;
+    color: #E8C765;
+    font-variant-numeric: tabular-nums;
+}
+
+.tv-gala-dueno-rotulo {
+    margin: 0.8vmin 0 0;
+    font-size: 1.8vmin;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: rgb(247 242 236 / 62%);
+    text-transform: uppercase;
+}
+
+.tv-gala-dueno {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 4.6vmin;
+    font-weight: 700;
+    color: #E8C765;
+}
+
+@keyframes tv-gala-entrar {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

@@ -1,0 +1,64 @@
+@page "/admin/catas/nueva"
+@page "/admin/catas/{Id:int}"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>@(EsNueva ? "Nueva cata" : "Editar cata") · MisCatas</PageTitle>
+
+<h1>@(EsNueva ? "Nueva cata" : "Editar cata")</h1>
+
+<Aviso Texto="@Error" EsError="true" />
+<Aviso Texto="@Mensaje" />
+
+@if (NoEncontrada)
+{
+    <p class="vacio">No existe esa cata.</p>
+    <a class="enlace" href="/admin/catas">Volver al listado</a>
+}
+else
+{
+    <EditForm Model="Datos" OnValidSubmit="GuardarAsync" class="formulario">
+        <DataAnnotationsValidator />
+
+        <label class="campo">
+            <span>Nombre</span>
+            <InputText @bind-Value="Datos.Nombre" />
+            <ValidationMessage For="() => Datos.Nombre" />
+        </label>
+
+        <div class="fila">
+            <label class="campo">
+                <span>Fecha</span>
+                <InputDate @bind-Value="Datos.Fecha" />
+                <ValidationMessage For="() => Datos.Fecha" />
+            </label>
+
+            <label class="campo">
+                <span>Lugar</span>
+                <InputText @bind-Value="Datos.Lugar" />
+            </label>
+        </div>
+
+        <label class="campo">
+            <span>Tiempo de voto (segundos)</span>
+            <InputNumber @bind-Value="Datos.TiempoVotoSegundos" min="10" max="3600" />
+            <ValidationMessage For="() => Datos.TiempoVotoSegundos" />
+            <small>Déjalo vacío para usar el valor global de los ajustes.</small>
+        </label>
+
+        <label class="campo">
+            <span>Comentarios</span>
+            <InputTextArea @bind-Value="Datos.Comentarios" rows="3" />
+        </label>
+
+        <div class="botones">
+            <a class="secundario" href="/admin/catas">Volver</a>
+            @if (!EsNueva)
+            {
+                <a class="secundario" href="@($"/admin/catas/{Id}/montar")">Montar cata</a>
+            }
+            <button type="submit" class="principal" disabled="@Guardando">
+                @(Guardando ? "Guardando…" : "Guardar")
+            </button>
+        </div>
+    </EditForm>
+}

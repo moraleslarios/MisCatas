@@ -1,0 +1,78 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+.fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    display: grid;
+    place-items: center;
+    padding: clamp(0.75rem, 4vw, 1rem);
+    background: rgb(0 0 0 / 45%);
+}
+
+.caja {
+    width: 100%;
+    max-width: 24rem;
+    padding: clamp(1rem, 4.5vw, 1.25rem);
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 25%);
+}
+
+.caja h2 {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1rem, 4vw, 1.1rem);
+}
+
+.caja p {
+    margin: 0 0 1.25rem;
+    color: var(--carbon-600, #383133);
+    font-size: 0.9rem;
+}
+
+.botones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.6rem;
+}
+
+.botones button {
+    padding: 0.55rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.secundario {
+    border: 1px solid #B9ADA2;
+    background: #fff;
+    color: var(--carbon-700, #2B2628);
+}
+
+.peligro {
+    border: 0;
+    background: #b3261e;
+    color: #fff;
+}
+
+.peligro:hover {
+    background: #8e1e18;
+}
+
+/* Móvil: los dos botones se reparten el ancho con 44 px de alto, para que no
+   haya forma de confundir "Cancelar" con la acción destructiva. */
+@media (max-width: 560px) {
+    .botones button {
+        flex: 1 1 auto;
+        min-height: 3rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Móvil muy estrecho: un botón por fila, con el destructivo abajo. */
+@media (max-width: 360px) {
+    .botones {
+        flex-direction: column;
+    }
+}

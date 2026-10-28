@@ -1,0 +1,78 @@
+@* ---------------------------------------------------------------------------
+   Entrada de nota de 0,0 a 10,0 con paso configurable (0,5 por defecto).
+
+   Pensada para el pulgar en móvil vertical: deslizador alto, botones de −/+
+   de 48px y un campo de texto que acepta coma decimal (es-ES) y punto.
+   El valor se expone siempre como decimal?; la conversión la hace el
+   componente, no la pantalla que lo usa.
+   --------------------------------------------------------------------------- *@
+
+<div class="voto @(Deshabilitado ? "voto--inerte" : null) @Clase">
+
+    <div class="voto-cifra" aria-live="polite">
+        <span class="voto-numero">@TextoCifra</span>
+        <span class="voto-sobre">/ @TextoNota(Maximo)</span>
+    </div>
+
+    <div class="voto-mandos">
+        <button type="button"
+                class="voto-paso"
+                aria-label="@($"Bajar la nota {TextoPaso}")"
+                disabled="@(Deshabilitado || !PuedeBajar)"
+                @onclick="BajarAsync">
+            <IconoVino Nombre="Icono.Abajo" Tamano="TamanoIcono.Medio" />
+        </button>
+
+        <input class="voto-deslizador"
+               type="range"
+               min="@TextoInvariante(Minimo)"
+               max="@TextoInvariante(Maximo)"
+               step="@TextoInvariante(Paso)"
+               value="@TextoInvariante(ValorEfectivo)"
+               disabled="@Deshabilitado"
+               aria-label="@EtiquetaAccesible"
+               aria-valuetext="@($"{TextoCifra} sobre {TextoNota(Maximo)}")"
+               @oninput="AlDeslizarAsync" />
+
+        <button type="button"
+                class="voto-paso"
+                aria-label="@($"Subir la nota {TextoPaso}")"
+                disabled="@(Deshabilitado || !PuedeSubir)"
+                @onclick="SubirAsync">
+            <IconoVino Nombre="Icono.Arriba" Tamano="TamanoIcono.Medio" />
+        </button>
+    </div>
+
+    <div class="voto-escala" aria-hidden="true">
+        <span>@TextoNota(Minimo)</span>
+        <span>@TextoNota((Minimo + Maximo) / 2)</span>
+        <span>@TextoNota(Maximo)</span>
+    </div>
+
+    <div class="voto-exacto">
+        <label class="voto-exacto-etiqueta" for="@($"voto-campo-{_id}")">Nota exacta</label>
+        <input class="voto-exacto-campo"
+               id="@($"voto-campo-{_id}")"
+               type="text"
+               inputmode="decimal"
+               autocomplete="off"
+               maxlength="5"
+               placeholder="@TextoNota(Minimo)"
+               value="@_textoCampo"
+               disabled="@Deshabilitado"
+               aria-describedby="@($"voto-ayuda-{_id}")"
+               @onchange="AlEscribirAsync" />
+    </div>
+
+    <p class="voto-ayuda" id="@($"voto-ayuda-{_id}")">
+        De @TextoNota(Minimo) a @TextoNota(Maximo), de @TextoPaso en @TextoPaso. Puedes usar coma.
+    </p>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <p class="voto-error" role="alert">
+            <IconoVino Nombre="Icono.Alerta" Tamano="TamanoIcono.Pequeno" />
+            @_error
+        </p>
+    }
+</div>

@@ -1,0 +1,95 @@
+/* Layout del modo Escaparate. Todo se mide en vh/vw para que llene exactamente
+   la pantalla de televisión sin desbordar ni dejar que aparezca scroll. */
+
+.marco-tv {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    color: #F7F3EE;
+    background:
+        radial-gradient(circle at 18% 12%, rgb(140 47 57 / 42%), transparent 55%),
+        radial-gradient(circle at 82% 88%, rgb(201 162 39 / 16%), transparent 52%),
+        linear-gradient(160deg, #280A11 0%, #17050A 48%, #1C1A1B 100%);
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.cabecera-tv {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    height: 9vh;
+    padding-inline: 3vw;
+    border-bottom: 1px solid rgb(201 162 39 / 28%);
+}
+
+.marca-tv {
+    display: flex;
+    gap: 0.6em;
+    align-items: center;
+    font-size: min(3.6vh, 2.25rem);
+}
+
+.marca-tv-icono {
+    width: 1.15em;
+    height: 1.15em;
+    color: #C9A227;
+}
+
+.marca-tv-texto {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.cabecera-tv-fecha {
+    font-size: min(2.6vh, 1.5rem);
+    font-weight: 600;
+    color: rgb(247 243 238 / 62%);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* --- Contenido ------------------------------------------------------------ */
+
+.contenido-tv {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    /* Si una pantalla concreta se pasa de alto, se recorta antes que sacar
+       barras de desplazamiento: el requisito es "sin scroll". */
+    overflow: hidden;
+    padding: 2.5vh 3vw;
+    text-align: center;
+}
+
+/* --- Pie ------------------------------------------------------------------ */
+
+.pie-tv {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    height: 2.5vh;
+}
+
+.pie-tv-filete {
+    width: 28vw;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #C9A227, transparent);
+    border-radius: 9999px;
+}
+
+/* En monitores verticales o pantallas pequeñas el escaparate sigue cabiendo,
+   solo se aprieta la cabecera. */
+@media (max-height: 40rem) {
+    .cabecera-tv {
+        height: 11vh;
+    }
+}

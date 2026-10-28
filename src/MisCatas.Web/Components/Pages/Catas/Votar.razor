@@ -1,0 +1,156 @@
+@page "/catas/{Id:int}/votar"
+
+@attribute [Authorize(Policy = Politicas.Votantes)]
+
+<PageTitle>@(Datos?.Nombre ?? "Votar") · MisCatas</PageTitle>
+
+@if (Cargando)
+{
+    <p class="votar-cargando" role="status">Abriendo la cata…</p>
+}
+else if (Datos is null)
+{
+    <EstadoVacio Icono="Icono.Oculto"
+                 Titulo="Esta cata no es para ti"
+                 Mensaje="O no estás invitado, o la cata ya no existe.">
+        <Acciones>
+            <a class="mc-boton mc-boton-secundario" href="@RutasApp.MisCatas">Volver a mis catas</a>
+        </Acciones>
+    </EstadoVacio>
+}
+else
+{
+    <div class="votar">
+        <header class="votar-cabecera">
+            <a class="votar-atras" href="@RutasApp.MisCatas" aria-label="Volver a mis catas">
+                <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Pequeno" />
+            </a>
+            <div class="votar-titulos">
+                <p class="mc-antetitulo">@Datos.Nombre</p>
+                <h1 class="votar-titulo">@TituloVino</h1>
+            </div>
+            <span class="@ClasePastillaEstado">@TextoEstadoVotacion</span>
+        </header>
+
+        <p class="votar-progreso">
+            Has votado @Datos.MisVotos de @Datos.Vinos.Count vinos
+        </p>
+
+        @if (SinConexion)
+        {
+            <p class="votar-reconectando" role="status">
+                <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Pequeno" />
+                Reconectando con la mesa…
+            </p>
+        }
+
+        @if (VinoActual is null)
+        {
+            <EstadoVacio Icono="Icono.Reloj"
+                         Titulo="Aún no hay vino en votación"
+                         Mensaje="En cuanto el organizador abra el siguiente vino, podrás puntuarlo desde aquí." />
+        }
+        else
+        {
+            <section class="votar-escena">
+                <BotellaVirtual NumeroOrden="VinoActual.NumeroOrden"
+                                Tamano="TamanoBotella.Media"
+                                Etiqueta="@($"Vino número {VinoActual.NumeroOrden}, a ciegas")" />
+
+                <CuentaAtras SegundosRestantes="SegundosRestantes"
+                             SegundosTotales="SegundosTotales"
+                             PorcentajeAlerta="PorcentajeAlerta"
+                             Pausada="!VotacionAbierta" />
+            </section>
+
+            <section class="votar-mando">
+                <VotoInput @bind-Valor="Nota"
+                           Paso="Datos.PasoDecimalNota"
+                           Deshabilitado="!PuedeVotar"
+                           EtiquetaAccesible="@($"Nota del vino número {VinoActual.NumeroOrden}")" />
+
+                <div class="mc-campo">
+                    <label class="mc-etiqueta" for="comentario-voto">Comentario (opcional)</label>
+                    <textarea class="mc-control"
+                              id="comentario-voto"
+                              rows="3"
+                              maxlength="500"
+                              placeholder="Qué has notado: aroma, cuerpo, final…"
+                              disabled="@(!PuedeVotar)"
+                              @bind="Comentario"
+                              @bind:event="oninput"></textarea>
+                    <p class="mc-ayuda">@Comentario.Length / 500</p>
+                </div>
+
+                <Aviso Texto="@Mensaje" EsError="false" />
+                <Aviso Texto="@Error" EsError="true" />
+
+                <button type="button"
+                        class="mc-boton mc-boton-primario mc-boton-grande votar-enviar"
+                        disabled="@(!PuedeEnviar)"
+                        @onclick="PedirConfirmacionAsync">
+                    <IconoVino Nombre="Icono.Hecho" Tamano="TamanoIcono.Pequeno" />
+                    @TextoBotonEnviar
+                </button>
+
+                @if (EnPausa)
+                {
+                    <p class="votar-nota-pie">
+                        El organizador ha pausado la votación. El reloj está detenido.
+                    </p>
+                }
+                else if (!VotacionAbierta)
+                {
+                    <p class="votar-nota-pie">
+                        La votación de este vino está cerrada.
+                    </p>
+                }
+            </section>
+        }
+
+        <section class="votar-recorrido" aria-label="Vinos de la cata">
+            @foreach (var vino in Datos.Vinos)
+            {
+                <span class="@ClaseHito(vino)" title="@vino.Titulo">
+                    @if (vino.HeVotado)
+                    {
+                        <IconoVino Nombre="Icono.Hecho" Tamano="TamanoIcono.Diminuto" />
+                    }
+                    else
+                    {
+                        @vino.NumeroOrden
+                    }
+                </span>
+            }
+        </section>
+    </div>
+
+    <ModalConfirmacion @bind-Visible="ConfirmacionVisible"
+                       Titulo="¿Confirmas tu nota?"
+                       Mensaje="@MensajeConfirmacion"
+                       TextoConfirmar="Sí, votar"
+                       Icono="Icono.Copa"
+                       AlConfirmar="VotarAsync" />
+
+    @if (EnPreparacion)
+    {
+        <div class="votar-preparacion" role="status" aria-live="assertive">
+            <p class="votar-preparacion-rotulo">Preparados</p>
+            <p class="votar-preparacion-cifra">@SegundosPreparacion</p>
+            <p class="votar-preparacion-pie">
+                @(OrdenActual is int orden ? $"Vino nº {orden}" : "Siguiente vino")
+            </p>
+        </div>
+    }
+    else if (EnPausa)
+    {
+        <div class="votar-pausa" role="status" aria-live="assertive">
+            <IconoVino Nombre="Icono.Pausa" Tamano="TamanoIcono.Grande" />
+            <p class="votar-pausa-rotulo">Votación en pausa</p>
+            <p class="votar-pausa-cifra">@SegundosRestantes<span class="votar-pausa-unidad">s</span></p>
+            <p class="votar-pausa-pie">
+                El organizador ha detenido el reloj. Espera a que lo reanude.
+            </p>
+        </div>
+    }
+}

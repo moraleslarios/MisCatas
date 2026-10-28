@@ -1,0 +1,17 @@
+@* Código QR dibujado en el servidor y pegado en la página como SVG.
+   Sin JavaScript y sin imágenes en disco: solo texto, así que escala a
+   cualquier tamaño sin pixelarse. *@
+
+@if (Dibujo is { } dibujo)
+{
+    <figure class="@ClasesFinales">
+        <div class="qr-lamina" role="img" aria-label="@TextoAlternativo">
+            @dibujo
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Pie))
+        {
+            <figcaption class="qr-pie">@Pie</figcaption>
+        }
+    </figure>
+}

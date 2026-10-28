@@ -1,0 +1,86 @@
+@* ---------------------------------------------------------------------------
+   Vitrina de botellas: rejilla de botellas virtuales con su rótulo y su nota.
+
+   Es la pieza que da respuesta a «la botella en diferentes tamaños según la
+   importancia o según el hueco que quede libre»:
+
+     · la rejilla es fluida (auto-fill + minmax), así que el número de
+       columnas lo decide el ancho disponible, no una cuenta fija;
+     · las piezas marcadas como destacadas ocupan el doble de ancho y una
+       altura mayor, de modo que el podio se lee antes que el resto;
+     · la botella usa el tamaño Elastica: su altura sale del hueco de la
+       celda, no de un valor escrito a mano.
+   --------------------------------------------------------------------------- *@
+
+@if (Piezas.Count > 0)
+{
+    <section class="@ClasesFinales" aria-label="@Titulo">
+        @if (!string.IsNullOrWhiteSpace(Titulo) && MostrarTitulo)
+        {
+            <h2 class="vitrina-titulo">@Titulo</h2>
+        }
+
+        <ol class="vitrina-rejilla">
+            @foreach (var pieza in Piezas)
+            {
+                <li class="@ClasePieza(pieza)">
+                    @if (AlPulsarPieza.HasDelegate)
+                    {
+                        @* Botón y no enlace: así se abre la ficha sin navegar
+                           ni perder el sitio de la pantalla. *@
+                        <button type="button"
+                                class="vitrina-hueco vitrina-hueco--pulsable"
+                                @onclick="() => AlPulsarPieza.InvokeAsync(pieza)">
+                            @RenderPieza(pieza)
+                        </button>
+                    }
+                    else if (!string.IsNullOrWhiteSpace(pieza.Enlace))
+                    {
+                        <a class="vitrina-hueco vitrina-hueco--pulsable" href="@pieza.Enlace">
+                            @RenderPieza(pieza)
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="vitrina-hueco">
+                            @RenderPieza(pieza)
+                        </div>
+                    }
+                </li>
+            }
+        </ol>
+    </section>
+}
+
+@code {
+    private RenderFragment RenderPieza(PiezaVitrina pieza) => __builder =>
+    {
+        <div class="vitrina-botella">
+            <BotellaVirtual NumeroOrden="pieza.NumeroOrden"
+                            UrlEtiqueta="@pieza.UrlEtiqueta"
+                            Puesto="pieza.Puesto"
+                            Nota="@(MostrarSello ? pieza.Nota : null)"
+                            Tamano="TamanoBotella.Elastica"
+                            Etiqueta="@pieza.TextoAccesible" />
+        </div>
+
+        <div class="vitrina-textos">
+            <p class="vitrina-pieza-titulo">@pieza.Titulo</p>
+
+            @if (!string.IsNullOrWhiteSpace(pieza.Subtitulo))
+            {
+                <p class="vitrina-pieza-subtitulo">@pieza.Subtitulo</p>
+            }
+
+            @if (!MostrarSello && !string.IsNullOrWhiteSpace(pieza.Nota))
+            {
+                <p class="vitrina-pieza-nota">@pieza.Nota</p>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(pieza.Detalle))
+            {
+                <p class="vitrina-pieza-detalle">@pieza.Detalle</p>
+            }
+        </div>
+    };
+}

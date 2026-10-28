@@ -1,0 +1,400 @@
+/* ---------------------------------------------------------------------------
+   Hoja de estilos global de MisCatas.
+   Este es el fichero FUENTE: Tailwind lo compila a wwwroot/css/estilos.css.
+   No editar nunca el fichero compilado.
+
+   Diseño definitivo de la fase 2: identidad de cata de vinos.
+   Los tokens viven en tailwind.config.js; aquí se replican como variables
+   CSS porque los .razor.css aislados no pasan por Tailwind y necesitan
+   poder referirse a la paleta sin repetir hexadecimales.
+   --------------------------------------------------------------------------- */
+
+/* Las fuentes autoalojadas NO se importan aquí a propósito: wwwroot/fuentes/fuentes.css
+   referencia los .woff2 con rutas relativas a su propia carpeta y, al compilarse
+   dentro de wwwroot/css/estilos.css, esas rutas se romperían. Se enlaza aparte
+   desde App.razor, antes de esta hoja. Lo genera tools\descargar-fuentes.ps1. */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Variables CSS: el puente entre los tokens de Tailwind y el CSS aislado.
+   --------------------------------------------------------------------------- */
+:root {
+    --burdeos: #6B1F2E;
+    --burdeos-claro: #B26173;
+    --burdeos-oscuro: #561826;
+    --burdeos-noche: #280A11;
+    --granate: #8C2F39;
+    --dorado: #C9A227;
+    --dorado-texto: #6E5508;
+    --dorado-suave: #F5E9BC;
+    --crema: #F7F3EE;
+    --crema-claro: #FDFBF8;
+    --crema-oscuro: #EDE5DB;
+    --crema-borde: #DFD4C6;
+
+    /* Escala de grises para texto. Revisada: los tonos anteriores (--carbon-400
+       estaba en #786F72, apenas 4.4:1 sobre crema) se leían con dificultad.
+       Ahora el tono MÁS CLARO de la escala ya supera 6.5:1, así que cualquier
+       texto de apoyo es legible incluso a 0.75rem. */
+    --carbon: #1C1A1B;
+    --carbon-800: #211D1F;
+    --carbon-700: #2B2628;
+    --carbon-600: #383133;
+    --carbon-500: #4A4245;
+    --carbon-400: #5C5457;
+
+    --exito: #1B6B35;
+    --exito-suave: #E6F3EA;
+    --exito-texto: #145128;
+    --aviso: #8A5A00;
+    --aviso-suave: #FDF2DC;
+    --aviso-texto: #6E4800;
+    --peligro: #A3161C;
+    --peligro-suave: #FBE9E9;
+    --peligro-texto: #8A1216;
+    --info: #1B4F8A;
+    --info-suave: #E6EEF8;
+    --info-texto: #163F6E;
+
+    --fuente-titulo: 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif;
+    --fuente-texto: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+    --sombra-tarjeta: 0 1px 2px rgba(28, 26, 27, 0.05), 0 6px 20px -8px rgba(107, 31, 46, 0.18);
+    --sombra-alta: 0 2px 4px rgba(28, 26, 27, 0.06), 0 18px 40px -12px rgba(107, 31, 46, 0.28);
+
+    --radio: 0.75rem;
+    --radio-copa: 1.25rem;
+    --tactil: 3rem;
+
+    /* Margen de respiro lateral, idéntico en toda la app. */
+    --margen: clamp(0.875rem, 3.5vw, 1.5rem);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+@layer base {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        /* Nada de desplazamiento horizontal: requisito de la fase 2. */
+        overflow-x: hidden;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        /* La paleta de MisCatas es crema sobre burdeos: siempre clara. Sin esta
+           declaración, un móvil con tema oscuro invertía los colores de texto
+           pero dejaba las tarjetas en blanco, y los textos se volvían
+           ilegibles (contraste 1.2:1). */
+        color-scheme: light;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100dvh;
+        font-family: var(--fuente-texto);
+        font-size: 1rem;
+        line-height: 1.55;
+        color: var(--carbon);
+        background-color: var(--crema);
+        background-image: theme('backgroundImage.textura');
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 {
+        font-family: var(--fuente-titulo);
+        font-weight: 600;
+        line-height: 1.15;
+        color: var(--burdeos-oscuro);
+        margin: 0;
+        text-wrap: balance;
+    }
+
+    h1 { font-size: clamp(1.5rem, 5.5vw, 2rem); }
+    h2 { font-size: clamp(1.25rem, 4.5vw, 1.5rem); }
+    h3 { font-size: clamp(1.05rem, 4vw, 1.2rem); }
+
+    h1:focus,
+    h2:focus { outline: none; }
+
+    p { margin: 0; }
+
+    /* Defensa global contra desbordes.
+       Nombres de vino, correos, logins o comentarios sin espacios no deben
+       salirse nunca de su panel: si no cabe la palabra, se parte.
+       `anywhere` (y no `break-word`) es intencionado: además de partir,
+       reduce el tamaño mínimo intrínseco del elemento, lo que evita que un
+       hijo de un contenedor flex empuje el panel hacia afuera. */
+    p, h1, h2, h3, h4, h5, h6,
+    label, li, dt, dd, th, td,
+    figcaption, blockquote, summary, legend {
+        overflow-wrap: anywhere;
+    }
+
+    /* En los controles interactivos se usa la variante conservadora: solo
+       parte cuando de verdad no hay otra forma de que quepa. */
+    button, a, span, strong, em, small, code {
+        overflow-wrap: break-word;
+    }
+
+    /* Las imágenes y los lienzos nunca superan su hueco. */
+    img, svg, canvas, video {
+        max-width: 100%;
+    }
+
+    a {
+        color: var(--burdeos);
+        text-underline-offset: 0.2em;
+    }
+
+    /* Foco visible SIEMPRE y con el mismo aspecto en toda la app.
+       Requisito explícito de accesibilidad de la fase 2. */
+    :focus-visible {
+        outline: 3px solid var(--dorado);
+        outline-offset: 2px;
+        border-radius: 0.25rem;
+    }
+
+    input[type='checkbox'],
+    input[type='radio'] {
+        accent-color: var(--burdeos);
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    /* Debajo de 560 px todos los controles son táctiles y con fuente de
+       16 px, para que iOS no haga zoom al enfocar un campo. */
+    @media (max-width: 560px) {
+        input,
+        select,
+        textarea,
+        button {
+            font-size: 1rem;
+        }
+    }
+
+    ::selection {
+        background: var(--dorado-suave);
+        color: var(--burdeos-oscuro);
+    }
+
+    /* Barras de desplazamiento acordes con la identidad. */
+    * {
+        scrollbar-color: var(--burdeos-claro) transparent;
+        scrollbar-width: thin;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Componentes reutilizables.
+   Solo lo verdaderamente transversal: lo específico de cada pantalla vive
+   en su propio .razor.css.
+   --------------------------------------------------------------------------- */
+@layer components {
+
+    /* --- Superficies ---------------------------------------------------- */
+    .mc-tarjeta {
+        @apply bg-crema-claro border border-crema-borde rounded-copa shadow-tarjeta;
+    }
+
+    .mc-tarjeta-oscura {
+        @apply bg-degradado-vino text-crema rounded-copa shadow-copa;
+    }
+
+    /* Filete dorado fino: el detalle de marca que separa secciones. */
+    .mc-filete {
+        @apply h-px w-full bg-filete-dorado border-0;
+    }
+
+    /* --- Botones -------------------------------------------------------- */
+    .mc-boton {
+        @apply inline-flex items-center justify-center gap-2 min-h-tactil px-5
+               rounded-full font-sans font-semibold text-base leading-none
+               border border-transparent cursor-pointer
+               transition-colors duration-200 ease-copa
+               disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .mc-boton-primario {
+        @apply mc-boton bg-burdeos text-crema-claro
+               hover:bg-burdeos-700 active:bg-burdeos-800;
+    }
+
+    .mc-boton-secundario {
+        @apply mc-boton bg-crema-claro text-burdeos border-burdeos-200
+               hover:bg-burdeos-50 active:bg-burdeos-100;
+    }
+
+    .mc-boton-dorado {
+        @apply mc-boton bg-dorado text-carbon
+               hover:bg-dorado-300 active:bg-dorado-500;
+    }
+
+    .mc-boton-peligro {
+        @apply mc-boton bg-peligro text-white hover:bg-peligro-texto;
+    }
+
+    .mc-boton-fantasma {
+        @apply mc-boton bg-transparent text-burdeos hover:bg-burdeos-50;
+    }
+
+    /* Botón de acción grande, para la zona baja del móvil. */
+    .mc-boton-grande {
+        @apply w-full min-h-tactil-lg text-lg;
+    }
+
+    /* Botón que solo lleva icono: necesita aria-label obligatoriamente. */
+    .mc-boton-icono {
+        @apply inline-flex items-center justify-center min-w-tactil min-h-tactil
+               rounded-full text-burdeos bg-transparent border-0 cursor-pointer
+               transition-colors duration-200
+               hover:bg-burdeos-50 active:bg-burdeos-100
+               disabled:opacity-40 disabled:cursor-not-allowed;
+    }
+
+    /* --- Formularios ---------------------------------------------------- */
+
+    .mc-campo {
+        @apply flex flex-col gap-2;
+    }
+
+    .mc-etiqueta {
+        @apply font-sans text-sm font-bold text-carbon-800;
+    }
+
+    .mc-ayuda {
+        @apply block font-sans text-sm leading-snug text-carbon-600;
+    }
+
+    .mc-control {
+        @apply w-full min-h-tactil px-3.5 py-2.5 rounded-etiqueta
+               font-sans text-base text-carbon
+               bg-crema-claro border border-crema-borde
+               transition-colors duration-200
+               placeholder:text-carbon-500
+               focus:border-burdeos focus:bg-white
+               disabled:bg-crema-oscuro disabled:text-carbon-600;
+    }
+
+    textarea.mc-control {
+        @apply min-h-[5rem] leading-relaxed;
+    }
+
+    /* --- Pastillas de estado -------------------------------------------- */
+    .mc-pastilla {
+        @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full
+               font-sans text-xs font-bold uppercase tracking-wide;
+    }
+
+    .mc-pastilla-borrador   { @apply mc-pastilla bg-crema-oscuro text-carbon-700; }
+    .mc-pastilla-abierta    { @apply mc-pastilla bg-info-suave text-info-texto; }
+    .mc-pastilla-encurso    { @apply mc-pastilla bg-aviso-suave text-aviso-texto; }
+    .mc-pastilla-finalizada { @apply mc-pastilla bg-exito-suave text-exito-texto; }
+
+    /* --- Avisos --------------------------------------------------------- */
+    .mc-aviso {
+        @apply flex items-start gap-2.5 px-4 py-3 rounded-etiqueta
+               font-sans text-sm border;
+    }
+
+    .mc-aviso-ok    { @apply mc-aviso bg-exito-suave text-exito-texto border-exito/25; }
+    .mc-aviso-error { @apply mc-aviso bg-peligro-suave text-peligro-texto border-peligro/25; }
+
+    /* --- Tipografía de apoyo -------------------------------------------- */
+    .mc-titulo-marca {
+        @apply font-serif font-bold tracking-tight;
+    }
+
+    /* Antetítulo en versalitas con filete: "sello" tipográfico de la app. */
+    .mc-antetitulo {
+        @apply font-sans text-xs font-bold uppercase tracking-[0.18em] text-dorado-texto;
+    }
+
+    .mc-cifra {
+        @apply font-sans font-bold tabular-nums tracking-tight;
+    }
+
+    /* --- Utilidades de disposición -------------------------------------- */
+    .mc-contenedor {
+        @apply w-full mx-auto px-[var(--margen)];
+        max-width: 72rem;
+    }
+
+    /* Texto accesible solo para lectores de pantalla, visible al enfocar.
+       Se usa en el enlace "saltar al contenido". */
+    .mc-salto {
+        @apply absolute left-3 z-50 px-4 py-2 rounded-full
+               bg-burdeos text-crema-claro font-sans text-sm font-semibold
+               -translate-y-20 focus:translate-y-3 transition-transform;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Clases que genera Blazor en tiempo de ejecución.
+   IMPORTANTE: estas reglas van FUERA de @layer a propósito. Dentro de
+   @layer components, Tailwind las purgaría, porque sus clases no aparecen
+   escritas en ningún .razor.
+   --------------------------------------------------------------------------- */
+
+.valid.modified:not([type='checkbox']) {
+    border-color: #1B6B35;
+}
+
+.invalid {
+    border-color: #A3161C;
+    background-color: #FBE9E9;
+}
+
+.validation-message {
+    display: block;
+    margin-top: 0.25rem;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #8A1216;
+}
+
+.blazor-error-boundary {
+    padding: 1rem 1.25rem;
+    border-radius: 0.625rem;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    color: #fff;
+    background: #A3161C;
+}
+
+.blazor-error-boundary::after {
+    content: 'Se ha producido un error inesperado.';
+}
+
+/* ---------------------------------------------------------------------------
+   Preferencias del sistema.
+   --------------------------------------------------------------------------- */
+
+/* Sin animaciones si el usuario las ha desactivado. Requisito de la fase 2.
+   Va fuera de @layer para que gane a cualquier utilidad de animación. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* Impresión: fondo limpio, sin texturas ni sombras. */
+@media print {
+    body {
+        background: #fff;
+        background-image: none;
+    }
+}

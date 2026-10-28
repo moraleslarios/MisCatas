@@ -1,0 +1,154 @@
+/* Estilos mínimos y provisionales: el diseño definitivo llega en la fase 2. */
+
+.pantalla {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: clamp(0.75rem, 4vw, 1.5rem);
+}
+
+.tarjeta {
+    width: 100%;
+    max-width: 24rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    /* El relleno acompaña al ancho del teléfono: compacto en pantallas de
+       360 px y holgado en cuanto hay algo más de resolución. */
+    padding: clamp(1.375rem, 5.5vw, 2rem);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+}
+
+.cabecera h1 {
+    margin: 0;
+    font-size: clamp(1.35rem, 5vw, 1.5rem);
+}
+
+.cabecera p {
+    margin: 0.375rem 0 0;
+    color: var(--carbon-600, #383133);
+    font-size: 0.9rem;
+}
+
+/* El <form> lo pinta EditForm, así que hace falta ::deep para alcanzarlo.
+   Sin esta regla los tres bloques del formulario quedaban pegados entre sí. */
+.tarjeta ::deep form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4375rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--carbon-800, #211D1F);
+}
+
+.campo ::deep input {
+    padding: 0.6875rem 0.75rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--carbon, #1C1A1B);
+    background: #fff;
+}
+
+.campo .ayuda {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--carbon-600, #383133);
+}
+
+/* Casilla de sesión: zona táctil completa, separada del campo de contraseña
+   y del botón, y con el texto alineado con la casilla. */
+.recordarme {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6875rem;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--carbon-700, #2B2628);
+    cursor: pointer;
+}
+
+.recordarme ::deep input {
+    flex: 0 0 auto;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+}
+
+.boton {
+    padding: 0.8125rem 1rem;
+    margin-top: 0.25rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #7b1f3a;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    /* La acción principal ocupa todo el ancho: es el objetivo más fácil
+       de acertar con el pulgar en vertical. */
+    width: 100%;
+    min-height: 3rem;
+}
+
+.boton:hover {
+    background: #641830;
+}
+
+.error {
+    margin: 0;
+    padding: 0.6875rem 0.875rem;
+    border-radius: 0.5rem;
+    background: var(--peligro-suave, #FBE9E9);
+    color: var(--peligro-texto, #8A1216);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.pista {
+    padding-top: 0.25rem;
+    color: var(--carbon-600, #383133);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+}
+
+.pista p {
+    margin: 0;
+}
+
+/* Controles con 48 px de alto en cualquier pantalla táctil y 16 px de fuente
+   para que iOS no haga zoom automático al enfocar el campo. */
+@media (max-width: 560px) {
+    .campo ::deep input {
+        min-height: 3rem;
+        font-size: 1rem;
+    }
+
+    .boton {
+        min-height: 3rem;
+        font-size: 1rem;
+    }
+}
+
+/* Teléfonos estrechos o con poca altura: la tarjeta se alinea arriba para no
+   quedar cortada por el teclado virtual. En móviles más grandes se mantiene
+   centrada, que es más cómodo de leer. */
+@media (max-width: 380px), (max-height: 700px) {
+    .pantalla {
+        place-items: start center;
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+    }
+}

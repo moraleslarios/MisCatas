@@ -1,0 +1,140 @@
+/* Layout del rol Usuario — mobile-first (ancho CSS de referencia: 360px). */
+
+.marco-usuario {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.cabecera-usuario {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem clamp(0.875rem, 3.5vw, 1.5rem);
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+    color: #FDFBF8;
+    background: linear-gradient(135deg, #8C2F39 0%, #6B1F2E 60%, #561826 100%);
+    box-shadow: 0 2px 12px rgb(23 5 10 / 22%);
+}
+
+/* Filete dorado inferior: marca de la casa. */
+.cabecera-usuario::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    content: '';
+    background: linear-gradient(90deg, transparent, #C9A227 50%, transparent);
+}
+
+.marca-usuario {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 3rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.marca-usuario-icono {
+    color: #C9A227;
+}
+
+.marca-usuario-texto {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.0625rem, 4.4vw, 1.375rem);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.cabecera-usuario-derecha {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-width: 0;
+}
+
+.cabecera-usuario-nombre {
+    overflow: hidden;
+    font-size: 0.8125rem;
+    color: rgb(253 251 248 / 94%);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cabecera-usuario-salir {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: inherit;
+    background: rgb(255 255 255 / 12%);
+    border-radius: 9999px;
+    transition: background-color 160ms ease;
+}
+
+.cabecera-usuario-salir:hover {
+    background: rgb(255 255 255 / 22%);
+}
+
+/* --- Contenido ------------------------------------------------------------ */
+
+.contenido-usuario {
+    flex: 1;
+    min-width: 0;
+    padding: clamp(0.875rem, 3.5vw, 1.5rem);
+    /* Hueco inferior: deja aire para las acciones que viven en la zona del
+       pulgar y respeta la barra de gestos de iOS/Android. */
+    padding-bottom: calc(clamp(1.25rem, 6vw, 2.5rem) + env(safe-area-inset-bottom));
+}
+
+.contenido-usuario--suelto {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+}
+
+/* En escritorio el contenido se centra: la app sigue siendo de móvil. */
+@media (min-width: 48rem) {
+    .contenido-usuario {
+        width: 100%;
+        max-width: 40rem;
+        margin-inline: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cabecera-usuario-salir {
+        transition: none;
+    }
+}
+
+/* --- Aviso de error de Blazor -------------------------------------------- */
+
+#blazor-error-ui {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    display: none;
+    width: 100%;
+    padding: 0.6rem 1.25rem 0.7rem;
+    color-scheme: light only;
+    background: lightyellow;
+    box-shadow: 0 -1px 2px rgb(0 0 0 / 20%);
+}
+
+#blazor-error-ui .dismiss {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    cursor: pointer;
+}

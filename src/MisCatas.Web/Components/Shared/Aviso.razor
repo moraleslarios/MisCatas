@@ -1,0 +1,8 @@
+@* Mensaje de error o de éxito reutilizable en los formularios de administración. *@
+
+@if (!string.IsNullOrWhiteSpace(Texto))
+{
+    <p class="aviso @(EsError ? "error" : "exito")" role="@(EsError ? "alert" : "status")">
+        @Texto
+    </p>
+}

@@ -1,0 +1,42 @@
+﻿@* Layout del rol Usuario. Pensado para móvil vertical (~360 CSS de ancho):
+   cabecera fina arriba, contenido con scroll vertical y hueco inferior para
+   que las acciones principales queden al alcance del pulgar. *@
+
+@inherits LayoutComponentBase
+
+<AuthorizeView>
+    <Authorized>
+        <GuardianPassword />
+
+        <div class="marco-usuario">
+            <header class="cabecera-usuario">
+                <a class="marca-usuario" href="@RutasApp.MisCatas">
+                    <IconoVino Nombre="Icono.Copa" Tamano="TamanoIcono.Medio" Clase="marca-usuario-icono" />
+                    <span class="marca-usuario-texto">MisCatas</span>
+                </a>
+
+                <div class="cabecera-usuario-derecha">
+                    <span class="cabecera-usuario-nombre">@context.User.ObtenerNombreCompleto()</span>
+                    <a class="cabecera-usuario-salir" href="@RutasCuenta.Logout" aria-label="Salir de la sesión">
+                        <IconoVino Nombre="Icono.Salir" Tamano="TamanoIcono.Pequeno" />
+                    </a>
+                </div>
+            </header>
+
+            <main class="contenido-usuario">
+                @Body
+            </main>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <main class="contenido-usuario contenido-usuario--suelto">
+            @Body
+        </main>
+    </NotAuthorized>
+</AuthorizeView>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Se ha producido un error inesperado.
+    <a href="." class="reload">Recargar</a>
+    <span class="dismiss">🗙</span>
+</div>

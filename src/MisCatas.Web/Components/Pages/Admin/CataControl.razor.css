@@ -1,0 +1,445 @@
+/* Mesa de control: panel denso de escritorio para el organizador. */
+
+.control {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.control-cargando {
+    padding: 2rem 0;
+    color: var(--carbon-600, #383133);
+    font-style: italic;
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.control-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--crema-borde, #DFD4C6);
+}
+
+.control-titulos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.control-titulo {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #2A2325;
+}
+
+.control-subtitulo {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--carbon-600, #383133);
+}
+
+.control-cabecera-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.control-nota {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    color: #45111C;
+    background: #F7F2EC;
+    border-left: 3px solid var(--burdeos, #6B1F2E);
+    border-radius: 0.4rem;
+}
+
+.control-nota--aviso {
+    color: var(--aviso-texto, #6E4800);
+    background: var(--aviso-suave, #FDF2DC);
+    border-left-color: var(--aviso, #8A5A00);
+}
+
+/* --- Marcadores ----------------------------------------------------------- */
+
+.control-marcadores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0.9rem;
+}
+
+.control-marcador {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem);
+    box-shadow: var(--sombra-tarjeta, 0 2px 8px rgb(23 5 10 / 8%));
+}
+
+.control-marcador-rotulo {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--carbon-500, #4A4245);
+    text-transform: uppercase;
+}
+
+.control-marcador-valor {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--burdeos, #6B1F2E);
+    font-variant-numeric: tabular-nums;
+}
+
+.control-marcador-de {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--carbon-500, #4A4245);
+}
+
+.control-marcador-pie {
+    font-size: 0.8rem;
+    color: var(--carbon-600, #383133);
+}
+
+.control-barra {
+    height: 0.4rem;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    background: var(--crema-oscuro, #EDE5DB);
+    border-radius: 9999px;
+}
+
+.control-barra-relleno {
+    height: 100%;
+    background: linear-gradient(90deg, #6B1F2E, #C9A227);
+    border-radius: 9999px;
+    transition: width 0.4s ease;
+}
+
+/* --- Reloj de la votación -------------------------------------------------- */
+
+.control-reloj {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    align-items: center;
+    padding: 1.1rem 1.2rem;
+    text-align: center;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem);
+    box-shadow: var(--sombra-tarjeta, 0 2px 8px rgb(23 5 10 / 8%));
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.control-reloj--preparacion {
+    background: var(--info-suave, #E6EEF8);
+    border-color: var(--info, #1B4F8A);
+}
+
+.control-reloj--alerta {
+    background: var(--peligro-suave, #FBE9E9);
+    border-color: var(--peligro, #A3161C);
+    animation: control-latido 1s ease-in-out infinite;
+}
+
+.control-reloj-fase {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--carbon-500, #4A4245);
+    text-transform: uppercase;
+}
+
+.control-reloj--preparacion .control-reloj-fase {
+    color: var(--info-texto, #163F6E);
+}
+
+.control-reloj--alerta .control-reloj-fase {
+    color: var(--peligro-texto, #8A1216);
+}
+
+.control-reloj-cifra {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(3rem, 14vw, 5.5rem);
+    font-weight: 700;
+    line-height: 0.95;
+    color: var(--burdeos, #6B1F2E);
+    font-variant-numeric: tabular-nums;
+}
+
+.control-reloj--preparacion .control-reloj-cifra {
+    color: var(--info, #1B4F8A);
+}
+
+.control-reloj--alerta .control-reloj-cifra {
+    color: var(--peligro, #A3161C);
+}
+
+.control-reloj-unidad {
+    margin-left: 0.1em;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.3em;
+    font-weight: 400;
+    color: var(--carbon-500, #4A4245);
+}
+
+.control-reloj-barra {
+    width: 100%;
+    max-width: 28rem;
+    height: 0.55rem;
+    overflow: hidden;
+    background: var(--crema-oscuro, #EDE5DB);
+    border-radius: 9999px;
+}
+
+.control-reloj-relleno {
+    height: 100%;
+    background: linear-gradient(90deg, #6B1F2E, #C9A227);
+    border-radius: 9999px;
+    transition: width 0.3s linear;
+}
+
+.control-reloj--alerta .control-reloj-relleno {
+    background: var(--peligro, #A3161C);
+}
+
+.control-reloj-pie {
+    margin: 0;
+    font-size: 0.84rem;
+    color: var(--carbon-600, #383133);
+}
+
+/* Pausa: el reloj se apaga en gris para que se vea que no corre. */
+.control-reloj--pausa {
+    background: var(--crema-oscuro, #EDE5DB);
+    border-color: var(--carbon-400, #6B6165);
+}
+
+.control-reloj--pausa .control-reloj-fase,
+.control-reloj--pausa .control-reloj-cifra {
+    color: var(--carbon-500, #4A4245);
+}
+
+.control-reloj--pausa .control-reloj-relleno {
+    background: var(--carbon-400, #6B6165);
+}
+
+@keyframes control-latido {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgb(163 22 28 / 35%);
+    }
+
+    50% {
+        box-shadow: 0 0 0 0.6rem rgb(163 22 28 / 0%);
+    }
+}
+
+/* --- Secciones ------------------------------------------------------------ */
+
+.control-rotulo {
+    margin: 0 0 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--carbon-500, #4A4245);
+    text-transform: uppercase;
+}
+
+.control-vacio {
+    margin: 0;
+    color: var(--carbon-500, #4A4245);
+    font-style: italic;
+}
+
+.control-mando,
+.control-vinos,
+.control-participantes {
+    padding: 1.1rem 1.2rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem);
+}
+
+.control-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.control-mando-pie {
+    margin: 0.9rem 0 0;
+    font-size: 0.84rem;
+    color: var(--carbon-500, #4A4245);
+    font-style: italic;
+}
+
+/* --- Recorrido de vinos --------------------------------------------------- */
+
+.control-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.control-hito {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    background: #F7F2EC;
+    border-radius: 0.7rem;
+}
+
+.control-hito--cerrado {
+    opacity: 0.7;
+}
+
+.control-hito--actual {
+    background: #fff;
+    box-shadow: inset 0 0 0 2px var(--burdeos, #6B1F2E);
+    opacity: 1;
+}
+
+.control-hito-numero {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--burdeos, #6B1F2E);
+    border-radius: 9999px;
+    font-variant-numeric: tabular-nums;
+}
+
+.control-hito-textos {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.05rem;
+    min-width: 0;
+}
+
+.control-hito-nombre {
+    overflow: hidden;
+    font-weight: 600;
+    color: #2A2325;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.control-hito-anio {
+    font-weight: 400;
+    color: var(--carbon-500, #4A4245);
+}
+
+.control-hito-pie {
+    font-size: 0.78rem;
+    color: var(--carbon-500, #4A4245);
+}
+
+.control-pastilla {
+    flex-shrink: 0;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--carbon-600, #383133);
+    background: var(--crema-oscuro, #EDE5DB);
+    border-radius: 9999px;
+    text-transform: uppercase;
+}
+
+.control-pastilla--abierta {
+    color: #fff;
+    background: var(--exito, #15803D);
+}
+
+.control-pastilla--cerrada {
+    color: #fff;
+    background: var(--carbon-500, #4A4245);
+}
+
+/* --- Participantes -------------------------------------------------------- */
+
+.control-fichas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.control-ficha {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.86rem;
+    color: #2A2325;
+    background: #F7F2EC;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+}
+
+.control-ficha-nombre {
+    font-weight: 600;
+}
+
+.control-ficha-login {
+    color: var(--carbon-500, #4A4245);
+    font-size: 0.78rem;
+}
+
+.control-hito-boton,
+.control-ficha-boton {
+    flex-shrink: 0;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* --- Recorrido de vinos --------------------------------------------------- */
+
+.control-vinos-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.7rem;
+}
+
+/* El rótulo ya no necesita su propio margen inferior dentro de la barra. */
+.control-vinos-cabecera .control-rotulo {
+    margin-bottom: 0;
+}
+

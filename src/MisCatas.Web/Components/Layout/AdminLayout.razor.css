@@ -1,0 +1,273 @@
+/* Layout del rol Admin. Móvil: cabecera fina + barra inferior de pestañas.
+   Escritorio (>= 56rem): navegación densa en la cabecera y sin barra inferior. */
+
+.marco-admin {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.cabecera-admin {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem clamp(0.875rem, 3vw, 1.75rem);
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+    color: #FDFBF8;
+    background: linear-gradient(135deg, #561826 0%, #6B1F2E 55%, #280A11 100%);
+    box-shadow: 0 2px 12px rgb(23 5 10 / 26%);
+}
+
+.cabecera-admin::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    content: '';
+    background: linear-gradient(90deg, transparent, #C9A227 50%, transparent);
+}
+
+.marca-admin {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 3rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.marca-admin-icono {
+    color: #C9A227;
+}
+
+.marca-admin-textos {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.marca-admin-nombre {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    font-weight: 700;
+}
+
+.marca-admin-rol {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: #E3C65E;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+}
+
+.cabecera-admin-derecha {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-width: 0;
+}
+
+.cabecera-admin-nombre {
+    display: none;
+    overflow: hidden;
+    font-size: 0.8125rem;
+    color: rgb(253 251 248 / 94%);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Accesos redondos de la cabecera (escaparate y salir). No caben en la barra
+   inferior, que ya tiene sus cinco pestañas, así que viven aquí arriba. */
+.cabecera-admin-accion {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: inherit;
+    background: rgb(255 255 255 / 12%);
+    border-radius: 9999px;
+    transition: background-color 160ms ease;
+}
+
+.cabecera-admin-accion:hover {
+    background: rgb(255 255 255 / 22%);
+}
+
+.cabecera-admin-salir {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: inherit;
+    background: rgb(255 255 255 / 12%);
+    border-radius: 9999px;
+    transition: background-color 160ms ease;
+}
+
+.cabecera-admin-salir:hover {
+    background: rgb(255 255 255 / 22%);
+}
+
+/* --- Navegación de escritorio -------------------------------------------- */
+
+.nav-escritorio {
+    display: none;
+}
+
+/* --- Contenido ------------------------------------------------------------ */
+
+.contenido-admin {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    padding: clamp(1rem, 3vw, 1.75rem);
+    /* Reserva para la barra inferior de pestañas (4rem) más la zona de gestos. */
+    padding-bottom: calc(5.75rem + env(safe-area-inset-bottom));
+}
+
+.contenido-admin--suelto {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding-bottom: clamp(0.875rem, 3vw, 1.75rem);
+}
+
+/* --- Barra inferior de pestañas (móvil) ---------------------------------- */
+
+.nav-movil {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding-bottom: env(safe-area-inset-bottom);
+    background: #FDFBF8;
+    border-top: 2px solid #C9A227;
+    box-shadow: 0 -6px 22px rgb(23 5 10 / 18%);
+}
+
+.nav-movil ::deep .nav-movil-enlace {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+    justify-content: center;
+    min-height: 4rem;
+    padding: 0.5rem 0.25rem;
+    color: var(--carbon-700, #2B2628);
+    text-decoration: none;
+    border-top: 3px solid transparent;
+    transition: color 160ms ease, background-color 160ms ease;
+}
+
+.nav-movil ::deep .nav-movil-enlace:hover {
+    color: #6B1F2E;
+}
+
+.nav-movil ::deep .nav-movil-enlace.active {
+    color: #6B1F2E;
+    background: #F5EBEC;
+    border-top-color: #6B1F2E;
+    font-weight: 700;
+}
+
+.nav-movil-texto {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+}
+
+/* --- Escritorio ----------------------------------------------------------- */
+
+@media (min-width: 56rem) {
+    .nav-movil {
+        display: none;
+    }
+
+    .cabecera-admin-nombre {
+        display: block;
+        max-width: 14rem;
+    }
+
+    .nav-escritorio {
+        display: flex;
+        flex: 1;
+        gap: 0.25rem;
+        justify-content: center;
+    }
+
+    .nav-escritorio ::deep .nav-escritorio-enlace {
+        display: flex;
+        gap: 0.4375rem;
+        align-items: center;
+        min-height: 2.5rem;
+        padding: 0 0.875rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: rgb(253 251 248 / 92%);
+        text-decoration: none;
+        border-radius: 9999px;
+        transition: background-color 160ms ease, color 160ms ease;
+    }
+
+    .nav-escritorio ::deep .nav-escritorio-enlace:hover {
+        color: #fff;
+        background: rgb(255 255 255 / 12%);
+    }
+
+    .nav-escritorio ::deep .nav-escritorio-enlace.active {
+        color: #280A11;
+        background: #C9A227;
+    }
+
+    .contenido-admin {
+        max-width: 80rem;
+        margin-inline: auto;
+        padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cabecera-admin-salir,
+    .cabecera-admin-accion,
+    .nav-movil ::deep .nav-movil-enlace,
+    .nav-escritorio ::deep .nav-escritorio-enlace {
+        transition: none;
+    }
+}
+
+/* --- Aviso de error de Blazor -------------------------------------------- */
+
+#blazor-error-ui {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    box-sizing: border-box;
+    display: none;
+    width: 100%;
+    padding: 0.6rem 1.25rem 0.7rem;
+    color-scheme: light only;
+    background: lightyellow;
+    box-shadow: 0 -1px 2px rgb(0 0 0 / 20%);
+}
+
+#blazor-error-ui .dismiss {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    cursor: pointer;
+}

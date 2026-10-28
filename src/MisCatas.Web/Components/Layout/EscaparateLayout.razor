@@ -1,0 +1,23 @@
+@* Layout del modo Escaparate: televisión horizontal de 1920x1080 o más.
+   SIN ningún control interactivo y SIN scroll: todo cabe en pantalla. *@
+
+@inherits LayoutComponentBase
+
+<div class="marco-tv">
+    <header class="cabecera-tv">
+        <span class="marca-tv">
+            <IconoVino Nombre="Icono.Copa" Tamano="TamanoIcono.Heredado" Clase="marca-tv-icono" />
+            <span class="marca-tv-texto">MisCatas</span>
+        </span>
+
+        <span class="cabecera-tv-fecha">@FechaLarga</span>
+    </header>
+
+    <main class="contenido-tv">
+        @Body
+    </main>
+
+    <footer class="pie-tv" aria-hidden="true">
+        <span class="pie-tv-filete"></span>
+    </footer>
+</div>

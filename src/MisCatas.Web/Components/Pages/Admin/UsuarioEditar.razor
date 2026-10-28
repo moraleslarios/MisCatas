@@ -1,0 +1,84 @@
+@page "/admin/usuarios/nuevo"
+@page "/admin/usuarios/{Id:int}"
+@attribute [Authorize(Policy = Politicas.SoloAdmin)]
+
+<PageTitle>@(EsNuevo ? "Nuevo usuario" : "Editar usuario") · MisCatas</PageTitle>
+
+<h1>@(EsNuevo ? "Nuevo usuario" : "Editar usuario")</h1>
+
+<Aviso Texto="@Error" EsError="true" />
+
+@if (NoEncontrado)
+{
+    <p class="vacio">No existe ese usuario.</p>
+    <a class="enlace" href="/admin/usuarios">Volver al listado</a>
+}
+else
+{
+    <EditForm Model="Datos" OnValidSubmit="GuardarAsync" class="formulario">
+        <DataAnnotationsValidator />
+
+        <label class="campo">
+            <span>Nombre</span>
+            <InputText @bind-Value="Datos.Nombre" @bind-Value:after="SugerirLoginAsync" />
+            <ValidationMessage For="() => Datos.Nombre" />
+        </label>
+
+        <label class="campo">
+            <span>Apellidos</span>
+            <InputText @bind-Value="Datos.Apellidos" @bind-Value:after="SugerirLoginAsync" />
+            <ValidationMessage For="() => Datos.Apellidos" />
+        </label>
+
+        <label class="campo">
+            <span>Teléfono</span>
+            <InputText @bind-Value="Datos.Telefono" type="tel" inputmode="tel"
+                       @bind-Value:after="SincronizarLoginConTelefono" />
+            <ValidationMessage For="() => Datos.Telefono" />
+            <small>
+                @(LoginEsTelefono
+                    ? "Es su login y su contraseña inicial. Si lo cambias, deberá volver a cambiar la contraseña."
+                    : EsNuevo
+                        ? "Será su contraseña inicial."
+                        : "Si lo cambias, la contraseña no se modifica: usa «Resetear» en el listado.")
+            </small>
+        </label>
+
+        <label class="campo">
+            <span>Login</span>
+            <InputText @bind-Value="Datos.Login"
+                       autocapitalize="off"
+                       spellcheck="false"
+                       readonly="@LoginEsTelefono"
+                       @bind-Value:after="MarcarLoginManual" />
+            <ValidationMessage For="() => Datos.Login" />
+            <small>
+                @(LoginEsTelefono
+                    ? "Los participantes entran con su número de teléfono: no se puede editar."
+                    : "Se propone automáticamente; puedes cambiarlo.")
+            </small>
+        </label>
+
+        <label class="campo">
+            <span>Rol</span>
+            <InputSelect @bind-Value="Datos.Rol" @bind-Value:after="SincronizarLoginConTelefono">
+                <option value="@Rol.Usuario">Usuario</option>
+                <option value="@Rol.Admin">Administrador</option>
+                <option value="@Rol.Escaparate">Escaparate</option>
+            </InputSelect>
+            <small>El escaparate solo proyecta la cata: no vota ni cambia contraseña.</small>
+        </label>
+
+        <label class="interruptor">
+            <InputCheckbox @bind-Value="Datos.Activo" />
+            <span>Activo</span>
+        </label>
+
+        <div class="botones">
+            <a class="secundario" href="/admin/usuarios">Cancelar</a>
+            <button type="submit" class="principal" disabled="@Guardando">
+                @(Guardando ? "Guardando…" : "Guardar")
+            </button>
+        </div>
+    </EditForm>
+}

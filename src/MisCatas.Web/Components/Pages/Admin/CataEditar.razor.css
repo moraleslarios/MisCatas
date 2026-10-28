@@ -1,0 +1,130 @@
+/* Estilos provisionales. El diseño definitivo llega en la fase 2. */
+
+h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.25rem, 4.5vw, 1.4rem);
+}
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 1.375rem;
+    max-width: 34rem;
+    padding: clamp(1.125rem, 4vw, 1.625rem);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+.fila {
+    display: grid;
+    gap: 1rem;
+    /* Con 9rem de mínimo, un teléfono de 430 px aún coloca dos campos por fila. */
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4375rem;
+    font-size: 0.9rem;
+}
+
+.campo > span {
+    font-weight: 600;
+}
+
+.campo ::deep input,
+.campo ::deep select,
+.campo ::deep textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6875rem 0.75rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+.campo ::deep .validation-message {
+    color: #b3261e;
+    font-size: 0.8rem;
+}
+
+.campo small {
+    color: var(--carbon-600, #383133);
+    font-size: 0.78rem;
+}
+
+.botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.principal {
+    padding: 0.75rem 1.25rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #7b1f3a;
+    color: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.principal:hover:not(:disabled) {
+    background: #641830;
+}
+
+.principal:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.secundario {
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #B9ADA2;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: var(--carbon-700, #2B2628);
+    font-size: 0.95rem;
+    text-decoration: none;
+}
+
+.vacio {
+    color: var(--carbon-600, #383133);
+}
+
+.enlace {
+    color: #7b1f3a;
+}
+
+/* Móvil: controles y botones con 44 px de alto. */
+@media (max-width: 560px) {
+    .campo ::deep input,
+    .campo ::deep select {
+        min-height: 3rem;
+    }
+
+    .principal,
+    .secundario {
+        flex: 1 1 auto;
+        min-height: 3rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Móvil muy estrecho: un campo y un botón por fila. */
+@media (max-width: 360px) {
+    .fila {
+        grid-template-columns: 1fr;
+    }
+
+    .botones {
+        flex-direction: column-reverse;
+    }
+}

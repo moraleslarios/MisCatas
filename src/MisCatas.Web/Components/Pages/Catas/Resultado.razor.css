@@ -1,0 +1,841 @@
+/* Resultado final de una cata: el momento de la revelación. */
+
+.resultado {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.resultado-cargando {
+    padding: 2.5rem 0;
+    color: var(--carbon-600, #383133);
+    text-align: center;
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.resultado-cabecera {
+    display: flex;
+    gap: 0.625rem;
+    align-items: flex-start;
+}
+
+.resultado-atras {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--burdeos, #6B1F2E);
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+}
+
+.resultado-titulos {
+    flex: 1;
+    min-width: 0;
+}
+
+.resultado-titulo {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.375rem, 6.2vw, 1.875rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--burdeos, #6B1F2E);
+}
+
+.resultado-subtitulo {
+    margin: 0.125rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--carbon-600, #383133);
+}
+
+/* --- Podio ---------------------------------------------------------------- */
+
+.resultado-podio {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+    padding: 1.5rem 1.125rem 1.375rem;
+    overflow: hidden;
+    color: #F7F2EC;
+    text-align: center;
+    background: linear-gradient(160deg, #6B1F2E 0%, #45111C 100%);
+    border-radius: var(--radio-copa, 1.25rem);
+    box-shadow: 0 10px 28px rgb(23 5 10 / 28%);
+}
+
+.resultado-podio-laurel {
+    color: rgb(201 162 39 / 95%);
+}
+
+.resultado-podio-rotulo {
+    margin: 0.25rem 0 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: #E8C765;
+    text-transform: uppercase;
+}
+
+.resultado-podio-nombre {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.5rem, 7vw, 2.125rem);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.resultado-podio-bodega {
+    margin: 0;
+    font-size: 0.875rem;
+    color: rgb(247 242 236 / 90%);
+}
+
+/* Denominación de Origen del ganador: un peldaño por debajo de la bodega. */
+.resultado-podio-do {
+    margin: 0.125rem 0 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(232 199 101 / 85%);
+}
+
+.resultado-podio-nota {
+    margin: 0.5rem 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #E8C765;
+    font-variant-numeric: tabular-nums;
+}
+
+.resultado-podio-pie {
+    margin: 0.375rem 0 0;
+    font-size: 0.75rem;
+    color: rgb(247 242 236 / 88%);
+}
+
+/* --- Dueño del vino ganador: el momento cumbre de la noche ---------------- */
+
+/* La botella y la medalla son componentes anidados: hace falta ::deep. */
+.resultado-podio ::deep .resultado-podio-botella {
+    margin: 0.75rem auto 0.25rem;
+}
+
+.resultado-dueno {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0 0;
+    background: linear-gradient(180deg, rgb(201 162 39 / 18%) 0%, rgb(201 162 39 / 4%) 100%);
+    border: 1px solid rgb(232 199 101 / 45%);
+    border-radius: 1.25rem;
+    box-shadow: inset 0 1px 0 rgb(245 233 188 / 25%);
+}
+
+.resultado-dueno-medalla {
+    color: #E8C765;
+    filter: drop-shadow(0 0 0.5rem rgb(201 162 39 / 55%));
+}
+
+.resultado-dueno-rotulo {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    color: rgb(232 199 101 / 85%);
+    text-transform: uppercase;
+}
+
+.resultado-dueno-nombre {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.75rem, 9vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: #F5E9BC;
+    text-align: center;
+    text-shadow: 0 0 1.5rem rgb(201 162 39 / 40%);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+}
+
+/* --- Clasificación -------------------------------------------------------- */
+
+.resultado-rotulo {
+    margin: 0 0 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--carbon-500, #4A4245);
+    text-transform: uppercase;
+}
+
+.resultado-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.resultado-ficha {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.875rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem);
+    box-shadow: var(--sombra-tarjeta, 0 2px 8px rgb(23 5 10 / 8%));
+}
+
+.resultado-ficha--puesto1 {
+    border-color: rgb(201 162 39 / 70%);
+    box-shadow: 0 4px 16px rgb(201 162 39 / 22%);
+}
+
+.resultado-ficha-cabecera {
+    display: flex;
+    gap: 0.625rem;
+    align-items: flex-start;
+}
+
+.resultado-puesto {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--carbon-600, #383133);
+    background: var(--crema-oscuro, #EDE5DB);
+    border-radius: 9999px;
+    font-variant-numeric: tabular-nums;
+}
+
+.resultado-puesto--oro {
+    color: #4A3708;
+    background: linear-gradient(145deg, #F3D97A, #C9A227);
+}
+
+.resultado-puesto--plata {
+    color: var(--carbon-700, #2B2628);
+    background: linear-gradient(145deg, #E6E6E6, #AFAFAF);
+}
+
+.resultado-puesto--bronce {
+    color: #fff;
+    background: linear-gradient(145deg, #CE8E52, #9A5A27);
+}
+
+.resultado-ficha-textos {
+    flex: 1;
+    min-width: 0;
+}
+
+.resultado-ficha-nombre {
+    margin: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #2A2325;
+}
+
+.resultado-ficha-pie {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    margin: 0.1875rem 0 0;
+    font-size: 0.75rem;
+    color: var(--carbon-600, #383133);
+}
+
+.resultado-ficha-pie > span:not(:last-child)::after {
+    margin-left: 0.5rem;
+    color: #BFB3A6;
+    content: '·';
+}
+
+.resultado-ficha-media {
+    flex-shrink: 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.625rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--burdeos, #6B1F2E);
+    font-variant-numeric: tabular-nums;
+}
+
+.resultado-ficha-datos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--crema-borde, #DFD4C6);
+}
+
+.resultado-ficha-datos dt {
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    color: var(--carbon-500, #4A4245);
+    text-transform: uppercase;
+}
+
+.resultado-ficha-datos dd {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2A2325;
+}
+
+.resultado-ficha-comentario {
+    margin: 0;
+    font-style: italic;
+    font-size: 0.875rem;
+    color: var(--carbon-600, #383133);
+}
+
+/* Ficha técnica que escribió el dueño del vino al darlo de alta. */
+.resultado-ficha-ficha-tecnica {
+    margin: 0;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--carbon-600, #383133);
+    background: var(--crema, #FBF6EE);
+    border-left: 3px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0 0.5rem 0.5rem 0;
+    white-space: pre-line;
+}
+
+/* Botellita de cada ficha. El tamaño lo decide el componente (Pequena para el
+   podio, Diminuta para el resto); aquí solo se reserva el hueco y se centra. */
+.resultado-ficha-botella {
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.resultado-ficha-botella ::deep .botella {
+    margin: 0;
+}
+
+/* --- Cifras de la cata entera -------------------------------------------- */
+
+.resultado-cifras {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.resultado-cifra {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    align-items: center;
+    padding: 0.625rem 0.5rem;
+    text-align: center;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 1rem;
+    box-shadow: var(--sombra-tarjeta, 0 2px 8px rgb(23 5 10 / 8%));
+}
+
+.resultado-cifra-valor {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.05;
+    color: #2A2325;
+    font-variant-numeric: tabular-nums;
+}
+
+.resultado-cifra-rotulo {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--carbon-500, #4A4245);
+    text-transform: uppercase;
+    text-wrap: balance;
+}
+
+/* La mía se marca en burdeos: es el dato que cada uno busca primero. */
+.resultado-cifra--mia {
+    background: linear-gradient(180deg, #fff 0%, rgb(107 31 46 / 6%) 100%);
+    border-color: rgb(107 31 46 / 35%);
+}
+
+.resultado-cifra--mia .resultado-cifra-valor {
+    color: var(--burdeos, #6B1F2E);
+}
+
+/* --- Menciones de honor --------------------------------------------------- */
+
+/* Una sola columna por defecto. En un móvil en vertical, partir esto en dos
+   columnas deja ~150 px útiles por panel que, descontada la botella, no dan
+   para el nombre del vino: se partía letra a letra. Las dos columnas solo
+   entran cuando hay ancho de sobra (tableta o teléfono en horizontal). */
+.resultado-menciones {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+}
+
+@media (min-width: 38rem) {
+    .resultado-menciones {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.resultado-mencion {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem);
+    box-shadow: var(--sombra-tarjeta, 0 2px 8px rgb(23 5 10 / 8%));
+}
+
+.resultado-mencion--chollo {
+    border-color: rgb(201 162 39 / 55%);
+    background: linear-gradient(135deg, #fff 55%, var(--dorado-suave, #F5E9BC) 100%);
+}
+
+.resultado-mencion--colista {
+    background: linear-gradient(135deg, #fff 55%, var(--crema-oscuro, #EDE5DB) 100%);
+}
+
+.resultado-mencion-botella {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+.resultado-mencion-textos {
+    flex: 1;
+    min-width: 0;
+}
+
+.resultado-mencion-rotulo {
+    margin: 0;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--carbon-500, #4A4245);
+    text-transform: uppercase;
+}
+
+.resultado-mencion-nombre {
+    margin: 0.125rem 0 0;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #2A2325;
+    overflow-wrap: anywhere;
+}
+
+.resultado-mencion-pie {
+    margin: 0.125rem 0 0;
+    font-size: 0.75rem;
+    color: var(--carbon-600, #383133);
+}
+
+/* --- Estantería de la cata ------------------------------------------------ */
+
+/* La clase llega como parámetro al componente hijo: sin ::deep no tendría el
+   atributo de ámbito de esta página y la regla no pintaría nada. */
+.resultado ::deep .resultado-vitrina {
+    padding: 0.875rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem);
+    box-shadow: var(--sombra-tarjeta, 0 2px 8px rgb(23 5 10 / 8%));
+}
+
+/* ---- Detalle de votos por usuario (punto 5) ---- */
+
+.resultado-votos {
+    margin: 0;
+    border-top: 1px solid var(--crema-borde, #DFD4C6);
+    padding-top: 0.6rem;
+}
+
+.resultado-votos-resumen {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+    padding: 0.25rem 0;
+    color: var(--burdeos, #6B1F2E);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+}
+
+.resultado-votos-resumen::-webkit-details-marker {
+    display: none;
+}
+
+.resultado-votos-resumen::after {
+    content: "▾";
+    margin-left: auto;
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+}
+
+.resultado-votos[open] > .resultado-votos-resumen::after {
+    transform: rotate(180deg);
+}
+
+.resultado-votos-extremos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    margin: 0.45rem 0 0.6rem;
+    font-size: 0.78rem;
+    color: var(--carbon-600, #383133);
+}
+
+.resultado-votos-extremos strong {
+    color: #2A2325;
+}
+
+.resultado-votos-lista {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.resultado-voto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    padding: 0.6875rem 0.75rem;
+    background: var(--crema, #F7F3EE);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.6rem;
+}
+
+.resultado-voto--sin {
+    opacity: 0.75;
+    border-style: dashed;
+}
+
+.resultado-voto-cabecera {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.resultado-voto-nombre {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #2A2325;
+    overflow-wrap: anywhere;
+}
+
+.resultado-voto-nota {
+    flex: 0 0 auto;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--burdeos, #6B1F2E);
+}
+
+.resultado-voto-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.5rem;
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--carbon-600, #383133);
+}
+
+.resultado-voto-marca {
+    padding: 0.05rem 0.4rem;
+    background: var(--dorado-suave, #F5E9BC);
+    border-radius: 0.4rem;
+    color: var(--dorado-texto, #6E5508);
+    font-weight: 600;
+}
+
+.resultado-voto-comentario {
+    margin: 0;
+    font-size: 0.82rem;
+    font-style: italic;
+    color: var(--carbon-700, #2B2628);
+    overflow-wrap: anywhere;
+}
+
+@media (min-width: 40rem) {
+    .resultado-ficha-datos {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* --- Rejilla de puestos --------------------------------------------------- */
+
+.resultado-rejilla {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resultado-rejilla-ayuda {
+    margin: -0.25rem 0 0;
+    font-size: 0.78rem;
+    color: var(--carbon-600, #383133);
+}
+
+.resultado-rejilla-lista {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.resultado-rejilla-item {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    gap: 0.6rem;
+    align-items: center;
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    background: #fff;
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 0.7rem;
+    color: var(--carbon-700, #2B2628);
+    text-decoration: none;
+    /* Es un <button>: hay que devolverle la tipografía y la alineación que
+       el navegador le quita, y dejar claro que se puede pulsar. */
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 140ms ease, transform 140ms ease;
+}
+
+.resultado-rejilla-item:hover,
+.resultado-rejilla-item:focus-visible {
+    border-color: var(--burdeos, #6B1F2E);
+    transform: translateY(-1px);
+}
+
+.resultado-rejilla-item:active {
+    background: var(--crema, #FBF6EE);
+    transform: translateY(0);
+}
+
+/* Si el sistema pide menos movimiento, quitamos el saltito al pulsar. */
+@media (prefers-reduced-motion: reduce) {
+    .resultado-rejilla-item {
+        transition: none;
+    }
+
+    .resultado-rejilla-item:hover,
+    .resultado-rejilla-item:focus-visible,
+    .resultado-rejilla-item:active {
+        transform: none;
+    }
+}
+
+.resultado-rejilla-puesto {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    background: var(--crema, #FBF6EE);
+    border-radius: 9999px;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--carbon-700, #2B2628);
+}
+
+.resultado-rejilla-item--puesto1 .resultado-rejilla-puesto {
+    background: var(--dorado-suave, #F5E9BC);
+    color: var(--dorado-texto, #6E5508);
+}
+
+.resultado-rejilla-item--puesto2 .resultado-rejilla-puesto {
+    background: #ECECEE;
+    color: #4A4A52;
+}
+
+.resultado-rejilla-item--puesto3 .resultado-rejilla-puesto {
+    background: #F3E2D2;
+    color: #7A4A20;
+}
+
+.resultado-rejilla-nombre {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.resultado-rejilla-nota {
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--burdeos, #6B1F2E);
+}
+
+@media (min-width: 30rem) {
+    .resultado-rejilla-lista {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* --- Gala del ganador en el móvil ----------------------------------------- */
+
+/* Capa a pantalla completa, pensada para un teléfono en vertical: se queda
+   unos segundos y se retira sola o de un toque. */
+.gala {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: radial-gradient(circle at 50% 30%, #3B1620 0%, #1A0B10 70%);
+    color: #FBF6EE;
+    text-align: center;
+    animation: gala-entra 420ms ease-out both;
+}
+
+@keyframes gala-entra {
+    from {
+        opacity: 0;
+        transform: scale(1.04);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.gala-laurel {
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--dorado, #C9A227);
+}
+
+.gala-rotulo {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dorado, #C9A227);
+}
+
+/* La botella manda; la etiqueta se superpone a un lado, como en la TV. */
+.gala-botella {
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin: 0.35rem 0;
+}
+
+.gala-botella ::deep .botella {
+    height: min(42vh, 20rem);
+    filter: drop-shadow(0 1.25rem 2rem rgba(0, 0, 0, 0.55));
+}
+
+.gala-etiqueta {
+    position: absolute;
+    right: -0.5rem;
+    bottom: 12%;
+    width: min(42vw, 9.5rem);
+    margin: 0;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid rgba(201, 162, 39, 0.5);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.5);
+    transform: rotate(-4deg);
+}
+
+.gala-etiqueta img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.gala-nombre {
+    margin: 0.5rem 0 0;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: clamp(1.375rem, 7vw, 2rem);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.gala-bodega {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(251, 246, 238, 0.75);
+}
+
+.gala-nota {
+    margin: 0.35rem 0 0;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: clamp(2.5rem, 14vw, 4rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--dorado, #C9A227);
+}
+
+.gala-dueno-rotulo {
+    margin: 0.5rem 0 0;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(251, 246, 238, 0.6);
+}
+
+.gala-dueno {
+    margin: 0;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: clamp(1.125rem, 5.5vw, 1.5rem);
+    font-weight: 700;
+}
+
+.gala-pie {
+    margin: 1.25rem 0 0;
+    font-size: 0.72rem;
+    color: rgba(251, 246, 238, 0.5);
+}
