@@ -111,6 +111,11 @@
     padding-top: 0.25rem;
 }
 
+/* Acceso al repaso de todas las notas propias. */
+.votar-repaso {
+    align-self: center;
+}
+
 .votar-hito {
     display: grid;
     place-items: center;

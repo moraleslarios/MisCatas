@@ -1,12 +1,17 @@
 #requires -Version 5.1
 <#
-    Crea dos accesos directos en el Escritorio para arrancar y parar MisCatas
+    Crea los accesos directos en el Escritorio para arrancar y parar MisCatas
     sin tocar la linea de comandos.
 
     Uso:
         .\tools\crear-accesos-directos.ps1
 
     Se pueden volver a ejecutar sin problema: sobreescribe los existentes.
+
+    Los tres iconos que deja:
+        MisCatas - ARRANCAR        -> abre https://localhost:5443 (seguro)
+        MisCatas - ARRANCAR (RED)  -> abre https://192.168.x.x:5443 (moviles/tele)
+        MisCatas - PARAR           -> cierra la web
 #>
 [CmdletBinding()]
 param()
@@ -22,8 +27,9 @@ $shell = New-Object -ComObject WScript.Shell
 $iconos = Join-Path $env:SystemRoot 'System32\imageres.dll'
 
 $atajos = @(
-    @{ Nombre = 'MisCatas - ARRANCAR'; Destino = 'Arrancar.cmd'; Icono = "$iconos,100"; Descripcion = 'Levanta la web de MisCatas y abre el navegador' }
-    @{ Nombre = 'MisCatas - PARAR';    Destino = 'Parar.cmd';    Icono = "$iconos,98";  Descripcion = 'Cierra la web de MisCatas' }
+    @{ Nombre = 'MisCatas - ARRANCAR';       Destino = 'Arrancar.cmd';     Icono = "$iconos,100"; Descripcion = 'Levanta la web de MisCatas en https://localhost:5443 y abre el navegador' }
+    @{ Nombre = 'MisCatas - ARRANCAR (RED)'; Destino = 'Arrancar-Red.cmd'; Icono = "$iconos,165"; Descripcion = 'Levanta la web y abre la direccion HTTPS de la red local (moviles y tele)' }
+    @{ Nombre = 'MisCatas - PARAR';          Destino = 'Parar.cmd';        Icono = "$iconos,98";  Descripcion = 'Cierra la web de MisCatas y libera los puertos 5443 y 5080' }
 )
 
 Write-Host ''
@@ -51,5 +57,5 @@ foreach ($atajo in $atajos) {
 }
 
 Write-Host ''
-Write-Host '  Listo. Mira tu Escritorio: tienes dos iconos nuevos.' -ForegroundColor Green
+Write-Host '  Listo. Mira tu Escritorio: tienes tres iconos nuevos.' -ForegroundColor Green
 Write-Host ''

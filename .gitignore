@@ -20,6 +20,16 @@ src/MisCatas.Web/wwwroot/css/estilos.css
 ## propias de cada máquina: se regeneran solas en el primer arranque.
 src/MisCatas.Web/claves/
 
+## Certificado HTTPS de la red local. El .pfx lleva la CLAVE PRIVADA dentro,
+## así que NUNCA debe subirse a un repositorio. Se fabrica solo en el primer
+## arranque (src/MisCatas.Web/Seguridad/CertificadoLocal.cs).
+src/MisCatas.Web/certificados/
+*.pfx
+
+## Registros que dejan los scripts de arranque al ejecutar la aplicación.
+tools/salida-app.log
+tools/salida-app.err.log
+
 ## Imágenes y volcados locales
 *.bak
 *.mdf

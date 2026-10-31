@@ -126,21 +126,17 @@ else
 
                 @if (Editable)
                 {
+                    @* Antes esto era un desplegable: con el catálogo crecido se
+                       volvía imposible de recorrer, así que ahora se abre una
+                       hoja con buscador. *@
                     <div class="montar-anadir">
-                        <select class="mc-control" @bind="VinoSeleccionado"
-                                aria-label="Vino que se añade a la cata">
-                            <option value="0">— Elige un vino —</option>
-                            @foreach (var vino in VinosDisponibles)
-                            {
-                                <option value="@vino.Id">@vino.NombreConAnio — @vino.Dueno</option>
-                            }
-                        </select>
                         <button type="button"
-                                class="mc-boton mc-boton-primario"
-                                disabled="@(Trabajando || VinoSeleccionado == 0)"
-                                @onclick="AgregarVinoAsync">
-                            <IconoVino Nombre="Icono.Mas" Tamano="TamanoIcono.Pequeno" />
-                            Añadir
+                                class="montar-elegir"
+                                disabled="@Trabajando"
+                                @onclick="() => BuscadorVinos = true">
+                            <IconoVino Nombre="Icono.Lupa" Tamano="TamanoIcono.Pequeno" />
+                            <span class="montar-elegir-texto">Buscar y añadir un vino</span>
+                            <span class="montar-elegir-cuenta">@VinosDisponibles.Count() libres</span>
                         </button>
                     </div>
                 }
@@ -208,23 +204,16 @@ else
 
                 @if (Editable)
                 {
+                    @* Mismo criterio que en los vinos: hoja con buscador en vez
+                       de un desplegable con decenas de catadores. *@
                     <div class="montar-anadir">
-                        <select class="mc-control" @bind="UsuarioSeleccionado"
-                                aria-label="Usuario que se invita a la cata">
-                            <option value="0">— Elige un usuario —</option>
-                            @foreach (var usuario in UsuariosDisponibles)
-                            {
-                                <option value="@usuario.Id">
-                                    @usuario.NombreCompleto (@usuario.Login)
-                                </option>
-                            }
-                        </select>
                         <button type="button"
-                                class="mc-boton mc-boton-primario"
-                                disabled="@(Trabajando || UsuarioSeleccionado == 0)"
-                                @onclick="AgregarParticipanteAsync">
-                            <IconoVino Nombre="Icono.Mas" Tamano="TamanoIcono.Pequeno" />
-                            Invitar
+                                class="montar-elegir"
+                                disabled="@Trabajando"
+                                @onclick="() => BuscadorUsuarios = true">
+                            <IconoVino Nombre="Icono.Lupa" Tamano="TamanoIcono.Pequeno" />
+                            <span class="montar-elegir-texto">Buscar e invitar a un catador</span>
+                            <span class="montar-elegir-cuenta">@UsuariosDisponibles.Count() libres</span>
                         </button>
                     </div>
                 }
@@ -271,5 +260,27 @@ else
         @* Avisos: va al final porque es el último paso del montaje, cuando ya
            están los vinos y la gente invitada. *@
         <AvisosWhatsApp Detalle="Detalle" />
+
+        @* Las dos hojas de búsqueda viven aquí, fuera de las columnas, porque
+           se pintan superpuestas a toda la pantalla. *@
+        <SelectorBuscable @bind-Visible="BuscadorVinos"
+                          Opciones="OpcionesVinos"
+                          Antetitulo="Añadir a la cata"
+                          Titulo="Elige un vino"
+                          Marcador="Nombre, bodega, año o quién lo trae…"
+                          TextoSinOpciones="Ya están todos los vinos del catálogo en esta cata."
+                          NombreSingular="vino"
+                          NombrePlural="vinos"
+                          AlElegir="AgregarVinoAsync" />
+
+        <SelectorBuscable @bind-Visible="BuscadorUsuarios"
+                          Opciones="OpcionesUsuarios"
+                          Antetitulo="Invitar a la cata"
+                          Titulo="Elige un catador"
+                          Marcador="Nombre, apellidos o usuario…"
+                          TextoSinOpciones="Ya están invitados todos los catadores."
+                          NombreSingular="catador"
+                          NombrePlural="catadores"
+                          AlElegir="AgregarParticipanteAsync" />
     </div>
 }

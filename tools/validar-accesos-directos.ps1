@@ -1,7 +1,7 @@
 $escritorio = [Environment]::GetFolderPath('Desktop')
 $shell = New-Object -ComObject WScript.Shell
 
-foreach ($nombre in @('MisCatas - ARRANCAR', 'MisCatas - PARAR')) {
+foreach ($nombre in @('MisCatas - ARRANCAR', 'MisCatas - ARRANCAR (RED)', 'MisCatas - PARAR')) {
     $ruta = Join-Path $escritorio ($nombre + '.lnk')
     if (Test-Path $ruta) {
         $l = $shell.CreateShortcut($ruta)

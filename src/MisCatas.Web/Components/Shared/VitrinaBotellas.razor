@@ -14,7 +14,12 @@
 
 @if (Piezas.Count > 0)
 {
-    <section class="@ClasesFinales" aria-label="@Titulo">
+    @* Se publica el número de piezas como variable CSS para que la rejilla del
+       escaparate pueda encogerse sola: en una pantalla fija sin scroll, 10
+       botellas tienen que caber en la misma fila en la que caben 3. *@
+    <section class="@ClasesFinales"
+             style="--vitrina-piezas: @Piezas.Count"
+             aria-label="@Titulo">
         @if (!string.IsNullOrWhiteSpace(Titulo) && MostrarTitulo)
         {
             <h2 class="vitrina-titulo">@Titulo</h2>

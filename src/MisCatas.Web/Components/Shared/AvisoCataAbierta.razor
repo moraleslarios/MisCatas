@@ -1,0 +1,76 @@
+@* ---------------------------------------------------------------------------
+   Aviso de «la cata ya está abierta» para el rol Usuario.
+
+   Problema que resuelve: el catador puede tener el móvil abierto en cualquier
+   pantalla (sus notas, el histórico, un resultado antiguo). Si el anfitrión
+   abre una cata, antes solo se enteraba quien estuviese justo en la pantalla
+   principal. Al colgar este componente del MainLayout, el aviso llega a
+   TODOS los catadores sea cual sea la pantalla en la que estén.
+
+   No pinta nada mientras no haya novedad: es invisible el 99% del tiempo.
+   --------------------------------------------------------------------------- *@
+
+@if (Visible && Cata is { } cata)
+{
+    <div class="aviso-cata-fondo" @onclick="PosponerAsync" @onkeydown="AlPulsarTeclaAsync" tabindex="-1">
+        <div class="aviso-cata-caja"
+             role="alertdialog"
+             aria-modal="true"
+             aria-labelledby="aviso-cata-titulo"
+             aria-describedby="aviso-cata-mensaje"
+             @onclick:stopPropagation="true">
+
+            <div class="aviso-cata-icono">
+                <IconoVino Nombre="@IconoCabecera" Tamano="TamanoIcono.Grande" />
+            </div>
+
+            <p class="aviso-cata-antetitulo">@Antetitulo</p>
+
+            <h2 class="aviso-cata-titulo" id="aviso-cata-titulo">@cata.Nombre</h2>
+
+            <p class="aviso-cata-mensaje" id="aviso-cata-mensaje">@Mensaje</p>
+
+            <dl class="aviso-cata-datos">
+                @if (!string.IsNullOrWhiteSpace(cata.Lugar))
+                {
+                    <div class="aviso-cata-dato">
+                        <dt>
+                            <IconoVino Nombre="Icono.Lugar" Tamano="TamanoIcono.Pequeno" />
+                            <span class="sr-only">Lugar</span>
+                        </dt>
+                        <dd>@cata.Lugar</dd>
+                    </div>
+                }
+
+                <div class="aviso-cata-dato">
+                    <dt>
+                        <IconoVino Nombre="Icono.Botella" Tamano="TamanoIcono.Pequeno" />
+                        <span class="sr-only">Vinos</span>
+                    </dt>
+                    <dd>@cata.NumeroVinos @(cata.NumeroVinos == 1 ? "vino" : "vinos")</dd>
+                </div>
+
+                <div class="aviso-cata-dato">
+                    <dt>
+                        <IconoVino Nombre="Icono.Personas" Tamano="TamanoIcono.Pequeno" />
+                        <span class="sr-only">Participantes</span>
+                    </dt>
+                    <dd>@cata.NumeroParticipantes catadores</dd>
+                </div>
+            </dl>
+
+            <div class="aviso-cata-botones">
+                <button type="button" class="mc-boton mc-boton-fantasma aviso-cata-boton" @onclick="PosponerAsync">
+                    Ahora no
+                </button>
+
+                <button type="button"
+                        class="mc-boton mc-boton-primario aviso-cata-boton"
+                        @onclick="IrAsync"
+                        @ref="_boton">
+                    @TextoBoton
+                </button>
+            </div>
+        </div>
+    </div>
+}

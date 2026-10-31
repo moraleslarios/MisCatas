@@ -88,6 +88,20 @@ public sealed class NotificadorCataSignalR(
             .SendAsync(EventosCata.TickTiempoRestante, estado, ct);
     }
 
+    /// <inheritdoc />
+    public async Task EnviarCarteleraAsync(string evento, int cataId, CancellationToken ct = default)
+    {
+        log.LogDebug("Cartelera: enviando «{Evento}» de la cata {CataId}.", evento, cataId);
+
+        // Solo cartelera: no hay estado de votación que repartir, porque esto
+        // no lo provoca el motor de la cata sino una edición del administrador.
+        await bus.PublicarCarteleraAsync(evento, cataId);
+
+        await hub.Clients
+            .Group(EventosCata.Grupo(cataId))
+            .SendAsync(evento, cataId, ct);
+    }
+
     /// <summary>
     /// Envía el resumen agrupando las ráfagas: el primer aviso sale enseguida
     /// y los siguientes se acumulan hasta que se cierra la ventana, momento en

@@ -131,6 +131,15 @@ else
                     <span class="resumen-fila-nota">@TextoNota(vino)</span>
                 </article>
             }
+
+            @if (EnCurso || Finalizada)
+            {
+                <a class="mc-boton mc-boton-secundario resumen-accion"
+                   href="@RutasApp.MisNotas(Datos.CataId)">
+                    <IconoVino Nombre="Icono.Lapiz" Tamano="TamanoIcono.Pequeno" />
+                    @(EnCurso ? "Repasar y corregir mis notas" : "Repasar mis notas")
+                </a>
+            }
         </section>
 
         @if (Datos.Estado == EstadoCata.Borrador)

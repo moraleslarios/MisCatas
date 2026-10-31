@@ -683,13 +683,17 @@ public class ServicioVotacion : IServicioVotacion
         var esVinoEnJuego = viva?.NumeroVinoActual == numeroOrden;
 
         // Dos ventanas legítimas: la votación abierta del vino en juego y la
-        // rectificación de un vino ya cerrado entre votaciones.
+        // rectificación de un vino ya cerrado mientras la cata sigue viva.
         var votacionAbierta = esVinoEnJuego
             && viva?.Fase == FaseVotacion.Abierta
             && viva.FinPrevistoUtc is DateTime fin
             && fin > ahora;
 
-        var rectificando = !esVinoEnJuego
+        // Cerrar la votación NO cambia el vino actual, así que el vino recién
+        // cerrado sigue siendo "el vino en juego". Por eso la rectificación no
+        // puede exigir que el vino no sea el actual: basta con que su votación
+        // esté cerrada y que la cata no tenga ninguna votación viva.
+        var rectificando = !votacionAbierta
             && cataVino.EstadoVotacion == EstadoVotacion.Cerrada
             && viva is not null
             && viva.Fase is FaseVotacion.Cerrada or FaseVotacion.Inactiva;

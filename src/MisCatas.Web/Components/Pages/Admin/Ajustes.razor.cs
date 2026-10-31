@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using MisCatas.Application.Configuraciones;
 using MisCatas.Domain.Enums;
+using MisCatas.Web.Seguridad;
 
 namespace MisCatas.Web.Components.Pages.Admin;
 
@@ -9,6 +10,9 @@ public partial class Ajustes
     [Inject]
     private IServicioConfiguracion Servicio { get; set; } = default!;
 
+    [Inject]
+    private NavigationManager Navegacion { get; set; } = default!;
+
     /// <summary>Copia editable de la fila única de configuración.</summary>
     private Domain.Entidades.Configuracion? Datos { get; set; }
 
@@ -16,7 +20,8 @@ public partial class Ajustes
 
     private string? Error { get; set; }
 
-    private string? Mensaje { get; set; }
+    /// <summary>La ventana de «guardado» está a la vista.</summary>
+    private bool MostrarExito { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -31,7 +36,7 @@ public partial class Ajustes
         }
 
         Error = null;
-        Mensaje = null;
+        MostrarExito = false;
         Guardando = true;
 
         try
@@ -50,13 +55,20 @@ public partial class Ajustes
             }
             else
             {
-                Mensaje = "Ajustes guardados.";
                 Datos = await Servicio.ObtenerAsync();
+                MostrarExito = true;
             }
         }
         finally
         {
             Guardando = false;
         }
+    }
+
+    /// <summary>Al cerrarse el aviso se vuelve al panel de administración.</summary>
+    private void SalirTrasGuardar()
+    {
+        MostrarExito = false;
+        Navegacion.NavigateTo(RutasApp.AdminInicio);
     }
 }

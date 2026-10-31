@@ -184,6 +184,19 @@ public static class EventosCata
     public const string RevelacionOcultada = nameof(RevelacionOcultada);
     public const string CataReabierta = nameof(CataReabierta);
 
+    /// <summary>
+    /// La ficha de la cata ha cambiado: nombre, fecha, vinos o participantes.
+    /// No altera la votación en curso, pero sí lo que tienen que mostrar las
+    /// pantallas que anuncian la próxima cata.
+    /// </summary>
+    public const string CataModificada = nameof(CataModificada);
+
+    /// <summary>
+    /// La cata ha desaparecido del sistema. Las pantallas que la estaban
+    /// anunciando tienen que volver a la espera.
+    /// </summary>
+    public const string CataEliminada = nameof(CataEliminada);
+
     /// <summary>Nombre del grupo de SignalR de una cata.</summary>
     public static string Grupo(int cataId) => $"cata-{cataId}";
 

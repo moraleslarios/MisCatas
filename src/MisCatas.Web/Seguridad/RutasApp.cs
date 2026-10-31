@@ -17,6 +17,12 @@ public static class RutasApp
     /// <summary>Resumen en vivo de una cata (sin revelar notas).</summary>
     public static string Resumen(int cataId) => $"/catas/{cataId}/resumen";
 
+    /// <summary>
+    /// Repaso de las notas propias: la pantalla donde el participante corrige
+    /// todas y cada una de sus puntuaciones antes de que se cante el veredicto.
+    /// </summary>
+    public static string MisNotas(int cataId) => $"/catas/{cataId}/mis-notas";
+
     /// <summary>Resultado completo de una cata finalizada.</summary>
     public static string Resultado(int cataId) => $"/catas/{cataId}/resultado";
 

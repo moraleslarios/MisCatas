@@ -90,13 +90,13 @@ public partial class Escaparate : IAsyncDisposable
     private DireccionSitio Sitio => _sitio ??= Direccion.Resolver(Navegacion.BaseUri);
 
     /// <summary>
-    /// Dirección completa, con <c>http://</c> y todo, para meterla en el QR.
+    /// Dirección completa, con <c>https://</c> y todo, para meterla en el QR.
     /// </summary>
     private string? UrlEntrada => Sitio.Raiz;
 
     /// <summary>
     /// Dirección que tienen que teclear los participantes en el móvil, sin el
-    /// <c>http://</c> delante para que se lea más corta en la pantalla.
+    /// <c>https://</c> delante para que se lea más corta en la pantalla.
     /// </summary>
     private string DireccionEntrada
     {

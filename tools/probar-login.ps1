@@ -1,5 +1,22 @@
 $ErrorActionPreference = 'Stop'
-$baseUrl = 'http://localhost:5080'
+$baseUrl = 'https://localhost:5443'
+
+# El certificado de la red local es autofirmado: sin esto, PowerShell 5.1 corta
+# la conexion antes de llegar al servidor.
+Add-Type -TypeDefinition @'
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+public static class ConfiarSiempreLogin {
+    public static void Activar() {
+        ServicePointManager.ServerCertificateValidationCallback =
+            delegate (object s, X509Certificate c, X509Chain ch, SslPolicyErrors e) { return true; };
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+    }
+}
+'@ -ErrorAction SilentlyContinue
+[ConfiarSiempreLogin]::Activar()
+
 $sesion = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
 # 1) GET del formulario: recoge la cookie de antiforgery y el token oculto.

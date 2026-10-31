@@ -12,6 +12,22 @@
 
 $ErrorActionPreference = 'Continue'
 
+# El certificado de la red local es autofirmado: sin esto, PowerShell 5.1 corta
+# la conexion antes de llegar al servidor y la sonda daria un falso negativo.
+Add-Type -TypeDefinition @'
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+public static class ConfiarSiempre {
+    public static void Activar() {
+        ServicePointManager.ServerCertificateValidationCallback =
+            delegate (object s, X509Certificate c, X509Chain ch, SslPolicyErrors e) { return true; };
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+    }
+}
+'@ -ErrorAction SilentlyContinue
+[ConfiarSiempre]::Activar()
+
 function Probar($url) {
     try {
         $r = Invoke-WebRequest -Uri $url -Method Post -UseBasicParsing -MaximumRedirection 0 -ErrorAction Stop
@@ -34,5 +50,5 @@ function Probar($url) {
     }
 }
 
-Probar 'http://localhost:5080/_blazor/negotiate?negotiateVersion=1'
-Probar 'http://localhost:5080/hubs/cata/negotiate?negotiateVersion=1'
+Probar 'https://localhost:5443/_blazor/negotiate?negotiateVersion=1'
+Probar 'https://localhost:5443/hubs/cata/negotiate?negotiateVersion=1'

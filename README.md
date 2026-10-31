@@ -56,14 +56,39 @@ datos mínimos.
 
 ### 3. Arrancar
 
+La forma cómoda, sin tocar la línea de comandos:
+
+| Qué quieres | Qué ejecutas | Dónde abre |
+|---|---|---|
+| Arrancar normal | `Arrancar.cmd` (doble clic) o `.\Arrancar.ps1` | `https://localhost:5443` |
+| Arrancar para móviles y tele | `Arrancar-Red.cmd` o `.\Arrancar.ps1 -Lan` | `https://192.168.x.x:5443` |
+| Arrancar sin HTTPS | `.\Arrancar.ps1 -Http` | `http://localhost:5080` (redirige al seguro) |
+| Arrancar sin abrir navegador | `.\Arrancar.ps1 -SinNavegador` | — |
+| Recompilar antes de arrancar | `.\Arrancar.ps1 -Compilar` | `https://localhost:5443` |
+| Parar | `Parar.cmd` o `.\Parar.ps1` | libera 5443 y 5080 |
+
+`tools\crear-accesos-directos.ps1` deja esos tres iconos en el Escritorio
+(ARRANCAR, ARRANCAR (RED) y PARAR).
+
+A mano también vale:
+
 ```powershell
 dotnet run --project src\MisCatas.Web
 ```
 
-La aplicación queda en **http://localhost:5080**. Escucha en `0.0.0.0`, así que
-también se puede abrir desde el móvil con la IP de la máquina
-(`http://192.168.x.x:5080`) tras abrir el puerto con
-`tools\abrir-puerto-firewall.ps1`.
+La aplicación escucha por **los dos puertos a la vez**:
+
+- **`https://localhost:5443`** → el seguro, el que atiende de verdad.
+- `http://localhost:5080` → solo redirige al seguro, para que los enlaces y los
+  QR antiguos sigan llevando a algún sitio.
+
+Escucha en `0.0.0.0`, así que también se abre desde el móvil con la IP de la
+máquina (`https://192.168.x.x:5443`) tras abrir los puertos con
+`tools\abrir-puerto-firewall.ps1`. El certificado es propio del equipo, así que
+la primera vez el navegador avisa: «Avanzado» → «Continuar». Es normal.
+
+Los puertos están en un solo sitio en el código:
+`src\MisCatas.Web\Seguridad\PuertosApp.cs`.
 
 ---
 
@@ -457,7 +482,11 @@ arrancar**. `Program.cs` llama a `MigrarYSembrarAsync()`, que ejecuta
 | `descargar-tailwind.ps1` | baja el CLI standalone de Tailwind (no está en el repositorio) |
 | `descargar-fuentes.ps1` | baja las fuentes a `wwwroot` para que no dependan de internet |
 | `vigilar-css.ps1` | recompila el CSS al guardar, en modo vigilancia |
-| `abrir-puerto-firewall.ps1` | abre el 5080 en el firewall para que entren los móviles |
+| `abrir-puerto-firewall.ps1` | abre el 5443 (HTTPS) y el 5080 (HTTP) en el firewall para que entren los móviles |
+| `crear-accesos-directos.ps1` | deja en el Escritorio los iconos ARRANCAR, ARRANCAR (RED) y PARAR |
+| `validar-accesos-directos.ps1` | comprueba que esos tres iconos apuntan a donde deben |
+| `arrancar-silencioso.ps1` | arranca dejando el log en un fichero (para no inundar el terminal) |
+| `arrancar-produccion.ps1` | publica en Release y arranca como en la cata real (HTTPS, accesible en la red) |
 | `crear-usuario-pruebas.ps1` | crea un usuario de pruebas |
 | `montar-escenario-pruebas.ps1` | deja una cata montada con vinos y participantes |
 | `finalizar-cata-pruebas.ps1` | finaliza la cata de pruebas para ver la revelación |

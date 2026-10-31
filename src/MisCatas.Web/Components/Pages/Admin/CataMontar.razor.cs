@@ -3,6 +3,7 @@ using MisCatas.Application.Catas;
 using MisCatas.Application.Usuarios;
 using MisCatas.Application.Vinos;
 using MisCatas.Domain.Enums;
+using MisCatas.Web.Components.Shared;
 using System.Globalization;
 
 namespace MisCatas.Web.Components.Pages.Admin;
@@ -29,10 +30,6 @@ public partial class CataMontar
     private IReadOnlyList<VinoDto> TodosLosVinos { get; set; } = [];
 
     private IReadOnlyList<UsuarioDto> TodosLosUsuarios { get; set; } = [];
-
-    private int VinoSeleccionado { get; set; }
-
-    private int UsuarioSeleccionado { get; set; }
 
     private bool Cargando { get; set; } = true;
 
@@ -158,6 +155,28 @@ public partial class CataMontar
             : string.Concat(trozos[0][..1], trozos[1][..1]).ToUpper(Espanol);
     }
 
+    /// <summary>Si está abierta la hoja de búsqueda de vinos.</summary>
+    private bool BuscadorVinos { get; set; }
+
+    /// <summary>Si está abierta la hoja de búsqueda de catadores.</summary>
+    private bool BuscadorUsuarios { get; set; }
+
+    /// <summary>Los vinos libres, traducidos a filas del buscador.</summary>
+    private IReadOnlyList<OpcionSelector> OpcionesVinos =>
+        [.. VinosDisponibles.Select(v => new OpcionSelector(
+            v.Id,
+            v.NombreConAnio,
+            $"Lo trae {v.Dueno}",
+            Detalle: v.Anio?.ToString(Espanol)))];
+
+    /// <summary>Los catadores libres, traducidos a filas del buscador.</summary>
+    private IReadOnlyList<OpcionSelector> OpcionesUsuarios =>
+        [.. UsuariosDisponibles.Select(u => new OpcionSelector(
+            u.Id,
+            u.NombreCompleto,
+            u.Login,
+            Inicial: Iniciales(u.NombreCompleto)))];
+
     protected override async Task OnParametersSetAsync()
     {
         Cargando = true;
@@ -175,9 +194,6 @@ public partial class CataMontar
     private async Task RecargarAsync()
     {
         Detalle = await Servicio.ObtenerDetalleAsync(Id);
-
-        VinoSeleccionado = 0;
-        UsuarioSeleccionado = 0;
     }
 
     /// <summary>Ejecuta una operación del servicio mostrando su resultado.</summary>
@@ -210,9 +226,9 @@ public partial class CataMontar
         }
     }
 
-    private Task AgregarVinoAsync() =>
+    private Task AgregarVinoAsync(int vinoId) =>
         EjecutarAsync(
-            () => Servicio.AgregarVinoAsync(Id, VinoSeleccionado),
+            () => Servicio.AgregarVinoAsync(Id, vinoId),
             "Vino añadido a la cata.");
 
     private Task QuitarVinoAsync(int vinoId) =>
@@ -220,9 +236,9 @@ public partial class CataMontar
             () => Servicio.QuitarVinoAsync(Id, vinoId),
             "Vino quitado de la cata.");
 
-    private Task AgregarParticipanteAsync() =>
+    private Task AgregarParticipanteAsync(int usuarioId) =>
         EjecutarAsync(
-            () => Servicio.AgregarParticipanteAsync(Id, UsuarioSeleccionado),
+            () => Servicio.AgregarParticipanteAsync(Id, usuarioId),
             "Participante invitado.");
 
     private Task QuitarParticipanteAsync(int usuarioId) =>

@@ -4,20 +4,32 @@
     ====================================
 
     Uso:
-        .\Arrancar.ps1              -> compila si hace falta y arranca
-        .\Arrancar.ps1 -Compilar    -> fuerza recompilar antes de arrancar
-        .\Arrancar.ps1 -SinNavegador -> no abre el navegador
+        .\Arrancar.ps1                -> compila si hace falta, arranca y abre HTTPS
+        .\Arrancar.ps1 -Compilar      -> fuerza recompilar antes de arrancar
+        .\Arrancar.ps1 -Http          -> abre el navegador por HTTP (que redirige al seguro)
+        .\Arrancar.ps1 -Lan           -> abre la direccion de la red local (la de los moviles)
+        .\Arrancar.ps1 -SinNavegador  -> no abre ningun navegador
 
     O directamente doble clic en  Arrancar.cmd
 
-    La app queda en  http://localhost:5080
+    La app escucha por los DOS puertos a la vez:
+        https://localhost:5443   <- el seguro, el que atiende de verdad
+        http://localhost:5080    <- solo redirige al seguro (enlaces y QR antiguos)
+
     El log queda en  tools\salida-app.log
 #>
 
 [CmdletBinding()]
 param(
     [switch]$Compilar,
-    [switch]$SinNavegador
+    [switch]$SinNavegador,
+
+    # Abre el navegador por el puerto sin cifrar (acaba redirigiendo al seguro).
+    [switch]$Http,
+
+    # Abre la direccion de la red local en lugar de localhost, para ver desde
+    # el movil o la tele lo mismo que van a ver ellos.
+    [switch]$Lan
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,7 +40,11 @@ $exe = Join-Path $raiz 'src\MisCatas.Web\bin\Debug\net10.0\MisCatas.Web.exe'
 $trabajo = Join-Path $raiz 'src\MisCatas.Web'
 $log = Join-Path $raiz 'tools\salida-app.log'
 $logError = Join-Path $raiz 'tools\salida-app.err.log'
-$url = 'http://localhost:5080'
+
+# Los puertos viven en src\MisCatas.Web\Seguridad\PuertosApp.cs. Si cambian
+# alli, hay que cambiarlos aqui tambien.
+$puertoHttps = 5443
+$puertoHttp = 5080
 
 Write-Host ''
 Write-Host '=== Arrancando MisCatas ===' -ForegroundColor Magenta
@@ -100,16 +116,71 @@ while ((Get-Date) -lt $limite) {
     Start-Sleep -Milliseconds 500
 }
 
+# Comprueba que un puerto esta de verdad aceptando conexiones. No usamos
+# Invoke-WebRequest porque el certificado es propio del equipo y PowerShell 5.1
+# lo rechaza; abrir un socket basta para saber que Kestrel esta escuchando.
+function Test-PuertoEscuchando {
+    param([int]$Puerto)
+    try {
+        $cliente = New-Object System.Net.Sockets.TcpClient
+        $espera = $cliente.BeginConnect('127.0.0.1', $Puerto, $null, $null)
+        $conectado = $espera.AsyncWaitHandle.WaitOne(2000, $false) -and $cliente.Connected
+        $cliente.Close()
+        return $conectado
+    }
+    catch { return $false }
+}
+
 Write-Host ''
 if ($lista) {
-    Write-Host '  LISTA  ' -ForegroundColor Black -BackgroundColor Green -NoNewline
-    Write-Host "  ->  $url" -ForegroundColor Cyan
+    # Direccion de la red local: la que hay que usar desde los moviles y la tele.
+    $ip = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+        Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } |
+        Select-Object -First 1 -ExpandProperty IPAddress)
+
+    # OJO: no llamar a estas variables $http / $https. PowerShell no distingue
+    # mayusculas, asi que pisarian el parametro -Http y el navegador abriria
+    # siempre la direccion equivocada.
+    $escuchaHttps = Test-PuertoEscuchando -Puerto $puertoHttps
+    $escuchaHttp = Test-PuertoEscuchando -Puerto $puertoHttp
+
+    Write-Host '  LISTA  ' -ForegroundColor Black -BackgroundColor Green
+    Write-Host ''
+    Write-Host '  DIRECCIONES DISPONIBLES' -ForegroundColor White
+    Write-Host '  -----------------------'
+
+    $marcaHttps = if ($escuchaHttps) { 'OK' } else { 'NO' }
+    $colorHttps = if ($escuchaHttps) { 'Green' } else { 'Red' }
+    Write-Host "  [$marcaHttps] HTTPS (recomendado) : " -ForegroundColor $colorHttps -NoNewline
+    Write-Host "https://localhost:$puertoHttps" -ForegroundColor Cyan
+
+    $marcaHttp = if ($escuchaHttp) { 'OK' } else { 'NO' }
+    $colorHttp = if ($escuchaHttp) { 'Green' } else { 'Red' }
+    Write-Host "  [$marcaHttp] HTTP (redirige)     : " -ForegroundColor $colorHttp -NoNewline
+    Write-Host "http://localhost:$puertoHttp" -ForegroundColor DarkCyan
+
+    if ($ip) {
+        Write-Host '  [OK] Moviles y tele      : ' -ForegroundColor Green -NoNewline
+        Write-Host "https://${ip}:$puertoHttps" -ForegroundColor Cyan
+        Write-Host "                             http://${ip}:$puertoHttp" -ForegroundColor DarkGray
+    }
+
+    Write-Host ''
+    Write-Host '  El certificado es propio de este equipo, asi que la primera vez el' -ForegroundColor DarkGray
+    Write-Host '  navegador avisa: pulsa "Avanzado" y "Continuar". Es normal.' -ForegroundColor DarkGray
     Write-Host ''
     Write-Host "  PID del proceso : $($proceso.Id)"
     Write-Host "  Log             : $log"
-    Write-Host "  Para pararla    : .\Parar.ps1  (o doble clic en Parar.cmd)"
+    Write-Host '  Para pararla    : .\Parar.ps1  (o doble clic en Parar.cmd)'
     Write-Host ''
-    if (-not $SinNavegador) { Start-Process $url }
+
+    if (-not $SinNavegador) {
+        # Por defecto el seguro. -Http abre el otro; -Lan usa la IP de la red.
+        $maquina = if ($Lan -and $ip) { $ip } else { 'localhost' }
+        $destino = if ($Http) { "http://${maquina}:$puertoHttp" } else { "https://${maquina}:$puertoHttps" }
+        Write-Host "  Abriendo $destino ..." -ForegroundColor DarkGray
+        Start-Process $destino
+    }
     exit 0
 }
 

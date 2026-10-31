@@ -7,7 +7,12 @@
 <h1>@(EsNueva ? "Nueva cata" : "Editar cata")</h1>
 
 <Aviso Texto="@Error" EsError="true" />
-<Aviso Texto="@Mensaje" />
+
+<ModalExito Visible="MostrarExito"
+            Titulo="Cata guardada"
+            Mensaje="@MensajeExito"
+            TextoBoton="Continuar"
+            AlCerrar="SalirTrasGuardar" />
 
 @if (NoEncontrada)
 {

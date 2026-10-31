@@ -11,8 +11,9 @@
 #   2. Publica en Release, lo que además regenera y minifica el CSS de Tailwind
 #      (ver el target "CompilarTailwind" de MisCatas.Web.csproj).
 #   3. Comprueba que están el CSS y los ficheros estáticos clave.
-#   4. Arranca el .exe publicado con ASPNETCORE_ENVIRONMENT=Production y los
-#      endpoints de appsettings.json (0.0.0.0:5080), accesible desde los móviles.
+#   4. Arranca el .exe publicado con ASPNETCORE_ENVIRONMENT=Production,
+#      escuchando en 0.0.0.0:5443 (HTTPS) y 0.0.0.0:5080 (solo redirige al
+#      seguro), accesible desde los móviles.
 #
 # Las migraciones de base de datos y la semilla las aplica la propia app al
 # arrancar (Program.cs -> MigrarYSembrarAsync), así que no hay paso extra.
@@ -55,11 +56,13 @@ else {
     Write-Host '[1/4] No habia instancias anteriores.' -ForegroundColor DarkGray
 }
 
-# Si el puerto sigue ocupado por otra cosa, mejor saberlo ya.
-$ocupado = Get-NetTCPConnection -LocalPort 5080 -State Listen -ErrorAction SilentlyContinue
-if ($ocupado) {
-    $pids = ($ocupado.OwningProcess | Sort-Object -Unique) -join ', '
-    throw "El puerto 5080 sigue ocupado por el/los proceso(s) $pids. Cierralo y vuelve a intentarlo."
+# Si alguno de los dos puertos sigue ocupado por otra cosa, mejor saberlo ya.
+foreach ($p in @(5443, 5080)) {
+    $ocupado = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue
+    if ($ocupado) {
+        $pids = ($ocupado.OwningProcess | Sort-Object -Unique) -join ', '
+        throw "El puerto $p sigue ocupado por el/los proceso(s) $pids. Cierralo y vuelve a intentarlo."
+    }
 }
 
 # --- 2. Publicar en Release -------------------------------------------------
@@ -107,10 +110,11 @@ $ip = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
 
 Write-Host '[4/4] Arrancando...' -ForegroundColor Cyan
 Write-Host ''
-Write-Host '  Este equipo : http://localhost:5080' -ForegroundColor White
+Write-Host '  Este equipo : https://localhost:5443' -ForegroundColor White
 if ($ip) {
-    Write-Host "  Moviles/TVs : http://${ip}:5080" -ForegroundColor White
+    Write-Host "  Moviles/TVs : https://${ip}:5443" -ForegroundColor White
 }
+Write-Host '  (el viejo http://...:5080 sigue valiendo: redirige al seguro)' -ForegroundColor DarkGray
 Write-Host '  Entorno     : Production (errores genericos, sin detalles tecnicos)' -ForegroundColor DarkGray
 Write-Host ''
 Write-Host '  Ctrl+C para parar.' -ForegroundColor DarkGray
@@ -121,9 +125,9 @@ if (-not $SinNavegador) {
     Start-Job -ScriptBlock {
         for ($i = 0; $i -lt 60; $i++) {
             Start-Sleep -Milliseconds 500
-            if (Get-NetTCPConnection -LocalPort 5080 -State Listen -ErrorAction SilentlyContinue) {
+            if (Get-NetTCPConnection -LocalPort 5443 -State Listen -ErrorAction SilentlyContinue) {
                 # Kestrel escucha en 0.0.0.0, que no es una direccion navegable.
-                Start-Process 'http://localhost:5080'
+                Start-Process 'https://localhost:5443'
                 return
             }
         }

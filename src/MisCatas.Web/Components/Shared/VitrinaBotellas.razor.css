@@ -23,7 +23,7 @@
 
 .vitrina-rejilla {
     display: grid;
-    gap: 0.75rem;
+    gap: var(--vitrina-hueco, 0.75rem);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -179,40 +179,90 @@ button.vitrina-hueco {
     font-size: 1.0625rem;
 }
 
-/* En la TV el tamaño se mide en unidades de viewport: la sala está lejos. */
+/* En la TV el tamaño se mide en unidades de viewport: la sala está lejos.
+
+   Y además la vitrina tiene que caber SIEMPRE en una sola fila, porque el
+   escaparate es una pantalla fija sin barras de desplazamiento: una cata de 3
+   vinos y otra de 10 han de ocupar el mismo alto. Por eso el ancho de columna
+   no es un valor fijo, sino el reparto del ancho disponible entre el número de
+   piezas (`--vitrina-piezas`, que publica el componente). Cuantas más botellas
+   haya, más estrecha y más baja es cada una, pero la fila es una sola. */
 .vitrina--escaparate {
-    --vitrina-columna: min(14vw, 13rem);
-    --vitrina-alto: min(26vh, 16rem);
-    gap: 1.25rem;
+    /* Ancho útil de la rejilla: la pantalla menos el relleno del layout. */
+    --vitrina-ancho: 88vw;
+
+    /* La pieza del podio se come dos columnas, así que se reserva una más. */
+    --vitrina-columnas: calc(var(--vitrina-piezas, 4) + 1);
+
+    --vitrina-hueco: min(1.25rem, 1.1vw);
+
+    --vitrina-columna: min(
+        13rem,
+        calc((var(--vitrina-ancho) - var(--vitrina-columnas) * var(--vitrina-hueco))
+             / var(--vitrina-columnas))
+    );
+
+    /* La botella es casi tres veces más alta que ancha, pero el hueco también
+       lleva rótulo: con 1.8 veces el ancho de columna queda proporcionado y,
+       sobre todo, baja solo cuando hay muchas botellas. */
+    --vitrina-alto: min(26vh, 16rem, calc(var(--vitrina-columna) * 1.8));
+
+    /* La letra de los rótulos se ata al ancho de columna para que no se salga
+       de la celda cuando la rejilla se aprieta. */
+    --vitrina-letra: min(1.4rem, calc(var(--vitrina-columna) * 0.16));
+
+    gap: var(--vitrina-hueco);
 }
 
 .vitrina--escaparate .vitrina-rejilla {
-    gap: 1.25rem;
+    gap: var(--vitrina-hueco);
+    min-height: 0;
 }
 
 .vitrina--escaparate .vitrina-hueco {
     background: rgba(255, 255, 255, 0.06);
     border-color: rgba(201, 162, 39, 0.35);
     border-radius: 1.1rem;
-    padding: 1rem 0.75rem;
+    padding: min(1rem, 0.6vw) min(0.75rem, 0.5vw) min(0.625rem, 0.5vw);
+    gap: min(0.5rem, 0.4vw);
+    min-height: 0;
+    overflow: hidden;
 }
 
-.vitrina--escaparate .vitrina-titulo,
-.vitrina--escaparate .vitrina-pieza-titulo {
+.vitrina--escaparate .vitrina-titulo {
     color: #FBF6EE;
     font-size: clamp(1rem, 1.5vw, 1.5rem);
+}
+
+.vitrina--escaparate .vitrina-pieza-titulo {
+    color: #FBF6EE;
+    font-size: var(--vitrina-letra);
+    /* Tres líneas: con la rejilla apretada un nombre con bodega y año ocupa
+       más de dos renglones, y antes se quedaba cortado a mitad de palabra. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
 }
 
 .vitrina--escaparate .vitrina-pieza-subtitulo,
 .vitrina--escaparate .vitrina-pieza-detalle {
     color: #E7DCCB;
     opacity: 0.8;
-    font-size: clamp(0.75rem, 1vw, 1rem);
+    font-size: calc(var(--vitrina-letra) * 0.68);
+    /* Dos renglones: la bodega y el «lo trajo» rara vez caben en uno solo
+       cuando hay diez botellas en la misma fila. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
 }
 
 .vitrina--escaparate .vitrina-pieza-nota {
     color: var(--dorado, #C9A227);
-    font-size: clamp(1.25rem, 2vw, 2rem);
+    font-size: calc(var(--vitrina-letra) * 1.35);
 }
 
 .vitrina--escaparate .vitrina-pieza--puesto1 .vitrina-hueco {
@@ -223,6 +273,28 @@ button.vitrina-hueco {
 .vitrina--escaparate .vitrina-pieza--puesto2 .vitrina-hueco,
 .vitrina--escaparate .vitrina-pieza--puesto3 .vitrina-hueco {
     background: rgba(255, 255, 255, 0.1);
+}
+
+/* En la TV la botella es la pieza elástica del hueco: los rótulos ocupan lo
+   que necesitan y la botella se queda con el alto que sobra. Así la fila entra
+   en el presupuesto de alto que le dé la pantalla, haya 3 botellas o 10, sin
+   recortar ningún texto. */
+.vitrina--escaparate .vitrina-pieza {
+    min-height: 0;
+}
+
+.vitrina--escaparate .vitrina-hueco {
+    height: 100%;
+}
+
+.vitrina--escaparate .vitrina-botella {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+}
+
+.vitrina--escaparate .vitrina-textos {
+    flex: 0 0 auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

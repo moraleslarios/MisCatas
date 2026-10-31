@@ -20,4 +20,7 @@ public sealed class NotificadorCataNulo : INotificadorCata
 
     public Task EnviarResumenAsync(int cataId, ProgresoCataDto progreso, CancellationToken ct = default) =>
         Task.CompletedTask;
+
+    public Task EnviarCarteleraAsync(string evento, int cataId, CancellationToken ct = default) =>
+        Task.CompletedTask;
 }

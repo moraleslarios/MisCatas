@@ -8,13 +8,19 @@
 
     O directamente doble clic en  Parar.cmd
 
-    Cierra el servidor de MisCatas y libera el puerto 5080.
+    Cierra el servidor de MisCatas y libera los dos puertos:
+        5443 -> HTTPS, el seguro, el que atiende de verdad
+        5080 -> HTTP, solo redirige al seguro
 #>
 
 [CmdletBinding()]
 param()
 
 $ErrorActionPreference = 'Stop'
+
+# Los puertos viven en src\MisCatas.Web\Seguridad\PuertosApp.cs.
+$puertoHttps = 5443
+$puertoHttp = 5080
 
 Write-Host ''
 Write-Host '=== Parando MisCatas ===' -ForegroundColor Magenta
@@ -38,12 +44,24 @@ else {
 
 # Comprobacion final
 $quedan = @(Get-Process -Name 'MisCatas.Web' -ErrorAction SilentlyContinue)
-$puerto = @(Get-NetTCPConnection -LocalPort 5080 -State Listen -ErrorAction SilentlyContinue)
+
+# Los dos puertos: el seguro (HTTPS), que es el que atiende de verdad, y el
+# viejo (HTTP), que solo esta para redirigir al seguro.
+$puertos = @($puertoHttps, $puertoHttp)
+$ocupados = @()
+foreach ($p in $puertos) {
+    if (Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue) {
+        $ocupados += $p
+    }
+}
+$puerto = $ocupados
 
 Write-Host ''
 if ($quedan.Count -eq 0 -and $puerto.Count -eq 0) {
-    Write-Host '  PARADA  ' -ForegroundColor Black -BackgroundColor Green -NoNewline
-    Write-Host '  El puerto 5080 esta libre.' -ForegroundColor Cyan
+    Write-Host '  PARADA  ' -ForegroundColor Black -BackgroundColor Green
+    Write-Host ''
+    Write-Host "  Puerto $puertoHttps (HTTPS) : libre" -ForegroundColor Cyan
+    Write-Host "  Puerto $puertoHttp (HTTP)  : libre" -ForegroundColor Cyan
     Write-Host ''
     exit 0
 }
@@ -53,8 +71,12 @@ if ($quedan.Count -gt 0) {
     Write-Host "  Siguen vivos estos procesos: $($quedan.Id -join ', ')" -ForegroundColor Red
 }
 if ($puerto.Count -gt 0) {
-    $pids = ($puerto | Select-Object -ExpandProperty OwningProcess -Unique) -join ', '
-    Write-Host "  El puerto 5080 sigue ocupado por el PID: $pids" -ForegroundColor Yellow
+    foreach ($p in $puerto) {
+        $que = if ($p -eq $puertoHttps) { 'HTTPS' } else { 'HTTP' }
+        $con = @(Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue)
+        $pids = ($con | Select-Object -ExpandProperty OwningProcess -Unique) -join ', '
+        Write-Host "  El puerto $p ($que) sigue ocupado por el PID: $pids" -ForegroundColor Yellow
+    }
     Write-Host '  (puede ser otro programa distinto de MisCatas)' -ForegroundColor DarkGray
 }
 Write-Host ''

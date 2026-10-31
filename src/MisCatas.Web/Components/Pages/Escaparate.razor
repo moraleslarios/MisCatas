@@ -171,58 +171,69 @@ else
                 <div class="tv-revelacion">
                     <p class="tv-rotulo">@Datos.Nombre</p>
 
-                    @if (Datos.Resultado?.Ganador is { } ganador)
-                    {
-                        <div class="tv-ganador">
-                            @* La botella se queda, ya en pequeño, para que la
-                               etiqueta siga a la vista junto a las notas. *@
-                            <BotellaVirtual NumeroOrden="ganador.NumeroOrden"
-                                            UrlEtiqueta="@UrlEtiqueta(ganador)"
-                                            Tamano="TamanoBotella.Grande"
-                                            Etiqueta="@($"Botella de {ganador.NombreConAnio}")"
-                                            Clase="tv-ganador-botella" />
-
-                            <p class="tv-ganador-rotulo">Vino ganador</p>
-                            <h1 class="tv-ganador-nombre">@ganador.NombreConAnio</h1>
-                            <p class="tv-ganador-nota">@TextoMedia(ganador)</p>
-
-                            @* El dueño es el titular de la noche: tipografía serif y oro. *@
-                            <p class="tv-ganador-dueno-rotulo">Lo trajo</p>
-                            <p class="tv-ganador-dueno">@ganador.Dueno</p>
-                        </div>
-                    }
-
-                    <ol class="tv-podio">
-                        @foreach (var vino in Clasificacion)
+                    @* Cuerpo a dos columnas: el ganador a la izquierda y la
+                       clasificación con sus cifras a la derecha. Al vivir cada
+                       cosa dentro de su propia caja, el reparto de alturas es
+                       predecible y ningún bloque se monta sobre el vecino. *@
+                    <div class="tv-revelacion-cuerpo">
+                        @if (Datos.Resultado?.Ganador is { } ganador)
                         {
-                            <li class="@ClasePodio(vino)">
-                                <span class="tv-podio-puesto">@vino.Posicion</span>
-                                <span class="tv-podio-textos">
-                                    <span class="tv-podio-nombre">@vino.NombreConAnio</span>
-                                    @* Quién lo trajo, también en los demás puestos:
-                                       es la mitad de la conversación de la sobremesa. *@
-                                    <span class="tv-podio-dueno">Lo trajo @vino.Dueno</span>
-                                </span>
-                                <span class="tv-podio-nota">@TextoMedia(vino)</span>
-                            </li>
-                        }
-                    </ol>
+                            <div class="tv-ganador">
+                                @* La botella se queda, ya en pequeño, para que la
+                                   etiqueta siga a la vista junto a las notas. *@
+                                <BotellaVirtual NumeroOrden="ganador.NumeroOrden"
+                                                UrlEtiqueta="@UrlEtiqueta(ganador)"
+                                                Tamano="TamanoBotella.Grande"
+                                                Etiqueta="@($"Botella de {ganador.NombreConAnio}")"
+                                                Clase="tv-ganador-botella" />
 
-                    @* Las tres cifras que resumen la noche, en grande para que
-                       se lean desde el fondo de la sala. *@
-                    <div class="tv-cifras tv-cifras--veredicto">
-                        <article class="tv-cifra">
-                            <span class="tv-cifra-valor">@TextoMediaCata</span>
-                            <span class="tv-cifra-rotulo">Nota media de la cata</span>
-                        </article>
-                        <article class="tv-cifra">
-                            <span class="tv-cifra-valor">@Datos.TotalVinos</span>
-                            <span class="tv-cifra-rotulo">Vinos catados</span>
-                        </article>
-                        <article class="tv-cifra">
-                            <span class="tv-cifra-valor">@TotalVotos</span>
-                            <span class="tv-cifra-rotulo">Votos contados</span>
-                        </article>
+                                <p class="tv-ganador-rotulo">Vino ganador</p>
+                                <h1 class="tv-ganador-nombre">@ganador.NombreConAnio</h1>
+                                <p class="tv-ganador-nota">@TextoMedia(ganador)</p>
+
+                                @* El dueño es el titular de la noche: tipografía serif y oro. *@
+                                <p class="tv-ganador-dueno-rotulo">Lo trajo</p>
+                                <p class="tv-ganador-dueno">@ganador.Dueno</p>
+                            </div>
+                        }
+
+                        <div class="tv-revelacion-marcador">
+                            @* Se publica cuántos puestos hay para que el CSS pueda
+                               apretar la lista: con 10 vinos cada fila tiene que ser
+                               más baja que con 3, porque la pantalla no se estira. *@
+                            <ol class="tv-podio">
+                                @foreach (var vino in Clasificacion)
+                                {
+                                    <li class="@ClasePodio(vino)">
+                                        <span class="tv-podio-puesto">@vino.Posicion</span>
+                                        <span class="tv-podio-textos">
+                                            <span class="tv-podio-nombre">@vino.NombreConAnio</span>
+                                            @* Quién lo trajo, también en los demás puestos:
+                                               es la mitad de la conversación de la sobremesa. *@
+                                            <span class="tv-podio-dueno">Lo trajo @vino.Dueno</span>
+                                        </span>
+                                        <span class="tv-podio-nota">@TextoMedia(vino)</span>
+                                    </li>
+                                }
+                            </ol>
+
+                            @* Las tres cifras que resumen la noche, en grande para que
+                               se lean desde el fondo de la sala. *@
+                            <div class="tv-cifras tv-cifras--veredicto">
+                                <article class="tv-cifra">
+                                    <span class="tv-cifra-valor">@TextoMediaCata</span>
+                                    <span class="tv-cifra-rotulo">Nota media de la cata</span>
+                                </article>
+                                <article class="tv-cifra">
+                                    <span class="tv-cifra-valor">@Datos.TotalVinos</span>
+                                    <span class="tv-cifra-rotulo">Vinos catados</span>
+                                </article>
+                                <article class="tv-cifra">
+                                    <span class="tv-cifra-valor">@TotalVotos</span>
+                                    <span class="tv-cifra-rotulo">Votos contados</span>
+                                </article>
+                            </div>
+                        </div>
                     </div>
 
                     @* La estantería completa, ya con las etiquetas reales y el
@@ -236,13 +247,12 @@ else
                     }
 
                     <div class="tv-revelacion-acciones">
-                        <button type="button" class="tv-boton" @onclick="VolverAlInicio">
+                        <button type="button"
+                            class="tv-volver"
+                            title="Volver al inicio"
+                            aria-label="Volver al inicio"
+                            @onclick="VolverAlInicio">
                             <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Heredado" />
-                            <span>Volver al inicio</span>
-                        </button>
-                        <button type="button" class="tv-boton tv-boton--suave" @onclick="RepetirGala">
-                            <IconoVino Nombre="Icono.Reanudar" Tamano="TamanoIcono.Heredado" />
-                            <span>Repetir la botella</span>
                         </button>
                     </div>
                 </div>

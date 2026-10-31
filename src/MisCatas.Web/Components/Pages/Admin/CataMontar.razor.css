@@ -162,9 +162,48 @@
     margin-bottom: 1rem;
 }
 
-.montar-anadir > select {
+/* Botón que abre la hoja con buscador. Ocupa todo el ancho porque sustituye a
+   la pareja desplegable + «Añadir» que había antes. */
+.montar-elegir {
+    display: flex;
     flex: 1;
+    gap: 0.6rem;
+    align-items: center;
     min-width: 0;
+    padding: 0.7rem 0.9rem;
+    color: var(--burdeos, #6B1F2E);
+    text-align: left;
+    background: var(--crema, #FBF6EE);
+    border: 1px dashed var(--crema-borde, #DFD4C6);
+    border-radius: 0.85rem;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.montar-elegir:hover:not(:disabled) {
+    background: var(--crema-oscuro, #EDE5DB);
+    border-color: var(--burdeos, #6B1F2E);
+    border-style: solid;
+}
+
+.montar-elegir:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.montar-elegir-texto {
+    flex: 1;
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.montar-elegir-cuenta {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    color: var(--carbon-500, #4A4245);
+    font-variant-numeric: tabular-nums;
 }
 
 .montar-vacio {

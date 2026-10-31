@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "▶ Arrancar la web",
-            "detail": "Levanta http://localhost:5080 y abre el navegador (script Arrancar.ps1)",
+            "detail": "Levanta https://localhost:5443 y abre el navegador (script Arrancar.ps1)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -16,8 +16,23 @@
             "problemMatcher": []
         },
         {
+            "label": "▶ Arrancar la web (red local)",
+            "detail": "Levanta https://192.168.x.x:5443 y abre la dirección que usan los móviles y la tele",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/Arrancar.ps1",
+                "-Lan"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "■ Parar la web",
-            "detail": "Cierra la app y libera el puerto 5080 (script Parar.ps1)",
+            "detail": "Cierra la app y libera los puertos 5443 (HTTPS) y 5080 (HTTP)",
             "type": "shell",
             "command": "powershell",
             "args": [
@@ -45,7 +60,7 @@
         },
         {
             "label": "Arrancar MisCatas",
-            "detail": "Levanta la web en http://localhost:5080 y abre el navegador",
+            "detail": "Levanta la web en https://localhost:5443 y abre el navegador",
             "type": "shell",
             "command": "dotnet",
             "args": [

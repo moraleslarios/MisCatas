@@ -64,7 +64,9 @@
 
 .resumen-cifras {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* Las cifras se reparten solas: en un móvil estrecho bajan a dos columnas
+       (y a una si hace falta) en vez de apretarse las tres en la misma fila. */
+    grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
     gap: 0.5rem;
 }
 
@@ -188,6 +190,8 @@
 .resumen-fila-titulo {
     font-weight: 600;
     color: #2A2325;
+    /* Un nombre de vino muy largo y sin espacios no debe ensanchar la fila. */
+    overflow-wrap: anywhere;
 }
 
 .resumen-fila-pie {

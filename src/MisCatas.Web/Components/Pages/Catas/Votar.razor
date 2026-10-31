@@ -106,6 +106,31 @@ else
                     </p>
                 }
             </section>
+
+            <section class="votar-recorrido" aria-label="Vinos de la cata">
+                @foreach (var vino in Datos.Vinos)
+                {
+                    <span class="@ClaseHito(vino)" title="@vino.Titulo">
+                        @if (vino.HeVotado)
+                        {
+                            <IconoVino Nombre="Icono.Hecho" Tamano="TamanoIcono.Diminuto" />
+                        }
+                        else
+                        {
+                            @vino.NumeroOrden
+                        }
+                    </span>
+                }
+            </section>
+
+            @if (Datos.Estado == EstadoCata.EnCurso)
+            {
+                <a class="mc-boton mc-boton-fantasma votar-repaso"
+                   href="@RutasApp.MisNotas(Id)">
+                    <IconoVino Nombre="Icono.Lapiz" Tamano="TamanoIcono.Pequeno" />
+                    Repasar y corregir todas mis notas
+                </a>
+            }
         }
 
         <section class="votar-recorrido" aria-label="Vinos de la cata">
@@ -123,6 +148,15 @@ else
                 </span>
             }
         </section>
+
+        @if (Datos.Estado == EstadoCata.EnCurso)
+        {
+            <a class="mc-boton mc-boton-fantasma votar-repaso"
+               href="@RutasApp.MisNotas(Id)">
+                <IconoVino Nombre="Icono.Lapiz" Tamano="TamanoIcono.Pequeno" />
+                Repasar y corregir todas mis notas
+            </a>
+        }
     </div>
 
     <ModalConfirmacion @bind-Visible="ConfirmacionVisible"

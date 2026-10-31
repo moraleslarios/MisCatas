@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using MisCatas.Application.Comun;
 using MisCatas.Application.Usuarios;
 using MisCatas.Domain.Enums;
+using MisCatas.Web.Seguridad;
 
 namespace MisCatas.Web.Components.Pages.Admin;
 
@@ -36,10 +37,17 @@ public partial class UsuarioEditar
 
     private string? Error { get; set; }
 
+    /// <summary>Texto del aviso de «guardado» que se muestra en la ventana.</summary>
+    private string MensajeExito { get; set; } = string.Empty;
+
+    /// <summary>La ventana de «guardado» está a la vista.</summary>
+    private bool MostrarExito { get; set; }
+
     protected override async Task OnParametersSetAsync()
     {
         NoEncontrado = false;
         Error = null;
+        MostrarExito = false;
 
         if (Id is null)
         {
@@ -116,6 +124,7 @@ public partial class UsuarioEditar
     private async Task GuardarAsync()
     {
         Error = null;
+        MostrarExito = false;
         Guardando = true;
 
         try
@@ -158,12 +167,23 @@ public partial class UsuarioEditar
                 }
             }
 
-            Navegacion.NavigateTo("/admin/usuarios");
+            MensajeExito = EsNuevo
+                ? $"{Datos.Nombre} {Datos.Apellidos} ya puede entrar con su teléfono."
+                : $"Los cambios de {Datos.Nombre} {Datos.Apellidos} se han guardado.";
+
+            MostrarExito = true;
         }
         finally
         {
             Guardando = false;
         }
+    }
+
+    /// <summary>Al cerrarse el aviso se vuelve al listado de usuarios.</summary>
+    private void SalirTrasGuardar()
+    {
+        MostrarExito = false;
+        Navegacion.NavigateTo(RutasApp.AdminUsuarios);
     }
 
     /// <summary>Datos del formulario con las validaciones de la interfaz.</summary>

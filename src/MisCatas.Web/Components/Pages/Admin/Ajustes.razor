@@ -10,7 +10,12 @@
 </p>
 
 <Aviso Texto="@Error" EsError="true" />
-<Aviso Texto="@Mensaje" />
+
+<ModalExito Visible="MostrarExito"
+            Titulo="Ajustes guardados"
+            Mensaje="Los ajustes generales se han guardado."
+            TextoBoton="Continuar"
+            AlCerrar="SalirTrasGuardar" />
 
 @if (Datos is null)
 {

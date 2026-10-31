@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MisCatas.Application.Imagenes;
 using MisCatas.Application.Vinos;
+using MisCatas.Web.Seguridad;
 
 namespace MisCatas.Web.Components.Pages.Admin;
 
@@ -41,6 +42,12 @@ public partial class VinoEditar
 
     private string? Mensaje { get; set; }
 
+    /// <summary>Texto del aviso de «guardado» que se muestra en la ventana.</summary>
+    private string MensajeExito { get; set; } = string.Empty;
+
+    /// <summary>La ventana de «guardado» está a la vista.</summary>
+    private bool MostrarExito { get; set; }
+
     private bool TieneFoto { get; set; }
 
     private bool TieneEtiqueta { get; set; }
@@ -61,6 +68,7 @@ public partial class VinoEditar
         NoEncontrado = false;
         Error = null;
         Mensaje = null;
+        MostrarExito = false;
 
         if (Id is null)
         {
@@ -103,6 +111,7 @@ public partial class VinoEditar
     {
         Error = null;
         Mensaje = null;
+        MostrarExito = false;
         Guardando = true;
 
         try
@@ -132,7 +141,8 @@ public partial class VinoEditar
 
                 // Tras darlo de alta se vuelve al listado; las imágenes se suben
                 // después entrando a editar el vino.
-                Navegacion.NavigateTo("/admin/vinos");
+                MensajeExito = $"«{Datos.Nombre}» se ha dado de alta. Entra a editarlo para ponerle foto y etiqueta.";
+                MostrarExito = true;
                 return;
             }
 
@@ -144,12 +154,20 @@ public partial class VinoEditar
                 return;
             }
 
-            Mensaje = "Cambios guardados.";
+            MensajeExito = $"Los cambios de «{Datos.Nombre}» se han guardado.";
+            MostrarExito = true;
         }
         finally
         {
             Guardando = false;
         }
+    }
+
+    /// <summary>Al cerrarse el aviso se vuelve al listado de vinos.</summary>
+    private void SalirTrasGuardar()
+    {
+        MostrarExito = false;
+        Navegacion.NavigateTo(RutasApp.AdminVinos);
     }
 
     private async Task SubirAsync(TipoImagenVino tipo, InputFileChangeEventArgs e)

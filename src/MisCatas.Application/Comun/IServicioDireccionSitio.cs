@@ -41,7 +41,7 @@ public interface IServicioDireccionSitio
 /// El motivo importa porque la pantalla avisa de forma distinta según el caso.
 /// </summary>
 /// <param name="Raiz">
-/// Dirección sin barra final (por ejemplo <c>http://192.168.1.50:5080</c>), o
+/// Dirección sin barra final (por ejemplo <c>https://192.168.1.50:5443</c>), o
 /// <c>null</c> si no se ha podido determinar ninguna de fiar.
 /// </param>
 /// <param name="Origen">De dónde ha salido la dirección.</param>

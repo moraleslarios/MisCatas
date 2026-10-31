@@ -18,6 +18,26 @@ CultureInfo.DefaultThreadCurrentUICulture = culturaEs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// HTTPS en la red local.
+//
+// Antes la aplicación se servía solo por HTTP, y eso daba dos problemas:
+// los enlaces que se mandan por WhatsApp salían marcados como «no seguro» y
+// algunos móviles los reescribían a https, rompiéndolos; y el QR llevaba a
+// una dirección que el navegador trataba con desconfianza.
+//
+// Se escucha por los dos puertos: el de HTTP solo para redirigir a HTTPS, así
+// quien tenga guardado el enlace viejo sigue llegando.
+var certificado = CertificadoLocal.ObtenerOCrear(
+    Path.Combine(builder.Environment.ContentRootPath, "certificados"));
+
+builder.WebHost.ConfigureKestrel(opciones =>
+{
+    opciones.ListenAnyIP(PuertosApp.Http);
+
+    opciones.ListenAnyIP(PuertosApp.Https, escucha =>
+        escucha.UseHttps(certificado));
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -39,7 +59,9 @@ builder.Services.AddScoped<ClienteCataHub>();
 // qué cata se va a abrir (inicio del participante y escaparate ocioso).
 builder.Services.AddScoped<ClienteCartelera>();
 
-// Autenticación por cookie. Sin HTTPS: se accede desde móviles por IP local.
+// Autenticación por cookie. Ya con HTTPS, pero marcando la cookie como
+// segura solo cuando la petición venga cifrada: así la redirección inicial
+// desde HTTP no se queda sin sesión a medio camino.
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(opciones =>
@@ -47,7 +69,7 @@ builder.Services
         opciones.Cookie.Name = "MisCatas.Auth";
         opciones.Cookie.HttpOnly = true;
         opciones.Cookie.SameSite = SameSiteMode.Lax;
-        opciones.Cookie.SecurePolicy = CookieSecurePolicy.None;
+        opciones.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         opciones.LoginPath = RutasCuenta.Login;
         opciones.LogoutPath = RutasCuenta.Logout;
         opciones.AccessDeniedPath = RutasCuenta.AccesoDenegado;
@@ -98,36 +120,31 @@ builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(carpetaClaves)
     .SetApplicationName("MisCatas");
 
-// Cookie de antiforgery explícita: sin HTTPS en la red local no puede ser
-// Secure, y Lax basta porque todos los formularios son del propio sitio.
+// Cookie de antiforgery explícita. «SameAsRequest» en vez de forzar Secure:
+// durante el salto de HTTP a HTTPS conviven las dos, y marcarla siempre
+// segura dejaba sin token a quien llegase por el enlace viejo.
 builder.Services.AddAntiforgery(opciones =>
 {
     opciones.Cookie.Name = "MisCatas.Antiforgery";
     opciones.Cookie.HttpOnly = true;
     opciones.Cookie.SameSite = SameSiteMode.Lax;
-    opciones.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    opciones.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
+
+// Destino de la redirección a HTTPS. Hay que decirle el puerto a mano: los
+// puertos de la aplicación no son los estándar (443), y sin esto la
+// redirección llevaría a una dirección donde no hay nadie escuchando.
+builder.Services.AddHttpsRedirection(opciones =>
+{
+    opciones.HttpsPort = PuertosApp.Https;
+    opciones.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
 });
 
 var app = builder.Build();
 
-// Aplica migraciones pendientes y crea los datos mínimos. Nunca borra nada.
-await app.Services.MigrarYSembrarAsync();
-
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-}
-
-// Páginas de error amigables, pero NUNCA sobre el canal en vivo: reejecutar
-// la petición contra «/not-found» convertiría el 401 del hub en un 400 de
-// antiforgery, y el cliente de SignalR no sabría que solo le falta la cookie.
-app.UseWhen(
-    contexto => !contexto.Request.Path.StartsWithSegments(CataHub.Ruta),
-    rama => rama.UseStatusCodePagesWithReExecute(
-        "/not-found",
-        createScopeForStatusCodePages: true));
-
-// Nada de UseHttpsRedirection ni HSTS: la app se sirve solo por HTTP en la red local.
+// Todo lo que entre por HTTP se manda a HTTPS. El puerto va explícito porque
+// no son los puertos estándar: sin decírselo, la redirección mandaría al 443.
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

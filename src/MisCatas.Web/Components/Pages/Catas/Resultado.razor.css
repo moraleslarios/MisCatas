@@ -767,6 +767,11 @@
     position: relative;
     display: grid;
     place-items: center;
+    /* El hueco se estira a todo el ancho disponible: si se deja medir por su
+       contenido, la botella (que mide su ancho a partir del alto) sale unos
+       píxeles más ancha que la caja y se desborda a los lados. */
+    width: 100%;
+    max-width: 100%;
     margin: 0.35rem 0;
 }
 

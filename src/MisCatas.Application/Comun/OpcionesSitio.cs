@@ -16,7 +16,7 @@ public class OpcionesSitio
 
     /// <summary>
     /// Dirección por la que los invitados llegan a la aplicación desde sus
-    /// móviles. Por ejemplo <c>http://192.168.1.50:5080</c> en una red local,
+    /// móviles. Por ejemplo <c>https://192.168.1.50:5443</c> en una red local,
     /// o <c>https://miscatas.ejemplo.com</c> si está publicada.
     ///
     /// Vacía mientras no se configure: en ese caso los avisos se siguen

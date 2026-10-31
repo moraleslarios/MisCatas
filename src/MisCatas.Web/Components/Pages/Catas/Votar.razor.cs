@@ -96,6 +96,16 @@ public partial class Votar : IAsyncDisposable
 
     private bool SinConexion => !Vivo.Conectado;
 
+    /// <summary>
+    /// Ya no queda ningún vino por lanzar y el que había está cerrado: la cata
+    /// está en el tramo final, a la espera de que el anfitrión la finalice.
+    /// </summary>
+    private bool SeAcabaronLosVinos =>
+        Datos is not null
+        && Datos.Estado == EstadoCata.EnCurso
+        && Datos.Vinos.Count > 0
+        && Datos.Vinos.All(v => v.EstadoVotacion == EstadoVotacion.Cerrada);
+
     // ---------------------------------------------------------------- textos
 
     private string TituloVino => VinoActual?.Titulo ?? "Sin vino en votación";
@@ -202,6 +212,15 @@ public partial class Votar : IAsyncDisposable
         if (Vivo.UltimoEvento is EventosCata.CataFinalizada)
         {
             await InvokeAsync(() => Navegacion.NavigateTo(RutasApp.Resultado(Id)));
+            return;
+        }
+
+        // Se ha cerrado el ÚLTIMO vino y la cata sigue viva: ya no queda nada
+        // que catar, así que cada participante pasa a su hoja de repaso, donde
+        // puede corregir cualquiera de sus notas antes del veredicto.
+        if (Vivo.UltimoEvento is EventosCata.VotacionCerrada && SeAcabaronLosVinos)
+        {
+            await InvokeAsync(() => Navegacion.NavigateTo(RutasApp.MisNotas(Id)));
             return;
         }
 

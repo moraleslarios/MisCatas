@@ -96,6 +96,9 @@ public partial class Resumen : IAsyncDisposable
 
     private bool Finalizada => Datos?.Estado == EstadoCata.Finalizada;
 
+    /// <summary>La cata sigue viva: todavía se pueden corregir notas.</summary>
+    private bool EnCurso => Datos?.Estado == EstadoCata.EnCurso;
+
     /// <summary>
     /// Vitrina de la cata vista desde el móvil. REGLA DE ORO: aquí la cata
     /// sigue a ciegas, así que nunca se pasa <c>UrlEtiqueta</c>; la botella se

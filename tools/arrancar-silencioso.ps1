@@ -3,7 +3,7 @@
 #
 #   powershell -NoProfile -ExecutionPolicy Bypass -File tools\arrancar-silencioso.ps1
 #
-# El log queda en tools\salida-app.log y la app en http://localhost:5080
+# El log queda en tools\salida-app.log y la app en https://localhost:5443
 
 $ErrorActionPreference = 'Stop'
 
@@ -39,7 +39,7 @@ Write-Host "MisCatas arrancada. PID $($proceso.Id). Log: $log"
 $limite = (Get-Date).AddSeconds(30)
 while ((Get-Date) -lt $limite) {
     if ((Test-Path $log) -and (Select-String -Path $log -Pattern 'Application started' -Quiet)) {
-        Write-Host 'LISTA: escuchando en http://localhost:5080'
+        Write-Host 'LISTA: escuchando en https://localhost:5443'
         exit 0
     }
     Start-Sleep -Milliseconds 500

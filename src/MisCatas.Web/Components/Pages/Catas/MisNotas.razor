@@ -1,0 +1,160 @@
+@page "/catas/{Id:int}/mis-notas"
+
+@attribute [Authorize(Policy = Politicas.Votantes)]
+
+<PageTitle>Mis notas · MisCatas</PageTitle>
+
+@if (Cargando)
+{
+    <p class="misnotas-cargando" role="status">Cargando tus notas…</p>
+}
+else if (Datos is null)
+{
+    <EstadoVacio Icono="Icono.Oculto"
+                 Titulo="No hay nada que repasar"
+                 Mensaje="O no estás invitado a esta cata, o ya no existe.">
+        <Acciones>
+            <a class="mc-boton mc-boton-secundario" href="@RutasApp.MisCatas">Volver a mis catas</a>
+        </Acciones>
+    </EstadoVacio>
+}
+else
+{
+    <div class="misnotas">
+        <header class="misnotas-cabecera">
+            <a class="misnotas-atras" href="@RutasApp.Resumen(Id)" aria-label="Volver al resumen de la cata">
+                <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Pequeno" />
+            </a>
+            <div class="misnotas-titulos">
+                <p class="mc-antetitulo">@Datos.Nombre</p>
+                <h1 class="misnotas-titulo">Mis notas</h1>
+            </div>
+            <span class="@ClasePastilla">@NombreEstado</span>
+        </header>
+
+        @if (SinConexion)
+        {
+            <p class="misnotas-reconectando" role="status">
+                <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Pequeno" />
+                Reconectando con la mesa…
+            </p>
+        }
+
+        @* Mi marcador: lo que llevo puesto, para decidir qué repasar. *@
+        <section class="misnotas-marcador" aria-label="Mi resumen">
+            <article class="misnotas-cifra">
+                <span class="misnotas-cifra-valor">@MisVotos <span class="misnotas-cifra-de">de @Datos.Vinos.Count</span></span>
+                <span class="misnotas-cifra-rotulo">Vinos puntuados</span>
+            </article>
+            <article class="misnotas-cifra">
+                <span class="misnotas-cifra-valor">@TextoMiMedia</span>
+                <span class="misnotas-cifra-rotulo">Mi nota media</span>
+            </article>
+            <article class="misnotas-cifra">
+                <span class="misnotas-cifra-valor">@MisComentarios</span>
+                <span class="misnotas-cifra-rotulo">Comentarios</span>
+            </article>
+        </section>
+
+        <p class="@ClaseExplicacion" role="status">
+            <IconoVino Nombre="@IconoExplicacion" Tamano="TamanoIcono.Pequeno" />
+            @TextoExplicacion
+        </p>
+
+        <Aviso Texto="@Mensaje" EsError="false" />
+        <Aviso Texto="@Error" EsError="true" />
+
+        <section class="misnotas-lista" aria-label="Todas mis notas">
+            @foreach (var vino in Datos.Vinos)
+            {
+                <article class="@ClaseFicha(vino)" @key="vino.CataVinoId">
+
+                    <div class="misnotas-ficha-cabecera">
+                        <span class="misnotas-ficha-numero">@vino.NumeroOrden</span>
+
+                        <div class="misnotas-ficha-textos">
+                            <span class="misnotas-ficha-titulo">@vino.Titulo</span>
+                            <span class="misnotas-ficha-pie">@TextoEstado(vino)</span>
+                        </div>
+
+                        <span class="misnotas-ficha-nota">@TextoNota(vino)</span>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(vino.MiComentario) && !EstaEditando(vino))
+                    {
+                        <p class="misnotas-ficha-comentario">«@vino.MiComentario»</p>
+                    }
+
+                    @if (EstaEditando(vino))
+                    {
+                        <div class="misnotas-editor">
+                            <VotoInput @bind-Valor="NotaEditada"
+                                       Paso="Datos.PasoDecimalNota"
+                                       Deshabilitado="Guardando"
+                                       EtiquetaAccesible="@($"Nota del vino número {vino.NumeroOrden}")" />
+
+                            <div class="mc-campo">
+                                <label class="mc-etiqueta" for="@($"misnotas-comentario-{vino.CataVinoId}")">
+                                    Comentario (opcional)
+                                </label>
+                                <textarea class="mc-control"
+                                          id="@($"misnotas-comentario-{vino.CataVinoId}")"
+                                          rows="3"
+                                          maxlength="500"
+                                          placeholder="Qué has notado: aroma, cuerpo, final…"
+                                          disabled="@Guardando"
+                                          @bind="ComentarioEditado"
+                                          @bind:event="oninput"></textarea>
+                                <p class="mc-ayuda">@ComentarioEditado.Length / 500</p>
+                            </div>
+
+                            <div class="misnotas-editor-botones">
+                                <button type="button"
+                                        class="mc-boton mc-boton-primario"
+                                        disabled="@(Guardando || NotaEditada is null)"
+                                        @onclick="GuardarAsync">
+                                    <IconoVino Nombre="Icono.Hecho" Tamano="TamanoIcono.Pequeno" />
+                                    Guardar esta nota
+                                </button>
+
+                                <button type="button"
+                                        class="mc-boton mc-boton-fantasma"
+                                        disabled="@Guardando"
+                                        @onclick="CancelarEdicion">
+                                    <IconoVino Nombre="Icono.Cerrar" Tamano="TamanoIcono.Pequeno" />
+                                    Dejarlo como estaba
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else if (PuedeEditar(vino))
+                    {
+                        <button type="button"
+                                class="mc-boton mc-boton-secundario misnotas-ficha-accion"
+                                disabled="@Guardando"
+                                @onclick="() => AbrirEdicion(vino)">
+                            <IconoVino Nombre="Icono.Lapiz" Tamano="TamanoIcono.Pequeno" />
+                            @(vino.MiNota is not null ? "Corregir mi nota" : "Poner mi nota")
+                        </button>
+                    }
+                </article>
+            }
+        </section>
+
+        <footer class="misnotas-pie">
+            <a class="mc-boton mc-boton-secundario" href="@RutasApp.Resumen(Id)">
+                <IconoVino Nombre="Icono.Atras" Tamano="TamanoIcono.Pequeno" />
+                Volver al resumen
+            </a>
+
+            @if (Finalizada)
+            {
+                <a class="mc-boton mc-boton-dorado mc-boton-grande"
+                   href="@RutasApp.Resultado(Id)">
+                    <IconoVino Nombre="Icono.Medalla" Tamano="TamanoIcono.Pequeno" />
+                    Ver resultados
+                </a>
+            }
+        </footer>
+    </div>
+}

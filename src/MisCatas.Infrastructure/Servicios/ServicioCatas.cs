@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MisCatas.Application.Catas;
 using MisCatas.Application.Comun;
+using MisCatas.Application.Votacion;
 using MisCatas.Domain.Entidades;
 using MisCatas.Domain.Enums;
 using MisCatas.Infrastructure.Persistencia;
@@ -12,9 +13,38 @@ public class ServicioCatas : IServicioCatas
 {
     private readonly IDbContextFactory<AppDbContext> _fabrica;
 
-    public ServicioCatas(IDbContextFactory<AppDbContext> fabrica)
+    /// <summary>
+    /// Avisa a las pantallas en espera. Hace falta porque el escaparate anuncia
+    /// la próxima cata (nombre, número de vinos y de catadores) y, sin este
+    /// aviso, seguiría mostrando los datos viejos hasta que alguien recargase.
+    /// </summary>
+    private readonly INotificadorCata _notificador;
+
+    public ServicioCatas(
+        IDbContextFactory<AppDbContext> fabrica,
+        INotificadorCata notificador)
     {
         _fabrica = fabrica;
+        _notificador = notificador;
+    }
+
+    /// <summary>
+    /// Publica en la cartelera que la cata ha cambiado. Nunca deja escapar un
+    /// error: un fallo al avisar no puede tumbar un guardado que ya se hizo.
+    /// </summary>
+    private async Task AvisarCarteleraAsync(
+        int cataId,
+        string evento,
+        CancellationToken ct)
+    {
+        try
+        {
+            await _notificador.EnviarCarteleraAsync(evento, cataId, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Silencio deliberado: el dato ya está guardado.
+        }
     }
 
     public async Task<ResultadoPaginado<CataDto>> ListarAsync(
@@ -114,6 +144,8 @@ public class ServicioCatas : IServicioCatas
         db.Catas.Add(cata);
         await db.SaveChangesAsync(ct);
 
+        await AvisarCarteleraAsync(cata.Id, EventosCata.CataModificada, ct);
+
         return Resultado.Ok(cata.Id);
     }
 
@@ -143,6 +175,8 @@ public class ServicioCatas : IServicioCatas
         Volcar(datos, cata);
         await db.SaveChangesAsync(ct);
 
+        await AvisarCarteleraAsync(cata.Id, EventosCata.CataModificada, ct);
+
         return Resultado.Ok();
     }
 
@@ -163,6 +197,8 @@ public class ServicioCatas : IServicioCatas
 
         db.Catas.Remove(cata);
         await db.SaveChangesAsync(ct);
+
+        await AvisarCarteleraAsync(id, EventosCata.CataEliminada, ct);
 
         return Resultado.Ok();
     }
@@ -214,6 +250,9 @@ public class ServicioCatas : IServicioCatas
         });
 
         await db.SaveChangesAsync(ct);
+
+        await AvisarCarteleraAsync(cataId, EventosCata.CataModificada, ct);
+
         return Resultado.Ok();
     }
 
@@ -259,6 +298,8 @@ public class ServicioCatas : IServicioCatas
 
         // Recompacta los órdenes para que queden consecutivos desde 1.
         await RecompactarOrdenesAsync(db, cataId, ct);
+
+        await AvisarCarteleraAsync(cataId, EventosCata.CataModificada, ct);
 
         return Resultado.Ok();
     }
@@ -315,6 +356,9 @@ public class ServicioCatas : IServicioCatas
         }
 
         await db.SaveChangesAsync(ct);
+
+        await AvisarCarteleraAsync(cataId, EventosCata.CataModificada, ct);
+
         return Resultado.Ok();
     }
 
@@ -387,6 +431,8 @@ public class ServicioCatas : IServicioCatas
 
         await db.SaveChangesAsync(ct);
 
+        await AvisarCarteleraAsync(cataId, EventosCata.CataModificada, ct);
+
         return Resultado.Ok();
     }
 
@@ -441,6 +487,8 @@ public class ServicioCatas : IServicioCatas
         db.CataUsuarios.Add(new CataUsuario { CataId = cataId, UsuarioId = usuarioId });
         await db.SaveChangesAsync(ct);
 
+        await AvisarCarteleraAsync(cataId, EventosCata.CataModificada, ct);
+
         return Resultado.Ok();
     }
 
@@ -479,6 +527,8 @@ public class ServicioCatas : IServicioCatas
 
         db.CataUsuarios.Remove(invitacion);
         await db.SaveChangesAsync(ct);
+
+        await AvisarCarteleraAsync(cataId, EventosCata.CataModificada, ct);
 
         return Resultado.Ok();
     }
@@ -547,6 +597,9 @@ public class ServicioCatas : IServicioCatas
         }
 
         await db.SaveChangesAsync(ct);
+
+        await AvisarCarteleraAsync(cataId, EventosCata.CataModificada, ct);
+
         return Resultado.Ok();
     }
 
@@ -648,6 +701,11 @@ public class ServicioCatas : IServicioCatas
         }
 
         await db.SaveChangesAsync(ct);
+
+        // El cambio de estado decide QUÉ cata anuncian las pantallas en
+        // espera: una cata que vuelve a Borrador deja de ser la próxima.
+        await AvisarCarteleraAsync(cataId, EventosCata.CataModificada, ct);
+
         return Resultado.Ok();
     }
 

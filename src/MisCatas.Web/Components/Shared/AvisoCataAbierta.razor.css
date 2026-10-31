@@ -1,0 +1,156 @@
+/* ---------------------------------------------------------------------------
+   Aviso de «la cata ya está abierta».
+
+   Es una ventana que se superpone a lo que el catador estuviera mirando, así
+   que tiene que llamar la atención sin tapar del todo: fondo oscurecido y una
+   tarjeta centrada con el color de la marca.
+
+   Pensada primero para móvil, que es donde la va a ver todo el mundo.
+   --------------------------------------------------------------------------- */
+
+.aviso-cata-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgb(26 20 22 / 72%);
+    backdrop-filter: blur(3px);
+    animation: aviso-cata-entrar-fondo 180ms ease-out both;
+}
+
+.aviso-cata-caja {
+    width: 100%;
+    max-width: 24rem;
+    padding: 1.75rem 1.5rem 1.5rem;
+    text-align: center;
+    background: var(--crema);
+    border: 1px solid var(--crema-borde);
+    border-top: 4px solid var(--dorado);
+    border-radius: var(--radio-copa);
+    box-shadow: 0 1.5rem 3rem rgb(0 0 0 / 35%);
+    animation: aviso-cata-entrar-caja 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* El icono respira para que se note que el aviso acaba de llegar. */
+.aviso-cata-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1rem;
+    color: var(--crema);
+    background: var(--burdeos);
+    border-radius: 999px;
+    box-shadow: 0 0 0 0.5rem var(--dorado-suave);
+    animation: aviso-cata-latido 1.8s ease-in-out infinite;
+}
+
+.aviso-cata-antetitulo {
+    margin: 0 0 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dorado-texto);
+}
+
+.aviso-cata-titulo {
+    margin: 0 0 0.6rem;
+    font-family: var(--fuente-titulo), serif;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: var(--burdeos-oscuro);
+}
+
+.aviso-cata-mensaje {
+    margin: 0 0 1.1rem;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--carbon-600);
+}
+
+/* Fichita con lugar, vinos y participantes. */
+.aviso-cata-datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    justify-content: center;
+    margin: 0 0 1.35rem;
+    padding: 0.7rem 0.6rem;
+    background: var(--crema-oscuro);
+    border-radius: 0.75rem;
+}
+
+.aviso-cata-dato {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.aviso-cata-dato dt {
+    display: flex;
+    color: var(--burdeos);
+}
+
+.aviso-cata-dato dd {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--carbon-700);
+}
+
+.aviso-cata-botones {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.aviso-cata-boton {
+    flex: 1 1 0;
+    justify-content: center;
+}
+
+@keyframes aviso-cata-entrar-fondo {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes aviso-cata-entrar-caja {
+    from {
+        opacity: 0;
+        transform: translateY(1.25rem) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes aviso-cata-latido {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0.5rem var(--dorado-suave);
+    }
+
+    50% {
+        box-shadow: 0 0 0 0.9rem rgb(201 162 39 / 25%);
+    }
+}
+
+/* Quien pide menos movimiento no ve ni la entrada ni el latido. */
+@media (prefers-reduced-motion: reduce) {
+    .aviso-cata-fondo,
+    .aviso-cata-caja,
+    .aviso-cata-icono {
+        animation: none;
+    }
+}

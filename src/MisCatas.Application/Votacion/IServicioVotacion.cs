@@ -105,4 +105,12 @@ public interface INotificadorCata
 
     /// <summary>Envía el resumen ya calculado (agrupado para evitar ráfagas).</summary>
     Task EnviarResumenAsync(int cataId, ProgresoCataDto progreso, CancellationToken ct = default);
+
+    /// <summary>
+    /// Avisa a las pantallas EN ESPERA de que la cartelera ha cambiado: se ha
+    /// modificado o borrado una cata y, por tanto, lo que anuncian puede haber
+    /// dejado de ser cierto. No transporta datos: cada pantalla vuelve a
+    /// preguntar qué le toca mostrar con sus propios permisos.
+    /// </summary>
+    Task EnviarCarteleraAsync(string evento, int cataId, CancellationToken ct = default);
 }

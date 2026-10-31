@@ -1,0 +1,46 @@
+@* ---------------------------------------------------------------------------
+   Modal de «hecho». Se usa después de guardar algo para que el aviso se vea
+   SIEMPRE, aunque el formulario sea largo y se haya hecho scroll hacia abajo.
+
+   Se cierra solo pasados unos segundos (o con el botón, con Escape o pulsando
+   fuera) y al cerrarse avisa con AlCerrar, que es donde la pantalla aprovecha
+   para volver al listado correspondiente.
+
+   Accesibilidad: role="alertdialog" + aria-modal, título ligado por
+   aria-labelledby, cierre con Escape y foco inicial en el botón.
+   --------------------------------------------------------------------------- *@
+
+@if (Visible)
+{
+    <div class="modal-fondo" @onclick="CerrarAsync" @onkeydown="AlPulsarTeclaAsync" tabindex="-1">
+        <div class="modal-caja modal-caja--exito"
+             role="alertdialog"
+             aria-modal="true"
+             aria-labelledby="@($"exito-titulo-{_id}")"
+             aria-describedby="@($"exito-mensaje-{_id}")"
+             @onclick:stopPropagation="true">
+
+            <div class="modal-icono">
+                <IconoVino Nombre="IconoCabecera" Tamano="TamanoIcono.Grande" />
+            </div>
+
+            <h2 class="modal-titulo" id="@($"exito-titulo-{_id}")">@Titulo</h2>
+
+            <p class="modal-mensaje" id="@($"exito-mensaje-{_id}")">@Mensaje</p>
+
+            @if (Detalle is not null)
+            {
+                <div class="modal-detalle">@Detalle</div>
+            }
+
+            <div class="modal-botones">
+                <button type="button"
+                        class="mc-boton mc-boton-primario modal-boton"
+                        @onclick="CerrarAsync"
+                        @ref="_boton">
+                    @TextoBoton
+                </button>
+            </div>
+        </div>
+    </div>
+}

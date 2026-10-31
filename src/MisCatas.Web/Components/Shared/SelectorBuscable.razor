@@ -1,0 +1,114 @@
+@* ---------------------------------------------------------------------------
+   Selector con buscador, en hoja superpuesta.
+
+   Por qué existe: los desplegables nativos se vuelven inmanejables en cuanto
+   hay docenas de vinos o de catadores. Aquí se escribe, la lista se recorta a
+   lo que encaja y se pulsa la fila. Mismo gesto en móvil y en el portátil.
+
+   Accesibilidad: role="dialog" + aria-modal, título ligado por aria-labelledby,
+   cierre con Escape o tocando fuera, foco inicial en el buscador y lista
+   anunciada con role="listbox" / role="option".
+   --------------------------------------------------------------------------- *@
+
+@if (Visible)
+{
+    <div class="selector-fondo" @onclick="CerrarAsync" @onkeydown="AlPulsarTeclaAsync" tabindex="-1">
+        <div class="selector-caja"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="@($"selector-titulo-{_id}")"
+             @onclick:stopPropagation="true">
+
+            <header class="selector-cabecera">
+                <div class="selector-cabecera-textos">
+                    <p class="mc-antetitulo">@Antetitulo</p>
+                    <h2 class="selector-titulo" id="@($"selector-titulo-{_id}")">@Titulo</h2>
+                </div>
+
+                <button type="button"
+                        class="selector-cerrar"
+                        aria-label="Cerrar el buscador"
+                        @onclick="CerrarAsync">
+                    <IconoVino Nombre="Icono.Cerrar" Tamano="TamanoIcono.Pequeno" />
+                </button>
+            </header>
+
+            @* El buscador se queda pegado arriba: se escribe sin perderlo de
+               vista aunque la lista se haya desplazado. *@
+            <div class="selector-buscador">
+                <IconoVino Nombre="Icono.Lupa" Tamano="TamanoIcono.Pequeno" Clase="selector-lupa" />
+
+                <input class="selector-campo"
+                       type="search"
+                       placeholder="@Marcador"
+                       aria-label="@Marcador"
+                       value="@Busqueda"
+                       @oninput="AlEscribir"
+                       @ref="_campo" />
+
+                @if (!string.IsNullOrEmpty(Busqueda))
+                {
+                    <button type="button"
+                            class="selector-limpiar"
+                            aria-label="Borrar la búsqueda"
+                            @onclick="LimpiarAsync">
+                        <IconoVino Nombre="Icono.Cerrar" Tamano="TamanoIcono.Pequeno" />
+                    </button>
+                }
+            </div>
+
+            <div class="selector-cuerpo">
+                @if (Opciones.Count == 0)
+                {
+                    <p class="selector-vacio">@TextoSinOpciones</p>
+                }
+                else if (Filtradas.Count == 0)
+                {
+                    <p class="selector-vacio">
+                        No hay nada que encaje con «@Busqueda».
+                    </p>
+                }
+                else
+                {
+                    <ul class="selector-lista" role="listbox" aria-label="@Titulo">
+                        @foreach (var opcion in Filtradas)
+                        {
+                            <li role="option" aria-selected="false">
+                                <button type="button"
+                                        class="selector-fila"
+                                        @onclick="() => ElegirAsync(opcion)">
+                                    <span class="selector-inicial" aria-hidden="true">
+                                        @InicialDe(opcion)
+                                    </span>
+
+                                    <span class="selector-fila-textos">
+                                        <span class="selector-fila-titulo">@opcion.Titulo</span>
+                                        @if (!string.IsNullOrWhiteSpace(opcion.Subtitulo))
+                                        {
+                                            <span class="selector-fila-pie">@opcion.Subtitulo</span>
+                                        }
+                                    </span>
+
+                                    @if (!string.IsNullOrWhiteSpace(opcion.Detalle))
+                                    {
+                                        <span class="selector-fila-detalle">@opcion.Detalle</span>
+                                    }
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+
+            @* El pie recuerda cuántas filas quedan tras filtrar: evita la duda
+               de «¿se ha quedado colgado o es que no hay más?». *@
+            <footer class="selector-pie">
+                <span class="selector-cuenta">@TextoCuenta</span>
+
+                <button type="button" class="mc-boton mc-boton-fantasma" @onclick="CerrarAsync">
+                    Cancelar
+                </button>
+            </footer>
+        </div>
+    </div>
+}

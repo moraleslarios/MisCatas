@@ -9,6 +9,12 @@
 <Aviso Texto="@Error" EsError="true" />
 <Aviso Texto="@Mensaje" />
 
+<ModalExito Visible="MostrarExito"
+            Titulo="Vino guardado"
+            Mensaje="@MensajeExito"
+            TextoBoton="Continuar"
+            AlCerrar="SalirTrasGuardar" />
+
 @if (NoEncontrado)
 {
     <p class="vacio">No existe ese vino.</p>

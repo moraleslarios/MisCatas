@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components;
 using MisCatas.Application.Catas;
+using MisCatas.Web.Seguridad;
 
 namespace MisCatas.Web.Components.Pages.Admin;
 
@@ -26,13 +27,20 @@ public partial class CataEditar
 
     private string? Error { get; set; }
 
-    private string? Mensaje { get; set; }
+    /// <summary>Texto del aviso de «guardado» que se muestra en la ventana.</summary>
+    private string MensajeExito { get; set; } = string.Empty;
+
+    /// <summary>La ventana de «guardado» está a la vista.</summary>
+    private bool MostrarExito { get; set; }
+
+    /// <summary>A dónde se va al cerrarse la ventana de «guardado».</summary>
+    private string DestinoTrasGuardar { get; set; } = RutasApp.AdminCatas;
 
     protected override async Task OnParametersSetAsync()
     {
         NoEncontrada = false;
         Error = null;
-        Mensaje = null;
+        MostrarExito = false;
 
         if (Id is null)
         {
@@ -61,7 +69,7 @@ public partial class CataEditar
     private async Task GuardarAsync()
     {
         Error = null;
-        Mensaje = null;
+        MostrarExito = false;
         Guardando = true;
 
         try
@@ -87,7 +95,9 @@ public partial class CataEditar
                 }
 
                 // Tras crearla se va directo al montaje: vinos y participantes.
-                Navegacion.NavigateTo($"/admin/catas/{creada.Valor}/montar");
+                MensajeExito = $"«{Datos.Nombre}» se ha creado. Ahora toca ponerle vinos y participantes.";
+                DestinoTrasGuardar = $"/admin/catas/{creada.Valor}/montar";
+                MostrarExito = true;
                 return;
             }
 
@@ -99,12 +109,21 @@ public partial class CataEditar
                 return;
             }
 
-            Mensaje = "Cambios guardados.";
+            MensajeExito = $"Los cambios de «{Datos.Nombre}» se han guardado.";
+            DestinoTrasGuardar = RutasApp.AdminCatas;
+            MostrarExito = true;
         }
         finally
         {
             Guardando = false;
         }
+    }
+
+    /// <summary>Al cerrarse el aviso se vuelve a la pantalla que toque.</summary>
+    private void SalirTrasGuardar()
+    {
+        MostrarExito = false;
+        Navegacion.NavigateTo(DestinoTrasGuardar);
     }
 
     /// <summary>Datos del formulario con las validaciones de la interfaz.</summary>

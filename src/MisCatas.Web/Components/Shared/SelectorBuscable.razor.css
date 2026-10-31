@@ -1,0 +1,288 @@
+/* Estilos aislados de SelectorBuscable.
+
+   Pensado primero para el móvil: hoja que sube desde abajo, cabecera y
+   buscador fijos, lista con scroll propio y pie con la cuenta. En pantallas
+   anchas se centra como una tarjeta. */
+
+.selector-fondo {
+    position: fixed;
+    inset: 0;
+    /* Por encima del resto de capas de la aplicación. */
+    z-index: 1200;
+    display: grid;
+    place-items: end center;
+    background-color: rgba(23, 5, 10, 0.62);
+    backdrop-filter: blur(3px);
+    animation: selector-aparecer 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.selector-caja {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 34rem;
+    max-height: 92dvh;
+    overflow: hidden;
+    background-color: var(--crema, #FBF6EE);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: var(--radio-copa, 1.25rem) var(--radio-copa, 1.25rem) 0 0;
+    box-shadow: 0 -18px 56px rgba(23, 5, 10, 0.38);
+    animation: selector-subir 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* --- Cabecera ------------------------------------------------------------- */
+
+.selector-cabecera {
+    position: relative;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 1.15rem 1rem 0.85rem;
+    background: #fff;
+    border-bottom: 1px solid var(--crema-borde, #DFD4C6);
+}
+
+/* Asa visual: avisa de que la hoja se cierra hacia abajo. */
+.selector-cabecera::before {
+    content: "";
+    position: absolute;
+    top: 0.4rem;
+    left: 50%;
+    width: 2.5rem;
+    height: 0.25rem;
+    background: var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+    transform: translateX(-50%);
+}
+
+.selector-cabecera-textos {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.selector-titulo {
+    margin: 0;
+    font-family: var(--fuente-titulo, Georgia, serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--burdeos, #6B1F2E);
+}
+
+.selector-cerrar {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--carbon-600, #4B4B4B);
+    background: var(--crema, #FBF6EE);
+    border: 1px solid var(--crema-borde, #DFD4C6);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.selector-cerrar:hover {
+    color: var(--burdeos, #6B1F2E);
+    background: var(--crema-oscuro, #EDE5DB);
+}
+
+/* --- Buscador fijo -------------------------------------------------------- */
+
+.selector-buscador {
+    position: relative;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    background: #fff;
+    border-bottom: 1px solid var(--crema-borde, #DFD4C6);
+}
+
+.selector-lupa {
+    flex-shrink: 0;
+    color: var(--carbon-500, #6B6B6B);
+}
+
+.selector-campo {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.25rem;
+    font-size: 1rem;
+    color: var(--carbon-700, #2F2F2F);
+    background: transparent;
+    border: 0;
+    outline: none;
+}
+
+/* Fuera la cruz del navegador: ya ponemos la nuestra, con mejor tamaño. */
+.selector-campo::-webkit-search-cancel-button {
+    appearance: none;
+}
+
+.selector-limpiar {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    color: var(--carbon-500, #6B6B6B);
+    background: var(--crema, #FBF6EE);
+    border: 0;
+    border-radius: 9999px;
+    cursor: pointer;
+}
+
+.selector-limpiar:hover {
+    color: var(--burdeos, #6B1F2E);
+}
+
+/* --- Lista con scroll propio --------------------------------------------- */
+
+.selector-cuerpo {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.selector-lista {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0.4rem;
+    list-style: none;
+}
+
+.selector-fila {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    width: 100%;
+    padding: 0.7rem 0.75rem;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: 0.85rem;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+}
+
+.selector-fila:hover,
+.selector-fila:focus-visible {
+    background: var(--crema-oscuro, #EDE5DB);
+    outline: none;
+}
+
+.selector-inicial {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--burdeos, #6B1F2E);
+    background: var(--dorado-suave, #F5E9BC);
+    border-radius: 9999px;
+}
+
+.selector-fila-textos {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.selector-fila-titulo {
+    overflow: hidden;
+    font-weight: 600;
+    color: var(--carbon-700, #2F2F2F);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.selector-fila-pie {
+    overflow: hidden;
+    font-size: 0.82rem;
+    color: var(--carbon-500, #6B6B6B);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.selector-fila-detalle {
+    flex-shrink: 0;
+    font-size: 0.82rem;
+    color: var(--carbon-500, #6B6B6B);
+    font-variant-numeric: tabular-nums;
+}
+
+.selector-vacio {
+    margin: 0;
+    padding: 2rem 1.25rem;
+    color: var(--carbon-500, #6B6B6B);
+    text-align: center;
+}
+
+/* --- Pie ------------------------------------------------------------------ */
+
+.selector-pie {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid var(--crema-borde, #DFD4C6);
+}
+
+.selector-cuenta {
+    font-size: 0.85rem;
+    color: var(--carbon-500, #6B6B6B);
+}
+
+/* --- Pantallas anchas ----------------------------------------------------- */
+
+@media (min-width: 40rem) {
+    .selector-fondo {
+        place-items: center;
+        padding: 1.5rem;
+    }
+
+    .selector-caja {
+        max-height: 80dvh;
+        border-radius: var(--radio-copa, 1.25rem);
+        box-shadow: 0 24px 64px rgba(23, 5, 10, 0.36);
+        animation: selector-aparecer 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .selector-cabecera::before {
+        display: none;
+    }
+}
+
+@keyframes selector-aparecer {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes selector-subir {
+    from { transform: translateY(14%); }
+    to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .selector-fondo,
+    .selector-caja {
+        animation: none;
+    }
+}

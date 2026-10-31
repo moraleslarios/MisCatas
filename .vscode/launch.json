@@ -23,7 +23,7 @@
                 "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
                 // Kestrel escucha en 0.0.0.0:5080 para que entren los móviles de
                 // la red, pero esa dirección no es navegable: forzamos localhost.
-                "uriFormat": "http://localhost:5080"
+                "uriFormat": "https://localhost:5443"
             }
         },
         {
@@ -48,7 +48,7 @@
             "serverReadyAction": {
                 "action": "openExternally",
                 "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-                "uriFormat": "http://localhost:5080"
+                "uriFormat": "https://localhost:5443"
             }
         }
     ]
