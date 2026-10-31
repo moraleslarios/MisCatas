@@ -436,6 +436,29 @@ foreach ($nombre in $nombres) {
 }
 Escribir-Ok 'Certificado asignado a los enlaces seguros.'
 
+# WebSockets. Es imprescindible para la cata en vivo: los votos que aparecen
+# al instante en el escaparate viajan por ahi. No se puede activar desde el
+# web.config de la aplicacion porque IIS mantiene esa seccion cerrada con
+# llave a nivel de servidor (si se intenta, la web responde con error 500.19),
+# asi que se enciende aqui, en el propio sitio.
+try {
+    Set-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' `
+                                 -Location $Sitio `
+                                 -Filter 'system.webServer/webSocket' `
+                                 -Name 'enabled' `
+                                 -Value $true
+    Set-WebConfigurationProperty -PSPath 'MACHINE/WEBROOT/APPHOST' `
+                                 -Location $Sitio `
+                                 -Filter 'system.webServer/webSocket' `
+                                 -Name 'pingInterval' `
+                                 -Value '00:00:10'
+    Escribir-Ok 'WebSockets activados (la cata en vivo necesita esto).'
+}
+catch {
+    Escribir-Aviso "No se han podido activar los WebSockets: $($_.Exception.Message)"
+    Escribir-Aviso 'La web funcionara, pero el escaparate no se actualizara solo.'
+}
+
 
 # --- 7. Permisos -----------------------------------------------------------
 Escribir-Paso 7 'Dando permisos a la web...'
