@@ -18,6 +18,10 @@ CultureInfo.DefaultThreadCurrentUICulture = culturaEs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ¿Nos está sirviendo un IIS local o arrancamos por nuestra cuenta?
+// De esto dependen los puertos, el certificado y la redirección a HTTPS.
+var enIis = Hospedaje.EsIis(builder.Configuration);
+
 // HTTPS en la red local.
 //
 // Antes la aplicación se servía solo por HTTP, y eso daba dos problemas:
@@ -27,16 +31,23 @@ var builder = WebApplication.CreateBuilder(args);
 //
 // Se escucha por los dos puertos: el de HTTP solo para redirigir a HTTPS, así
 // quien tenga guardado el enlace viejo sigue llegando.
-var certificado = CertificadoLocal.ObtenerOCrear(
-    Path.Combine(builder.Environment.ContentRootPath, "certificados"));
-
-builder.WebHost.ConfigureKestrel(opciones =>
+//
+// Dentro de IIS esto se salta por completo: los puertos (el 443 de siempre) y
+// el certificado los pone el propio IIS en la configuración del sitio, y abrir
+// aquí el 5443 solo conseguiría que dos servidores se peleasen por el puerto.
+if (!enIis)
 {
-    opciones.ListenAnyIP(PuertosApp.Http);
+    var certificado = CertificadoLocal.ObtenerOCrear(
+        Path.Combine(builder.Environment.ContentRootPath, "certificados"));
 
-    opciones.ListenAnyIP(PuertosApp.Https, escucha =>
-        escucha.UseHttps(certificado));
-});
+    builder.WebHost.ConfigureKestrel(opciones =>
+    {
+        opciones.ListenAnyIP(PuertosApp.Http);
+
+        opciones.ListenAnyIP(PuertosApp.Https, escucha =>
+            escucha.UseHttps(certificado));
+    });
+}
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -134,11 +145,18 @@ builder.Services.AddAntiforgery(opciones =>
 // Destino de la redirección a HTTPS. Hay que decirle el puerto a mano: los
 // puertos de la aplicación no son los estándar (443), y sin esto la
 // redirección llevaría a una dirección donde no hay nadie escuchando.
-builder.Services.AddHttpsRedirection(opciones =>
+//
+// En IIS no se fija puerto: el sitio usa el 443 de siempre y el propio módulo
+// de IIS le cuenta a la aplicación por dónde ha entrado la visita. Si aquí
+// forzásemos el 5443, quien llegara por http acabaría en un puerto vacío.
+if (!enIis)
 {
-    opciones.HttpsPort = PuertosApp.Https;
-    opciones.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-});
+    builder.Services.AddHttpsRedirection(opciones =>
+    {
+        opciones.HttpsPort = PuertosApp.Https;
+        opciones.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+    });
+}
 
 var app = builder.Build();
 

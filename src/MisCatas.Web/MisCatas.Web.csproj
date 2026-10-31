@@ -40,6 +40,16 @@
     <None Remove="claves\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--
+      Certificado HTTPS de la red local. El .pfx lleva la clave privada dentro
+      y se fabrica solo en el primer arranque, así que no se publica: en IIS el
+      certificado lo pone el propio sitio web.
+    -->
+    <Content Remove="certificados\**" />
+    <None Remove="certificados\**" />
+  </ItemGroup>
+
   <!--
     Compila el CSS de Tailwind antes de cada build. Si el binario no está
     descargado se avisa y se continúa con el último CSS generado, de modo que

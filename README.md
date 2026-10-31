@@ -487,6 +487,8 @@ arrancar**. `Program.cs` llama a `MigrarYSembrarAsync()`, que ejecuta
 | `validar-accesos-directos.ps1` | comprueba que esos tres iconos apuntan a donde deben |
 | `arrancar-silencioso.ps1` | arranca dejando el log en un fichero (para no inundar el terminal) |
 | `arrancar-produccion.ps1` | publica en Release y arranca como en la cata real (HTTPS, accesible en la red) |
+| `desplegar-iis.ps1` | instala la web en el IIS del equipo y la publica en `https://miscatas.es` (**administrador**) |
+| `retirar-iis.ps1` | quita la web del IIS y deja el equipo como estaba (**administrador**) |
 | `crear-usuario-pruebas.ps1` | crea un usuario de pruebas |
 | `montar-escenario-pruebas.ps1` | deja una cata montada con vinos y participantes |
 | `finalizar-cata-pruebas.ps1` | finaliza la cata de pruebas para ver la revelación |
@@ -524,3 +526,75 @@ utilidad:
    cómoda antes de publicar la aplicación en Release.
 4. Exportar el resultado de una cata a PDF para mandárselo al grupo al día
    siguiente.
+
+---
+
+## Despliegue en IIS
+
+Lo de arriba sirve para trabajar: la ventana negra tiene que quedarse abierta y
+la dirección lleva un puerto raro. Si se quiere que la web esté **siempre
+disponible**, sin abrir nada, y con una dirección bonita:
+
+| Qué quieres | Qué ejecutas |
+|---|---|
+| Instalar la web en el IIS del equipo | **botón derecho** sobre `Desplegar-IIS.cmd` → *Ejecutar como administrador* |
+| Actualizar la web tras hacer cambios | el mismo `Desplegar-IIS.cmd` otra vez |
+| Rehacer solo la configuración de IIS | `.\tools\desplegar-iis.ps1 -SinPublicar` |
+| Quitarla del IIS | **botón derecho** sobre `Retirar-IIS.cmd` → *Ejecutar como administrador* |
+| Quitarla y borrar los ficheros | `.\tools\retirar-iis.ps1 -BorrarCarpeta` |
+
+Al terminar, la web vive en **`https://miscatas.es`** y arranca sola al encender
+el ordenador.
+
+**Hace falta ejecutarlo como administrador**: instala piezas de Windows, escribe
+en el fichero `hosts` y crea un certificado para toda la máquina. Los `.cmd`
+avisan y se niegan a seguir si no tienen permisos.
+
+Lo que hace el script, en orden (y se puede repetir sin miedo: cada paso
+comprueba antes si ya está hecho):
+
+1. Instala **IIS** si falta, con los **WebSockets** incluidos — sin ellos la
+   cata en vivo se queda congelada aunque la web cargue.
+2. Instala el **complemento de IIS para .NET** (*Hosting Bundle*), que es lo que
+   le enseña a IIS a ejecutar la aplicación. Son unos 100 MB de descarga y
+   **puede pedir reiniciar**: si pasa, se reinicia y se vuelve a ejecutar.
+3. Apunta `miscatas.es` y `www.miscatas.es` a este mismo equipo en el fichero
+   `hosts` de Windows.
+4. Fabrica el **certificado** de `miscatas.es` (válido 5 años) y lo marca como
+   de confianza, para que el navegador no muestre la pantalla roja de aviso.
+5. Publica la aplicación en `C:\inetpub\MisCatas` y **comprueba el resultado**:
+   si el CSS de Tailwind sale con menos de 14 KB aborta, porque eso significa
+   que ha purgado de más y la web se vería sin estilos.
+6. Crea el sitio y su grupo de aplicaciones en IIS: *No Managed Code*, siempre
+   activo, sin apagado por inactividad ni reciclados (una cata puede estar horas
+   abierta en el televisor sin que nadie toque nada). Para el «Default Web
+   Site», que ocupaba los puertos 80 y 443.
+7. Da permisos: lectura en la carpeta, escritura en `claves` (donde se guardan
+   las claves de cifrado de las cookies) y, como la conexión usa autenticación
+   de Windows, da de alta en SQL Server al usuario `IIS AppPool\MisCatas` con
+   `db_owner` — la aplicación aplica ella misma las migraciones al arrancar.
+8. Arranca el sitio y espera hasta un minuto a que responda. El primer arranque
+   es lento porque aplica migraciones y siembra los datos.
+
+**⚠️ `miscatas.es` solo funciona en este equipo.** Es un nombre inventado que
+vive en el fichero `hosts` local; ningún móvil ni televisor lo conoce. Para
+ellos sigue valiendo lo de siempre: `Arrancar-Red.cmd` y la dirección con la IP.
+Las dos formas pueden convivir, porque IIS usa los puertos 80/443 y la versión
+de desarrollo los 5080/5443.
+
+Para que la aplicación sepa cuál de los dos mundos la está sirviendo hay un
+detector, `src\MisCatas.Web\Seguridad\Hospedaje.cs`: si ve las variables de
+entorno que inyecta IIS, **no** abre sus propios puertos ni crea el certificado
+de la red local. Y el resto de ajustes propios de IIS (la dirección pública con
+la que se montan los QR y los enlaces de WhatsApp) están en
+`src\MisCatas.Web\web.config`, que es un fichero que **solo lee IIS** — el
+arranque normal lo ignora por completo.
+
+Si algo falla, el script lo dice y apunta dónde mirar: el estado del grupo de
+aplicaciones, el *Visor de eventos* de Windows (Aplicación → «IIS AspNetCore»),
+el acceso a SQL Server y quién ocupa el puerto 443.
+
+Retirarlo **no borra nada de las catas**: los datos están en la base de datos y
+no se toca. Tampoco desinstala IIS, por si lo usa otro programa.
+
+---
