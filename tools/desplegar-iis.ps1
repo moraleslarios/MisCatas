@@ -2,13 +2,21 @@
 
 <#
 .SYNOPSIS
-    Instala MisCatas en el IIS de este equipo y la publica en https://miscatas.es
+    Instala MisCatas en el IIS de este equipo: https://miscatas.es desde el
+    propio ordenador, y http://<ip-del-equipo>:5080 desde los moviles.
 
 .DESCRIPTION
     Hace de una vez todo lo que normalmente se haría a mano. Se puede volver a
     ejecutar tantas veces como se quiera: cada paso comprueba antes si ya está
     hecho, así que repetirlo no rompe nada (sirve también para actualizar la web
     después de hacer cambios).
+
+    La idea es que no haya que arrancar nada nunca: IIS tiene la web puesta y
+    esperando, se enciende sola con el ordenador y responde por dos sitios:
+      - Desde este equipo, por el nombre bonito: https://miscatas.es
+      - Desde los móviles y el televisor, por la IP y el puerto 5080, que es
+        la dirección que llevan los QR y los enlaces de WhatsApp. Ese nombre
+        bonito solo existe aquí dentro, así que para ellos no vale.
 
     Pasos:
       1. Comprueba que IIS está instalado y, si no, lo instala.
@@ -17,10 +25,13 @@
       3. Apunta el nombre miscatas.es a este mismo equipo.
       4. Fabrica (una sola vez) el certificado de seguridad de miscatas.es y lo
          marca como de confianza, para que el navegador no avise.
-      5. Publica la aplicación en C:\inetpub\MisCatas.
-      6. Crea el sitio web y su grupo de aplicaciones en IIS.
+      5. Escribe en web.config la IP de este equipo (la que va en los QR) y
+         publica la aplicación en C:\inetpub\MisCatas.
+      6. Crea el sitio web y su grupo de aplicaciones en IIS, le pone las
+         direcciones por las que responde (incluido el puerto 5080 para los
+         móviles) y abre ese puerto en el cortafuegos.
       7. Da permisos a la web sobre su carpeta y sobre la base de datos.
-      8. Arranca el sitio y comprueba que responde.
+      8. Arranca el sitio y comprueba que responde por las dos direcciones.
 
 .NOTES
     Hay que ejecutarlo como ADMINISTRADOR. La forma fácil es botón derecho
@@ -37,8 +48,7 @@
 
 [CmdletBinding()]
 param(
-    # Nombre con el que se verá la web. Si se cambia, hay que cambiarlo también
-    # en src\MisCatas.Web\web.config (variable Sitio__UrlPublica).
+    # Nombre con el que se verá la web desde este mismo ordenador.
     [string]$Dominio = 'miscatas.es',
 
     # Carpeta donde queda la web publicada.
@@ -62,6 +72,10 @@ $rutaAjustes = Join-Path $proyecto 'appsettings.json'
 $cssMinimoBytes = 14000
 $totalPasos = 8
 
+# Puerto por el que la web responde a los moviles y al televisor. Va sin cifrar
+# y por la IP del equipo, porque el nombre miscatas.es solo existe aqui dentro.
+$puertoRed = 5080
+
 function Escribir-Paso {
     param([int]$Numero, [string]$Texto)
     Write-Host ''
@@ -83,10 +97,41 @@ function Escribir-Aviso {
     Write-Host "      !!  $Texto" -ForegroundColor Yellow
 }
 
+# IP de este equipo en la red de casa. Es la unica direccion que entienden el
+# movil y el televisor, asi que es la que se pone en los QR y en los enlaces de
+# WhatsApp. Se prefiere el cable sobre el wifi, y se descartan la direccion
+# interna (127.x) y las que Windows se inventa cuando no hay red (169.254.x).
+function Obtener-IpDeLaRed {
+    $direcciones = @(Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.IPAddress -notlike '127.*' -and
+            $_.IPAddress -notlike '169.254.*' -and
+            $_.AddressState -ne 'Invalid'
+        })
+
+    foreach ($familia in @('Ethernet', 'Wi-Fi', '')) {
+        foreach ($direccion in $direcciones) {
+            $tarjeta = Get-NetAdapter -InterfaceIndex $direccion.InterfaceIndex -ErrorAction SilentlyContinue
+            if (-not $tarjeta) { continue }
+            if ($familia -eq '' -or $tarjeta.InterfaceDescription -like "*$familia*" -or $tarjeta.Name -like "*$familia*") {
+                return $direccion.IPAddress
+            }
+        }
+    }
+
+    return ($direcciones | Select-Object -First 1 -ExpandProperty IPAddress)
+}
+
+$ipRed = Obtener-IpDeLaRed
+$direccionRed = if ($ipRed) { "http://${ipRed}:$puertoRed" } else { $null }
+
 Write-Host ''
 Write-Host '=============================================================' -ForegroundColor Magenta
 Write-Host '  MisCatas - instalacion en el IIS de este equipo' -ForegroundColor Magenta
-Write-Host "  Direccion final: https://$Dominio" -ForegroundColor Magenta
+Write-Host "  Este equipo        : https://$Dominio" -ForegroundColor Magenta
+if ($direccionRed) {
+    Write-Host "  Moviles/televisor  : $direccionRed" -ForegroundColor Magenta
+}
 Write-Host '=============================================================' -ForegroundColor Magenta
 
 
@@ -293,10 +338,56 @@ else {
 # CSS minificado y con todos los ficheros estaticos de verdad en wwwroot.
 Escribir-Paso 5 'Publicando la aplicacion...'
 
+# Antes de nada, se graba en el web.config la direccion con la que se dibujan
+# los QR y se escriben los enlaces de WhatsApp. Se hace aqui, de forma
+# automatica, porque la IP la reparte el router y puede cambiar: si quedara
+# escrita a mano, un dia los QR dejarian de abrirse sin que nadie supiera por
+# que.
+function Ajustar-DireccionPublica {
+    param([string]$Ruta, [string]$Direccion)
+
+    if (-not (Test-Path $Ruta)) { return $false }
+
+    $texto = Get-Content -Path $Ruta -Raw -Encoding UTF8
+    $patron = '(?<inicio><environmentVariable\s+name="Sitio__UrlPublica"\s+value=")(?<valor>[^"]*)(?<fin>")'
+    $coincidencia = [regex]::Match($texto, $patron)
+
+    if (-not $coincidencia.Success) {
+        Escribir-Aviso "No se ha encontrado Sitio__UrlPublica en $Ruta."
+        return $false
+    }
+
+    if ($coincidencia.Groups['valor'].Value -eq $Direccion) { return $false }
+
+    $nuevo = [regex]::Replace($texto, $patron, "`${inicio}$Direccion`${fin}")
+    [System.IO.File]::WriteAllText($Ruta, $nuevo, (New-Object System.Text.UTF8Encoding($false)))
+    return $true
+}
+
+if (-not $direccionRed) {
+    Escribir-Aviso 'No se ha podido averiguar la IP de este equipo: se deja la direccion que ya hubiera en web.config.'
+}
+else {
+    $rutaWebConfig = Join-Path $proyecto 'web.config'
+    if (Ajustar-DireccionPublica -Ruta $rutaWebConfig -Direccion $direccionRed) {
+        Escribir-Ok "Direccion de los QR y de WhatsApp actualizada a $direccionRed"
+    }
+    else {
+        Escribir-Info "La direccion de los QR ya era $direccionRed"
+    }
+}
+
 if ($SinPublicar) {
     Escribir-Info 'Publicacion omitida (-SinPublicar).'
     if (-not (Test-Path (Join-Path $Carpeta 'MisCatas.Web.dll'))) {
         throw "No hay nada publicado en '$Carpeta'. Ejecuta el script sin -SinPublicar al menos una vez."
+    }
+    # Sin publicar no se copia nada, asi que la direccion hay que escribirla
+    # tambien en la copia que ya esta servida.
+    if ($direccionRed) {
+        if (Ajustar-DireccionPublica -Ruta (Join-Path $Carpeta 'web.config') -Direccion $direccionRed) {
+            Escribir-Ok "Direccion actualizada tambien en la web ya publicada."
+        }
     }
 }
 else {
@@ -398,19 +489,29 @@ else {
 # Enlaces (por que direccion y puerto responde el sitio).
 # Se usa SNI (SslFlags 1) para que varios sitios puedan compartir el puerto 443
 # distinguiendose por el nombre.
+#
+# El ultimo enlace es el importante para los invitados: puerto 5080, sin cifrar
+# y SIN NOMBRE. "Sin nombre" quiere decir que responde a cualquier direccion con
+# la que se llame al equipo, y en particular a su IP, que es lo unico que
+# entienden el movil y el televisor. Es el mismo puerto de siempre, el de
+# Arrancar-Red.cmd, pero ahora lo sirve IIS: ya no hay que arrancar nada.
 $enlaces = @(
-    @{ Protocolo = 'http';  Puerto = 80;  Nombre = $Dominio },
-    @{ Protocolo = 'http';  Puerto = 80;  Nombre = "www.$Dominio" },
-    @{ Protocolo = 'https'; Puerto = 443; Nombre = $Dominio },
-    @{ Protocolo = 'https'; Puerto = 443; Nombre = "www.$Dominio" }
+    @{ Protocolo = 'http';  Puerto = 80;         Nombre = $Dominio },
+    @{ Protocolo = 'http';  Puerto = 80;         Nombre = "www.$Dominio" },
+    @{ Protocolo = 'https'; Puerto = 443;        Nombre = $Dominio },
+    @{ Protocolo = 'https'; Puerto = 443;        Nombre = "www.$Dominio" },
+    @{ Protocolo = 'http';  Puerto = $puertoRed; Nombre = '' }
 )
 
 foreach ($enlace in $enlaces) {
+    $informacion = "*:$($enlace.Puerto):$($enlace.Nombre)"
+    $comoSeLlama = if ($enlace.Nombre) { "$($enlace.Protocolo)://$($enlace.Nombre)" } else { "$($enlace.Protocolo) puerto $($enlace.Puerto) (cualquier direccion)" }
+
     $existe = Get-WebBinding -Name $Sitio -Protocol $enlace.Protocolo -ErrorAction SilentlyContinue |
-        Where-Object { $_.bindingInformation -eq "*:$($enlace.Puerto):$($enlace.Nombre)" }
+        Where-Object { $_.bindingInformation -eq $informacion }
 
     if ($existe) {
-        Escribir-Info "El enlace $($enlace.Protocolo)://$($enlace.Nombre) ya existia."
+        Escribir-Info "El enlace $comoSeLlama ya existia."
         continue
     }
 
@@ -422,19 +523,14 @@ foreach ($enlace in $enlaces) {
         New-WebBinding -Name $Sitio -Protocol 'http' -Port $enlace.Puerto `
             -HostHeader $enlace.Nombre | Out-Null
     }
-    Escribir-Ok "Enlace $($enlace.Protocolo)://$($enlace.Nombre) creado."
+    Escribir-Ok "Enlace $comoSeLlama creado."
 }
 
-# Asignar el certificado a los dos enlaces seguros.
-foreach ($nombre in $nombres) {
-    $enlaceHttps = Get-WebBinding -Name $Sitio -Protocol 'https' |
-        Where-Object { $_.bindingInformation -eq "*:443:$nombre" }
-
-    if ($enlaceHttps) {
-        $enlaceHttps.AddSslCertificate($certificado.Thumbprint, 'My')
-    }
-}
-Escribir-Ok 'Certificado asignado a los enlaces seguros.'
+# Que el sitio vuelva solo cada vez que se enciende el ordenador. Junto con el
+# grupo de aplicaciones "siempre activo", esto es lo que hace que no haya que
+# dar a ningun Arrancar: la web esta puesta y esperando.
+Set-ItemProperty "IIS:\Sites\$Sitio" -Name serverAutoStart -Value $true
+Escribir-Ok 'El sitio se arrancara solo al encender el equipo.'
 
 # WebSockets. Es imprescindible para la cata en vivo: los votos que aparecen
 # al instante en el escaparate viajan por ahi. No se puede activar desde el
@@ -457,6 +553,41 @@ try {
 catch {
     Escribir-Aviso "No se han podido activar los WebSockets: $($_.Exception.Message)"
     Escribir-Aviso 'La web funcionara, pero el escaparate no se actualizara solo.'
+}
+
+# Cortafuegos. Windows bloquea por defecto todo lo que llega de fuera, asi que
+# aunque IIS este escuchando en el 5080 el movil recibiria un silencio. Se abre
+# solo ese puerto, y solo para entrar.
+try {
+    $nombreRegla = "MisCatas (HTTP $puertoRed)"
+    $regla = Get-NetFirewallRule -DisplayName $nombreRegla -ErrorAction SilentlyContinue
+
+    if ($regla) {
+        Set-NetFirewallRule -DisplayName $nombreRegla -Enabled True -Action Allow `
+            -Profile Domain, Private, Public | Out-Null
+        Escribir-Info "La regla del cortafuegos '$nombreRegla' ya existia (revisada)."
+    }
+    else {
+        New-NetFirewallRule -DisplayName $nombreRegla `
+            -Description 'Permite que los moviles y el televisor de casa abran MisCatas.' `
+            -Direction Inbound -Action Allow -Protocol TCP -LocalPort $puertoRed `
+            -Profile Domain, Private, Public | Out-Null
+        Escribir-Ok "Cortafuegos: abierto el puerto $puertoRed para la red de casa."
+    }
+}
+catch {
+    Escribir-Aviso "No se ha podido abrir el puerto $puertoRed en el cortafuegos: $($_.Exception.Message)"
+    Escribir-Aviso 'Ejecuta tools\abrir-puerto-firewall.ps1 como administrador.'
+}
+
+# Si la red de casa esta marcada como "publica", Windows endurece el filtro y
+# los moviles pueden seguir sin ver la web. Se avisa, pero no se cambia nada
+# sin permiso.
+$redesPublicas = @(Get-NetConnectionProfile -ErrorAction SilentlyContinue |
+    Where-Object { $_.NetworkCategory -eq 'Public' })
+if ($redesPublicas.Count -gt 0) {
+    Escribir-Aviso "La red '$($redesPublicas[0].Name)' esta marcada como publica: puede bloquear el acceso."
+    Escribir-Aviso 'Para arreglarlo: tools\abrir-puerto-firewall.ps1 (ofrece cambiarla a privada).'
 }
 
 
@@ -553,6 +684,19 @@ for ($intento = 1; $intento -le 12; $intento++) {
     Escribir-Info "Intento $intento de 12..."
 }
 
+# Y ahora la puerta de los invitados: la IP con el puerto 5080. Si esta no
+# contesta, el QR no se podra abrir desde el movil, asi que se comprueba
+# aparte. Interesa que NO devuelva un 307: eso significaria que esta mandando
+# al visitante a una direccion segura que el movil no sabra abrirla.
+$codigoRed = $null
+if ($direccionRed) {
+    for ($intento = 1; $intento -le 6; $intento++) {
+        $codigoRed = (& curl.exe -s -o NUL -w '%{http_code}' "$direccionRed/" 2>$null)
+        if ($codigoRed -and $codigoRed -ne '000') { break }
+        Start-Sleep -Seconds 3
+    }
+}
+
 Write-Host ''
 Write-Host '=============================================================' -ForegroundColor Magenta
 
@@ -561,16 +705,36 @@ Write-Host '=============================================================' -Fore
 if ($codigo -in @('200', '302')) {
     Write-Host '  LISTO. La web ya esta instalada en IIS.' -ForegroundColor Green
     Write-Host ''
-    Write-Host "  Este equipo : https://$Dominio" -ForegroundColor White
-    Write-Host "  Tambien     : https://www.$Dominio" -ForegroundColor White
-    Write-Host "  Carpeta     : $Carpeta" -ForegroundColor DarkGray
+    Write-Host "  Este equipo       : https://$Dominio" -ForegroundColor White
+    Write-Host "  Tambien           : https://www.$Dominio" -ForegroundColor White
+    if ($direccionRed) {
+        Write-Host "  Moviles/televisor : $direccionRed" -ForegroundColor White
+    }
+    Write-Host "  Carpeta           : $Carpeta" -ForegroundColor DarkGray
     Write-Host ''
-    Write-Host '  Se arranca sola al encender el equipo: no hay que hacer nada.' -ForegroundColor DarkGray
+    Write-Host '  Se arranca sola al encender el equipo: no hay que dar a' -ForegroundColor DarkGray
+    Write-Host '  ningun Arrancar nunca mas.' -ForegroundColor DarkGray
     Write-Host '  Para quitarla: tools\retirar-iis.ps1 (como administrador).' -ForegroundColor DarkGray
     Write-Host ''
-    Write-Host '  OJO: los moviles y el televisor NO conocen el nombre' -ForegroundColor Yellow
-    Write-Host '  miscatas.es, porque solo existe en este equipo. Para ellos' -ForegroundColor Yellow
-    Write-Host '  sigue valiendo la direccion con la IP (Arrancar-Red.cmd).' -ForegroundColor Yellow
+
+    if (-not $direccionRed) {
+        Write-Host '  OJO: no se ha podido averiguar la IP de este equipo, asi que' -ForegroundColor Yellow
+        Write-Host '  los QR pueden estar apuntando a una direccion antigua.' -ForegroundColor Yellow
+    }
+    elseif ($codigoRed -in @('200', '302')) {
+        Write-Host "  Los QR y los enlaces de WhatsApp llevan a $direccionRed," -ForegroundColor Green
+        Write-Host '  que ya responde: se pueden abrir desde el movil.' -ForegroundColor Green
+    }
+    elseif ($codigoRed -eq '307') {
+        Write-Host "  OJO: $direccionRed esta reenviando a la version segura," -ForegroundColor Yellow
+        Write-Host '  y el movil no sabra abrirla. Vuelve a publicar (sin' -ForegroundColor Yellow
+        Write-Host '  -SinPublicar) para que se aplique el cambio del programa.' -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "  OJO: $direccionRed no responde (codigo '$codigoRed')." -ForegroundColor Yellow
+        Write-Host '  Los QR no se podran abrir desde el movil. Mira el' -ForegroundColor Yellow
+        Write-Host '  cortafuegos: tools\abrir-puerto-firewall.ps1' -ForegroundColor Yellow
+    }
 }
 else {
     Write-Host '  La web no responde todavia.' -ForegroundColor Red
@@ -584,13 +748,6 @@ else {
     Write-Host '      Registros de Windows -> Aplicacion), buscando "IIS AspNetCore".' -ForegroundColor DarkGray
     Write-Host '   3. Que la web tenga acceso a la base de datos: el usuario' -ForegroundColor DarkGray
     Write-Host "      '$identidad' debe existir en SQL Server con permisos sobre '$baseDatos'." -ForegroundColor DarkGray
-    Write-Host '   4. Que nadie mas ocupe el puerto 443:' -ForegroundColor DarkGray
-    Write-Host '      Get-NetTCPConnection -LocalPort 443 -State Listen' -ForegroundColor DarkGray
-}
-
-Write-Host '=============================================================' -ForegroundColor Magenta
-Write-Host ''
-
-if (-not $SinNavegador -and $codigo -in @('200', '302')) {
-    Start-Process "https://$Dominio/"
+    Write-Host '   4. Que nadie mas ocupe los puertos 443 o 5080:' -ForegroundColor DarkGray
+    Write-Host '      Get-NetTCPConnection -LocalPort 443,5080 -State Listen' -ForegroundColor DarkGray
 }

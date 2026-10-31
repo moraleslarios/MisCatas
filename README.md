@@ -487,7 +487,7 @@ arrancar**. `Program.cs` llama a `MigrarYSembrarAsync()`, que ejecuta
 | `validar-accesos-directos.ps1` | comprueba que esos tres iconos apuntan a donde deben |
 | `arrancar-silencioso.ps1` | arranca dejando el log en un fichero (para no inundar el terminal) |
 | `arrancar-produccion.ps1` | publica en Release y arranca como en la cata real (HTTPS, accesible en la red) |
-| `desplegar-iis.ps1` | instala la web en el IIS del equipo y la publica en `https://miscatas.es` (**administrador**) |
+| `desplegar-iis.ps1` | instala la web en el IIS del equipo: `https://miscatas.es` aquí y `http://<ip>:5080` para los móviles (**administrador**) |
 | `retirar-iis.ps1` | quita la web del IIS y deja el equipo como estaba (**administrador**) |
 | `crear-usuario-pruebas.ps1` | crea un usuario de pruebas |
 | `montar-escenario-pruebas.ps1` | deja una cata montada con vinos y participantes |
@@ -544,11 +544,10 @@ disponible**, sin abrir nada, y con una dirección bonita:
 | Quitarla y borrar los ficheros | `.\tools\retirar-iis.ps1 -BorrarCarpeta` |
 
 Al terminar, la web vive en **`https://miscatas.es`** y arranca sola al encender
-el ordenador.
-
-**Hace falta ejecutarlo como administrador**: instala piezas de Windows, escribe
-en el fichero `hosts` y crea un certificado para toda la máquina. Los `.cmd`
-avisan y se niegan a seguir si no tienen permisos.
+el ordenador. Y los móviles y el televisor la abren en
+**`http://<ip-del-equipo>:5080`**, que es la dirección que llevan los QR y los
+enlaces de WhatsApp. **No hay que arrancar nada nunca más**: `Arrancar.cmd` y
+`Arrancar-Red.cmd` quedan solo para desarrollo.
 
 Lo que hace el script, en orden (y se puede repetir sin miedo: cada paso
 comprueba antes si ya está hecho):
@@ -568,33 +567,48 @@ comprueba antes si ya está hecho):
 6. Crea el sitio y su grupo de aplicaciones en IIS: *No Managed Code*, siempre
    activo, sin apagado por inactividad ni reciclados (una cata puede estar horas
    abierta en el televisor sin que nadie toque nada). Para el «Default Web
-   Site», que ocupaba los puertos 80 y 443.
+   Site», que ocupaba los puertos 80 y 443. Le pone cinco direcciones: las
+   cuatro del nombre (`miscatas.es` y `www`, en 80 y 443) y una más en el
+   **puerto 5080 sin nombre**, que es la que responde a la IP del equipo y la
+   que usan los móviles. Abre ese puerto en el cortafuegos y marca el sitio para
+   que se arranque solo al encender.
 7. Da permisos: lectura en la carpeta, escritura en `claves` (donde se guardan
    las claves de cifrado de las cookies) y, como la conexión usa autenticación
    de Windows, da de alta en SQL Server al usuario `IIS AppPool\MisCatas` con
    `db_owner` — la aplicación aplica ella misma las migraciones al arrancar.
 8. Arranca el sitio y espera hasta un minuto a que responda. El primer arranque
-   es lento porque aplica migraciones y siembra los datos.
+   es lento porque aplica migraciones y siembra los datos. Comprueba las dos
+   direcciones: la del nombre y la de la IP.
 
-**⚠️ `miscatas.es` solo funciona en este equipo.** Es un nombre inventado que
-vive en el fichero `hosts` local; ningún móvil ni televisor lo conoce. Para
-ellos sigue valiendo lo de siempre: `Arrancar-Red.cmd` y la dirección con la IP.
-Las dos formas pueden convivir, porque IIS usa los puertos 80/443 y la versión
-de desarrollo los 5080/5443.
+### Dos direcciones para la misma web
+
+`miscatas.es` es un nombre inventado que vive en el fichero `hosts` de este
+equipo: **ningún móvil ni televisor lo conoce**, y el certificado está hecho a
+ese nombre. Por eso la web responde también por el **puerto 5080, sin cifrar y
+por la IP**, que es lo único que entienden los demás aparatos de casa:
+
+| Desde dónde | Dirección |
+|---|---|
+| Este ordenador | `https://miscatas.es` |
+| Móviles y televisor | `http://<ip-del-equipo>:5080` |
+
+Es el mismo puerto 5080 de siempre, pero ahora lo sirve IIS en lugar de
+`Arrancar-Red.cmd`. Esa segunda dirección es la que se graba en
+`Sitio__UrlPublica` (dentro de `src\MisCatas.Web\web.config`) y la que se dibuja
+en los QR y se manda por WhatsApp. **No hay que mantenerla a mano**: el paso 5
+del script mira la IP real del equipo y la reescribe en cada despliegue, porque
+el router puede cambiarla.
+
+En ese puerto la aplicación **no** reenvía a HTTPS, justo para que los QR se
+puedan abrir. Fuera de IIS (en desarrollo) sigue reenviando como antes.
 
 Para que la aplicación sepa cuál de los dos mundos la está sirviendo hay un
 detector, `src\MisCatas.Web\Seguridad\Hospedaje.cs`: si ve las variables de
 entorno que inyecta IIS, **no** abre sus propios puertos ni crea el certificado
-de la red local. Y el resto de ajustes propios de IIS (la dirección pública con
-la que se montan los QR y los enlaces de WhatsApp) están en
+de la red local. Y el resto de ajustes propios de IIS están en
 `src\MisCatas.Web\web.config`, que es un fichero que **solo lee IIS** — el
 arranque normal lo ignora por completo.
 
 Si algo falla, el script lo dice y apunta dónde mirar: el estado del grupo de
 aplicaciones, el *Visor de eventos* de Windows (Aplicación → «IIS AspNetCore»),
-el acceso a SQL Server y quién ocupa el puerto 443.
-
-Retirarlo **no borra nada de las catas**: los datos están en la base de datos y
-no se toca. Tampoco desinstala IIS, por si lo usa otro programa.
-
----
+el acceso a SQL Server y quién ocupa los puertos 443 o 5080.
