@@ -160,27 +160,13 @@ if (!enIis)
 
 var app = builder.Build();
 
-// Todo lo que entre por HTTP se manda a HTTPS... salvo la puerta de la red
-// local.
+// Todo lo que entre por HTTP se manda a HTTPS.
 //
-// Dentro de IIS el sitio responde también por el puerto 5080 sin cifrar, y esa
-// es la dirección (la IP del equipo) que viaja en los QR y en los enlaces de
-// WhatsApp. Ahí NO se puede redirigir a HTTPS: el certificado está hecho a
-// nombre de miscatas.es, un nombre que solo conoce este ordenador, así que el
-// salto llevaría a los móviles a una dirección donde no contesta nadie.
-//
-// Fuera de IIS se mantiene lo de siempre: el 5080 existe solo para empujar al
-// puerto seguro, de modo que los enlaces y los QR antiguos sigan valiendo.
-if (enIis)
-{
-    app.UseWhen(
-        contexto => contexto.Request.Host.Port != PuertosApp.Http,
-        rama => rama.UseHttpsRedirection());
-}
-else
-{
-    app.UseHttpsRedirection();
-}
+// Dentro de IIS esto casi nunca entra en juego, porque las dos direcciones por
+// las que se usa la web (el nombre bonito de este equipo y la IP con el puerto
+// 5080 de los moviles) ya van cifradas; solo actua si alguien escribe la
+// direccion a mano sin la "s".
+app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

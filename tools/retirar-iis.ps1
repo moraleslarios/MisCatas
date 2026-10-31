@@ -99,68 +99,61 @@ else {
         Start-Website -Name 'Default Web Site' -ErrorAction SilentlyContinue
         Escribir-Ok 'Sitio de ejemplo de IIS devuelto a su estado original.'
     }
-}
 
-# --- Fichero hosts ---
-$rutaHosts = Join-Path $env:SystemRoot 'System32\drivers\etc\hosts'
-$lineas = @(Get-Content -Path $rutaHosts -ErrorAction SilentlyContinue)
-
-# Se quitan las lineas del dominio y el comentario que puso el despliegue.
-$limpias = $lineas | Where-Object {
-    $_ -notmatch "(^|\s)(www\.)?$([regex]::Escape($Dominio))(\s|$)" -and
-    $_ -notmatch 'MisCatas - web local'
-}
-
-if ($limpias.Count -ne $lineas.Count) {
-    # Se recortan los saltos de linea sueltos que quedan al borrar el bloque.
-    $texto = ($limpias -join "`r`n").TrimEnd() + "`r`n"
-    Set-Content -Path $rutaHosts -Value $texto -Encoding ASCII -NoNewline
-    & ipconfig.exe /flushdns | Out-Null
-    Escribir-Ok "Quitado $Dominio del fichero hosts."
-}
-else {
-    Escribir-Info 'El fichero hosts no tenia nada de MisCatas.'
-}
-
-# --- Certificado ---
-$nombreAmistoso = "MisCatas ($Dominio)"
-$borrados = 0
-
-foreach ($almacen in @('Cert:\LocalMachine\My', 'Cert:\LocalMachine\Root')) {
-    $encontrados = @(Get-ChildItem -Path $almacen -ErrorAction SilentlyContinue |
-        Where-Object { $_.FriendlyName -eq $nombreAmistoso -or $_.Subject -eq "CN=$Dominio" })
-
-    foreach ($cert in $encontrados) {
-        Remove-Item -Path $cert.PSPath -Force -DeleteKey -ErrorAction SilentlyContinue
-        $borrados++
-    }
-}
-
-if ($borrados -gt 0) {
-    Escribir-Ok "Borrado(s) $borrados certificado(s) de $Dominio."
-}
-else {
-    Escribir-Info "No habia certificados de $Dominio."
-}
-
-# --- Carpeta publicada ---
-if ($BorrarCarpeta) {
-    if (Test-Path $Carpeta) {
-        try {
-            Remove-Item -Path $Carpeta -Recurse -Force -ErrorAction Stop
-            Escribir-Ok "Carpeta '$Carpeta' borrada."
-        }
-        catch {
-            Escribir-Aviso "No se ha podido borrar '$Carpeta': $($_.Exception.Message)"
-            Escribir-Aviso 'Prueba a ejecutar iisreset y repite.'
-        }
+    # --- Certificado atado al puerto 5080 ---
+    # El enlace del 5080 (el de los moviles) no va por nombre, asi que Windows
+    # guarda su certificado en una tabla propia, aparte de IIS. Al borrar el sitio
+    # esa anotacion se queda ahi: hay que retirarla a mano o el puerto queda
+    # reservado y luego nadie mas lo puede usar.
+    $anotacion = & netsh.exe http show sslcert ipport=0.0.0.0:5080 2>$null | Out-String
+    if ($anotacion -match '5080') {
+        & netsh.exe http delete sslcert ipport=0.0.0.0:5080 | Out-Null
+        Escribir-Ok 'Certificado retirado del puerto 5080.'
     }
     else {
-        Escribir-Info "La carpeta '$Carpeta' no existia."
+        Escribir-Info 'El puerto 5080 no tenia certificado atado.'
     }
-}
-elseif (Test-Path $Carpeta) {
-    Escribir-Info "La carpeta '$Carpeta' se conserva (usa -BorrarCarpeta para borrarla)."
+
+    # --- Certificado ---
+    $nombreAmistoso = "MisCatas ($Dominio)"
+    $borrados = 0
+
+    foreach ($almacen in @('Cert:\LocalMachine\My', 'Cert:\LocalMachine\Root')) {
+        $encontrados = @(Get-ChildItem -Path $almacen -ErrorAction SilentlyContinue |
+            Where-Object { $_.FriendlyName -eq $nombreAmistoso -or $_.Subject -eq "CN=$Dominio" })
+
+        foreach ($cert in $encontrados) {
+            Remove-Item -Path $cert.PSPath -Force -DeleteKey -ErrorAction SilentlyContinue
+            $borrados++
+        }
+    }
+
+    if ($borrados -gt 0) {
+        Escribir-Ok "Borrado(s) $borrados certificado(s) de $Dominio."
+    }
+    else {
+        Escribir-Info "No habia certificados de $Dominio."
+    }
+
+    # --- Carpeta publicada ---
+    if ($BorrarCarpeta) {
+        if (Test-Path $Carpeta) {
+            try {
+                Remove-Item -Path $Carpeta -Recurse -Force -ErrorAction Stop
+                Escribir-Ok "Carpeta '$Carpeta' borrada."
+            }
+            catch {
+                Escribir-Aviso "No se ha podido borrar '$Carpeta': $($_.Exception.Message)"
+                Escribir-Aviso 'Prueba a ejecutar iisreset y repite.'
+            }
+        }
+        else {
+            Escribir-Info "La carpeta '$Carpeta' no existia."
+        }
+    }
+    elseif (Test-Path $Carpeta) {
+        Escribir-Info "La carpeta '$Carpeta' se conserva (usa -BorrarCarpeta para borrarla)."
+    }
 }
 
 Write-Host ''

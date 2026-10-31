@@ -2,8 +2,13 @@
 # Abre los puertos de MisCatas en el Firewall de Windows para poder entrar
 # desde otros dispositivos de la red local (moviles, tablets, otros PCs).
 #
-#   5443 -> HTTPS, el que de verdad atiende la app
-#   5080 -> HTTP, solo redirige al seguro (para enlaces y QR antiguos)
+#   5443 -> el puerto que usa la app cuando se arranca a mano (Arrancar.cmd)
+#   5080 -> el puerto por el que entran el movil y el televisor cuando la web
+#           la sirve el IIS. Tambien va cifrado.
+#
+# El nombre de las reglas dice "HTTPS"/"HTTP" por como nacieron; lo que importa
+# es el numero del puerto. tools\desplegar-iis.ps1 crea la del 5080 por su
+# cuenta, asi que este fichero solo hace falta si algo se ha quedado a medias.
 #
 # HAY QUE EJECUTARLO COMO ADMINISTRADOR:
 #   Boton derecho sobre PowerShell -> "Ejecutar como administrador", y luego:

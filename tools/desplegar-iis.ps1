@@ -3,7 +3,7 @@
 <#
 .SYNOPSIS
     Instala MisCatas en el IIS de este equipo: https://miscatas.es desde el
-    propio ordenador, y http://<ip-del-equipo>:5080 desde los moviles.
+    propio ordenador, y https://<ip-del-equipo>:5080 desde los moviles.
 
 .DESCRIPTION
     Hace de una vez todo lo que normalmente se haría a mano. Se puede volver a
@@ -12,7 +12,8 @@
     después de hacer cambios).
 
     La idea es que no haya que arrancar nada nunca: IIS tiene la web puesta y
-    esperando, se enciende sola con el ordenador y responde por dos sitios:
+    esperando, se enciende sola con el ordenador y responde por dos sitios, los
+    dos cifrados:
       - Desde este equipo, por el nombre bonito: https://miscatas.es
       - Desde los móviles y el televisor, por la IP y el puerto 5080, que es
         la dirección que llevan los QR y los enlaces de WhatsApp. Ese nombre
@@ -23,8 +24,8 @@
       2. Comprueba el complemento de IIS para .NET (el "Hosting Bundle") y lo
          instala si falta. Sin él IIS no sabe arrancar la aplicación.
       3. Apunta el nombre miscatas.es a este mismo equipo.
-      4. Fabrica (una sola vez) el certificado de seguridad de miscatas.es y lo
-         marca como de confianza, para que el navegador no avise.
+      4. Fabrica el certificado de seguridad, que ampara tanto el nombre
+         miscatas.es como la IP del equipo, y lo marca como de confianza.
       5. Escribe en web.config la IP de este equipo (la que va en los QR) y
          publica la aplicación en C:\inetpub\MisCatas.
       6. Crea el sitio web y su grupo de aplicaciones en IIS, le pone las
@@ -123,7 +124,7 @@ function Obtener-IpDeLaRed {
 }
 
 $ipRed = Obtener-IpDeLaRed
-$direccionRed = if ($ipRed) { "http://${ipRed}:$puertoRed" } else { $null }
+$direccionRed = if ($ipRed) { "https://${ipRed}:$puertoRed" } else { $null }
 
 Write-Host ''
 Write-Host '=============================================================' -ForegroundColor Magenta
@@ -293,31 +294,81 @@ else {
 # Hace falta uno propio porque ningun organismo oficial puede certificar un
 # nombre que solo existe en esta casa. Se marca como de confianza en este equipo
 # para que el navegador no muestre la pantalla roja de aviso.
+#
+# El certificado tiene que servir para DOS cosas: para el nombre bonito
+# (miscatas.es, que es como se abre la web en este ordenador) y para la IP del
+# equipo (que es como la abren el movil y el televisor). Si la IP no esta
+# dentro, el movil dice que el certificado "no es de esta direccion" y no deja
+# entrar ni dandole a Continuar.
+#
+# La IP se mete como "Direccion IP" y no como nombre: los navegadores de movil
+# no aceptan una IP escrita en la casilla de los nombres.
 Escribir-Paso 4 "Preparando el certificado de $Dominio..."
 
 $nombreAmistoso = "MisCatas ($Dominio)"
+
+# Lista de direcciones que el certificado debe amparar, en el formato que
+# entiende Windows: los nombres con DNS= y la IP con IPAddress=.
+$trozosSan = @()
+foreach ($nombre in $nombres) { $trozosSan += "DNS=$nombre" }
+if ($ipRed) { $trozosSan += "IPAddress=$ipRed" }
+$extensionSan = '2.5.29.17={text}' + ($trozosSan -join '&')
+
+# Se mira si ya hay uno hecho y si sigue valiendo. "Valer" es tener cuerda para
+# un mes mas y, sobre todo, cubrir la IP de hoy: la IP la reparte el router y
+# puede cambiar, y entonces hay que hacer el certificado otra vez.
 $certificado = Get-ChildItem -Path Cert:\LocalMachine\My |
     Where-Object { $_.FriendlyName -eq $nombreAmistoso -and $_.NotAfter -gt (Get-Date).AddDays(30) } |
     Sort-Object NotAfter -Descending |
     Select-Object -First 1
 
+$sirve = $false
 if ($certificado) {
+    $sirve = $true
+
+    if ($ipRed) {
+        $san = $certificado.Extensions | Where-Object { $_.Oid.Value -eq '2.5.29.17' }
+        $textoSan = if ($san) { $san.Format($false) } else { '' }
+        if ($textoSan -notmatch [regex]::Escape($ipRed)) {
+            $sirve = $false
+            Escribir-Info "El certificado de antes no incluye la IP $ipRed (la red ha cambiado): se hace uno nuevo."
+        }
+    }
+}
+
+if ($sirve) {
     Escribir-Info "Reutilizando el certificado existente (valido hasta $($certificado.NotAfter.ToString('dd/MM/yyyy')))."
 }
 else {
+    # Se retiran los anteriores para no dejar cacharros a medias que luego
+    # confundan a IIS ni al navegador.
+    Get-ChildItem -Path Cert:\LocalMachine\My |
+        Where-Object { $_.FriendlyName -eq $nombreAmistoso } |
+        ForEach-Object {
+            $huella = $_.Thumbprint
+            Remove-Item -Path "Cert:\LocalMachine\My\$huella" -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path "Cert:\LocalMachine\Root\$huella" -Force -ErrorAction SilentlyContinue
+        }
+
     $certificado = New-SelfSignedCertificate `
-        -DnsName $nombres `
+        -Subject "CN=$Dominio" `
+        -TextExtension @($extensionSan) `
         -FriendlyName $nombreAmistoso `
         -CertStoreLocation 'Cert:\LocalMachine\My' `
         -KeyExportPolicy Exportable `
         -KeyLength 2048 `
         -NotAfter (Get-Date).AddYears(5)
 
-    Escribir-Ok "Certificado creado, valido hasta $($certificado.NotAfter.ToString('dd/MM/yyyy'))."
+    Escribir-Ok "Certificado creado para $($trozosSan -join ', '), valido hasta $($certificado.NotAfter.ToString('dd/MM/yyyy'))."
 }
 
-# Copia en el almacen de "entidades de confianza": sin esto el navegador
-# desconfia de su propio certificado.
+# Copia en el almacen de "entidades de confianza": sin esto el navegador de
+# ESTE ordenador desconfia de su propio certificado.
+#
+# Ojo: esto vale solo para este equipo. El movil y el televisor no conocen el
+# certificado, asi que la primera vez avisaran de que la conexion "no es de
+# fiar"; hay que entrar en "Avanzado" y continuar. Es normal: el certificado lo
+# ha hecho esta casa, no una autoridad de internet.
 $yaConfiado = Get-ChildItem -Path Cert:\LocalMachine\Root |
     Where-Object { $_.Thumbprint -eq $certificado.Thumbprint }
 
@@ -490,17 +541,21 @@ else {
 # Se usa SNI (SslFlags 1) para que varios sitios puedan compartir el puerto 443
 # distinguiendose por el nombre.
 #
-# El ultimo enlace es el importante para los invitados: puerto 5080, sin cifrar
-# y SIN NOMBRE. "Sin nombre" quiere decir que responde a cualquier direccion con
+# El ultimo enlace es el importante para los invitados: puerto 5080, cifrado y
+# SIN NOMBRE. "Sin nombre" quiere decir que responde a cualquier direccion con
 # la que se llame al equipo, y en particular a su IP, que es lo unico que
 # entienden el movil y el televisor. Es el mismo puerto de siempre, el de
 # Arrancar-Red.cmd, pero ahora lo sirve IIS: ya no hay que arrancar nada.
+#
+# Ese enlace NO puede llevar SNI: SNI consiste en elegir el certificado segun
+# el nombre pedido, y aqui justamente no hay nombre. Por eso el certificado se
+# le cuelga despues, a mano, un poco mas abajo.
 $enlaces = @(
     @{ Protocolo = 'http';  Puerto = 80;         Nombre = $Dominio },
     @{ Protocolo = 'http';  Puerto = 80;         Nombre = "www.$Dominio" },
     @{ Protocolo = 'https'; Puerto = 443;        Nombre = $Dominio },
     @{ Protocolo = 'https'; Puerto = 443;        Nombre = "www.$Dominio" },
-    @{ Protocolo = 'http';  Puerto = $puertoRed; Nombre = '' }
+    @{ Protocolo = 'https'; Puerto = $puertoRed; Nombre = '' }
 )
 
 foreach ($enlace in $enlaces) {
@@ -515,15 +570,55 @@ foreach ($enlace in $enlaces) {
         continue
     }
 
-    if ($enlace.Protocolo -eq 'https') {
+    if ($enlace.Protocolo -eq 'https' -and $enlace.Nombre) {
         New-WebBinding -Name $Sitio -Protocol 'https' -Port $enlace.Puerto `
             -HostHeader $enlace.Nombre -SslFlags 1 | Out-Null
+    }
+    elseif ($enlace.Protocolo -eq 'https') {
+        # Sin nombre: nada de SNI (ver la explicacion de arriba).
+        New-WebBinding -Name $Sitio -Protocol 'https' -Port $enlace.Puerto `
+            -IPAddress '*' | Out-Null
     }
     else {
         New-WebBinding -Name $Sitio -Protocol 'http' -Port $enlace.Puerto `
             -HostHeader $enlace.Nombre | Out-Null
     }
     Escribir-Ok "Enlace $comoSeLlama creado."
+}
+
+# Se le cuelga el certificado a cada enlace seguro. Sin esto el navegador no
+# llega ni a pedir la pagina: la conversacion se corta antes de empezar.
+#
+# Se repasan todos en cada despliegue (no solo los nuevos) porque si el
+# certificado se ha vuelto a fabricar -por ejemplo, porque el router ha dado
+# otra IP- los enlaces seguirian apuntando al viejo.
+foreach ($enlace in (Get-WebBinding -Name $Sitio -Protocol 'https' -ErrorAction SilentlyContinue)) {
+    $comoSeLlama = $enlace.bindingInformation
+
+    if ($enlace.certificateHash -eq $certificado.Thumbprint) {
+        Escribir-Info "El enlace seguro $comoSeLlama ya usaba este certificado."
+        continue
+    }
+
+    try {
+        $enlace.AddSslCertificate($certificado.Thumbprint, 'My')
+        Escribir-Ok "Certificado puesto en el enlace seguro $comoSeLlama."
+    }
+    catch {
+        # El enlace sin nombre (el del 5080) guarda su certificado en una tabla
+        # de Windows aparte, y a veces hay que retirar el anterior antes de
+        # poder poner el nuevo.
+        $puertoEnlace = ($comoSeLlama -split ':')[1]
+        & netsh.exe http delete sslcert ipport=0.0.0.0:$puertoEnlace | Out-Null
+
+        try {
+            $enlace.AddSslCertificate($certificado.Thumbprint, 'My')
+            Escribir-Ok "Certificado puesto en el enlace seguro $comoSeLlama (al segundo intento)."
+        }
+        catch {
+            Escribir-Aviso "No se ha podido poner el certificado en $comoSeLlama : $($_.Exception.Message)"
+        }
+    }
 }
 
 # Que el sitio vuelva solo cada vez que se enciende el ordenador. Junto con el
@@ -559,6 +654,8 @@ catch {
 # aunque IIS este escuchando en el 5080 el movil recibiria un silencio. Se abre
 # solo ese puerto, y solo para entrar.
 try {
+    # El nombre de la regla se queda como estaba (dice "HTTP") para no duplicar
+    # reglas en los equipos donde ya se creo. Lo que importa es el puerto.
     $nombreRegla = "MisCatas (HTTP $puertoRed)"
     $regla = Get-NetFirewallRule -DisplayName $nombreRegla -ErrorAction SilentlyContinue
 
@@ -686,12 +783,11 @@ for ($intento = 1; $intento -le 12; $intento++) {
 
 # Y ahora la puerta de los invitados: la IP con el puerto 5080. Si esta no
 # contesta, el QR no se podra abrir desde el movil, asi que se comprueba
-# aparte. Interesa que NO devuelva un 307: eso significaria que esta mandando
-# al visitante a una direccion segura que el movil no sabra abrirla.
+# aparte. Tambien con -k, porque el certificado es de casa.
 $codigoRed = $null
 if ($direccionRed) {
     for ($intento = 1; $intento -le 6; $intento++) {
-        $codigoRed = (& curl.exe -s -o NUL -w '%{http_code}' "$direccionRed/" 2>$null)
+        $codigoRed = (& curl.exe -k -s -o NUL -w '%{http_code}' "$direccionRed/" 2>$null)
         if ($codigoRed -and $codigoRed -ne '000') { break }
         Start-Sleep -Seconds 3
     }
@@ -724,16 +820,18 @@ if ($codigo -in @('200', '302')) {
     elseif ($codigoRed -in @('200', '302')) {
         Write-Host "  Los QR y los enlaces de WhatsApp llevan a $direccionRed," -ForegroundColor Green
         Write-Host '  que ya responde: se pueden abrir desde el movil.' -ForegroundColor Green
-    }
-    elseif ($codigoRed -eq '307') {
-        Write-Host "  OJO: $direccionRed esta reenviando a la version segura," -ForegroundColor Yellow
-        Write-Host '  y el movil no sabra abrirla. Vuelve a publicar (sin' -ForegroundColor Yellow
-        Write-Host '  -SinPublicar) para que se aplique el cambio del programa.' -ForegroundColor Yellow
+        Write-Host ''
+        Write-Host '  La primera vez, el movil avisara de que la conexion "no es' -ForegroundColor DarkGray
+        Write-Host '  privada": el certificado lo ha hecho esta casa, no una' -ForegroundColor DarkGray
+        Write-Host '  autoridad de internet. Hay que darle a "Avanzado" y' -ForegroundColor DarkGray
+        Write-Host '  continuar. Solo pasa la primera vez en cada aparato.' -ForegroundColor DarkGray
     }
     else {
         Write-Host "  OJO: $direccionRed no responde (codigo '$codigoRed')." -ForegroundColor Yellow
-        Write-Host '  Los QR no se podran abrir desde el movil. Mira el' -ForegroundColor Yellow
-        Write-Host '  cortafuegos: tools\abrir-puerto-firewall.ps1' -ForegroundColor Yellow
+        Write-Host '  Los QR no se podran abrir desde el movil. Cosas que mirar:' -ForegroundColor Yellow
+        Write-Host '   - El cortafuegos: tools\abrir-puerto-firewall.ps1' -ForegroundColor Yellow
+        Write-Host '   - Que el certificado este puesto en el puerto 5080:' -ForegroundColor Yellow
+        Write-Host '     netsh http show sslcert ipport=0.0.0.0:5080' -ForegroundColor Yellow
     }
 }
 else {

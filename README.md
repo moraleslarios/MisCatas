@@ -487,7 +487,7 @@ arrancar**. `Program.cs` llama a `MigrarYSembrarAsync()`, que ejecuta
 | `validar-accesos-directos.ps1` | comprueba que esos tres iconos apuntan a donde deben |
 | `arrancar-silencioso.ps1` | arranca dejando el log en un fichero (para no inundar el terminal) |
 | `arrancar-produccion.ps1` | publica en Release y arranca como en la cata real (HTTPS, accesible en la red) |
-| `desplegar-iis.ps1` | instala la web en el IIS del equipo: `https://miscatas.es` aquí y `http://<ip>:5080` para los móviles (**administrador**) |
+| `desplegar-iis.ps1` | instala la web en el IIS del equipo: `https://miscatas.es` aquí y `https://<ip>:5080` para los móviles (**administrador**) |
 | `retirar-iis.ps1` | quita la web del IIS y deja el equipo como estaba (**administrador**) |
 | `crear-usuario-pruebas.ps1` | crea un usuario de pruebas |
 | `montar-escenario-pruebas.ps1` | deja una cata montada con vinos y participantes |
@@ -545,7 +545,7 @@ disponible**, sin abrir nada, y con una dirección bonita:
 
 Al terminar, la web vive en **`https://miscatas.es`** y arranca sola al encender
 el ordenador. Y los móviles y el televisor la abren en
-**`http://<ip-del-equipo>:5080`**, que es la dirección que llevan los QR y los
+**`https://<ip-del-equipo>:5080`**, que es la dirección que llevan los QR y los
 enlaces de WhatsApp. **No hay que arrancar nada nunca más**: `Arrancar.cmd` y
 `Arrancar-Red.cmd` quedan solo para desarrollo.
 
@@ -559,8 +559,12 @@ comprueba antes si ya está hecho):
    **puede pedir reiniciar**: si pasa, se reinicia y se vuelve a ejecutar.
 3. Apunta `miscatas.es` y `www.miscatas.es` a este mismo equipo en el fichero
    `hosts` de Windows.
-4. Fabrica el **certificado** de `miscatas.es` (válido 5 años) y lo marca como
-   de confianza, para que el navegador no muestre la pantalla roja de aviso.
+4. Fabrica el **certificado** (válido 5 años) y lo marca como de confianza. El
+   certificado ampara tres direcciones: `miscatas.es`, `www.miscatas.es` y **la
+   IP del equipo**; esa última va anotada como *dirección IP* y no como nombre,
+   porque los navegadores de móvil no aceptan una IP escrita en la casilla de
+   los nombres. Si el router cambia la IP, el siguiente despliegue detecta que
+   el certificado ya no la cubre y lo vuelve a fabricar.
 5. Publica la aplicación en `C:\inetpub\MisCatas` y **comprueba el resultado**:
    si el CSS de Tailwind sale con menos de 14 KB aborta, porque eso significa
    que ha purgado de más y la web se vería sin estilos.
@@ -569,9 +573,10 @@ comprueba antes si ya está hecho):
    abierta en el televisor sin que nadie toque nada). Para el «Default Web
    Site», que ocupaba los puertos 80 y 443. Le pone cinco direcciones: las
    cuatro del nombre (`miscatas.es` y `www`, en 80 y 443) y una más en el
-   **puerto 5080 sin nombre**, que es la que responde a la IP del equipo y la
-   que usan los móviles. Abre ese puerto en el cortafuegos y marca el sitio para
-   que se arranque solo al encender.
+   **puerto 5080 cifrado y sin nombre**, que es la que responde a la IP del
+   equipo y la que usan los móviles. A cada dirección segura le cuelga el
+   certificado. Abre ese puerto en el cortafuegos y marca el sitio para que se
+   arranque solo al encender.
 7. Da permisos: lectura en la carpeta, escritura en `claves` (donde se guardan
    las claves de cifrado de las cookies) y, como la conexión usa autenticación
    de Windows, da de alta en SQL Server al usuario `IIS AppPool\MisCatas` con
@@ -583,14 +588,14 @@ comprueba antes si ya está hecho):
 ### Dos direcciones para la misma web
 
 `miscatas.es` es un nombre inventado que vive en el fichero `hosts` de este
-equipo: **ningún móvil ni televisor lo conoce**, y el certificado está hecho a
-ese nombre. Por eso la web responde también por el **puerto 5080, sin cifrar y
-por la IP**, que es lo único que entienden los demás aparatos de casa:
+equipo: **ningún móvil ni televisor lo conoce**. Por eso la web responde también
+por la **IP del equipo en el puerto 5080**, que es lo único que entienden los
+demás aparatos de casa. Las dos direcciones van cifradas:
 
 | Desde dónde | Dirección |
 |---|---|
 | Este ordenador | `https://miscatas.es` |
-| Móviles y televisor | `http://<ip-del-equipo>:5080` |
+| Móviles y televisor | `https://<ip-del-equipo>:5080` |
 
 Es el mismo puerto 5080 de siempre, pero ahora lo sirve IIS en lugar de
 `Arrancar-Red.cmd`. Esa segunda dirección es la que se graba en
@@ -599,8 +604,16 @@ en los QR y se manda por WhatsApp. **No hay que mantenerla a mano**: el paso 5
 del script mira la IP real del equipo y la reescribe en cada despliegue, porque
 el router puede cambiarla.
 
-En ese puerto la aplicación **no** reenvía a HTTPS, justo para que los QR se
-puedan abrir. Fuera de IIS (en desarrollo) sigue reenviando como antes.
+Ese enlace del 5080 no lleva nombre, y eso tiene dos consecuencias técnicas: no
+puede usar SNI (que consiste precisamente en elegir el certificado según el
+nombre pedido), así que el certificado se le ata aparte, en la tabla de Windows
+que se consulta con `netsh http show sslcert ipport=0.0.0.0:5080`; y el
+certificado tiene que incluir la IP entre sus direcciones o el móvil dirá que
+«no es de esta dirección» y no dejará entrar ni dándole a *Continuar*.
+
+**La primera vez, cada móvil avisará de que la conexión «no es privada»**. Es
+normal: el certificado lo ha hecho esta casa, no una autoridad de internet. Se
+entra en *Avanzado* → *Continuar* y no vuelve a preguntar en ese aparato.
 
 Para que la aplicación sepa cuál de los dos mundos la está sirviendo hay un
 detector, `src\MisCatas.Web\Seguridad\Hospedaje.cs`: si ve las variables de
