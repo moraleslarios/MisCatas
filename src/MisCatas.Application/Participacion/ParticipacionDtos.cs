@@ -234,6 +234,60 @@ public sealed record CataEscaparateDto(
     /// </summary>
     public bool CataAnunciadaActiva =>
         ProximaCata is not null && ProximaCata.Estado is EstadoCata.Abierta or EstadoCata.EnCurso;
+
+    /// <summary>
+    /// Rótulo con el que se presenta la cata anunciada en la televisión.
+    ///
+    /// Son cuatro situaciones distintas y la sala las vive de forma distinta:
+    /// si ya se está votando, es la cata en marcha; si las puertas están
+    /// abiertas pero aún no se vota, hay que mover a la gente a coger el móvil
+    /// sin dar a entender que llegan tarde; si la cata es de hoy pero todavía
+    /// está en el cajón, es la antesala; y si es de otro día, es cartelera.
+    /// </summary>
+    public string RotuloCataAnunciada
+    {
+        get
+        {
+            if (ProximaCata is null)
+            {
+                return "Próxima cata";
+            }
+
+            if (ProximaCata.Estado == EstadoCata.EnCurso)
+            {
+                return "Cata en marcha";
+            }
+
+            if (ProximaCata.Estado == EstadoCata.Abierta)
+            {
+                return "Pendiente de empezar · ya puedes entrar";
+            }
+
+            return ProximaCata.Fecha.Date == DateTime.Today
+                ? "Hoy · pendiente de realizarse"
+                : "Próxima cata";
+        }
+    }
+
+    /// <summary>
+    /// Frase que explica en qué punto está la cata anunciada cuando todavía no
+    /// se puede entrar a votar. Es <c>null</c> cuando las puertas ya están
+    /// abiertas, porque entonces la pantalla muestra el QR y la dirección.
+    /// </summary>
+    public string? EsperaCataAnunciada
+    {
+        get
+        {
+            if (ProximaCata is null || CataAnunciadaActiva)
+            {
+                return null;
+            }
+
+            return ProximaCata.Fecha.Date == DateTime.Today
+                ? "Pendiente de realizarse: en cuanto se abra, podrás entrar a votar desde el móvil."
+                : "Pendiente de realizarse. Avisaremos en esta pantalla cuando se abra.";
+        }
+    }
 }
 
 /// <summary>

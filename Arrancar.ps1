@@ -4,17 +4,22 @@
     ====================================
 
     Uso:
-        .\Arrancar.ps1                -> compila si hace falta, arranca y abre HTTPS
+        .\Arrancar.ps1                -> compila si hace falta, arranca y abre la web
         .\Arrancar.ps1 -Compilar      -> fuerza recompilar antes de arrancar
-        .\Arrancar.ps1 -Http          -> abre el navegador por HTTP (que redirige al seguro)
+        .\Arrancar.ps1 -Https         -> abre el navegador por HTTPS (avisa del certificado)
         .\Arrancar.ps1 -Lan           -> abre la direccion de la red local (la de los moviles)
         .\Arrancar.ps1 -SinNavegador  -> no abre ningun navegador
 
     O directamente doble clic en  Arrancar.cmd
 
     La app escucha por los DOS puertos a la vez:
-        https://localhost:5443   <- el seguro, el que atiende de verdad
-        http://localhost:5080    <- solo redirige al seguro (enlaces y QR antiguos)
+        http://localhost:5081    <- sin cifrar, y es el que conviene usar
+        https://localhost:5443   <- cifrado, pero avisa de que no es de fiar
+
+    Por defecto se abre el SIN CIFRAR. Parece al reves, pero es lo que hace que
+    la web funcione en todas partes: el certificado lo firmamos nosotros, y el
+    iPhone no solo desconfia, sino que ni siquiera deja aceptar el aviso. Usa
+    -Https si quieres el cifrado en este ordenador.
 
     El log queda en  tools\salida-app.log
 #>
@@ -24,8 +29,10 @@ param(
     [switch]$Compilar,
     [switch]$SinNavegador,
 
-    # Abre el navegador por el puerto sin cifrar (acaba redirigiendo al seguro).
-    [switch]$Http,
+    # Abre el navegador por el puerto cifrado. Da aviso de certificado y en
+    # iPhone directamente no se puede entrar; esta aqui por si hace falta
+    # comprobar algo que dependa de HTTPS.
+    [switch]$Https,
 
     # Abre la direccion de la red local en lugar de localhost, para ver desde
     # el movil o la tele lo mismo que van a ver ellos.
@@ -43,8 +50,11 @@ $logError = Join-Path $raiz 'tools\salida-app.err.log'
 
 # Los puertos viven en src\MisCatas.Web\Seguridad\PuertosApp.cs. Si cambian
 # alli, hay que cambiarlos aqui tambien.
+#
+# El 5081 NO es el 5080: el 5080 lo ocupa IIS. Esta linea decia 5080 y por eso
+# el panel de direcciones de aqui abajo marcaba el puerto como caido.
 $puertoHttps = 5443
-$puertoHttp = 5080
+$puertoHttp = 5081
 
 Write-Host ''
 Write-Host '=== Arrancando MisCatas ===' -ForegroundColor Magenta
@@ -139,7 +149,7 @@ if ($lista) {
         Select-Object -First 1 -ExpandProperty IPAddress)
 
     # OJO: no llamar a estas variables $http / $https. PowerShell no distingue
-    # mayusculas, asi que pisarian el parametro -Http y el navegador abriria
+    # mayusculas, asi que pisarian el parametro -Https y el navegador abriria
     # siempre la direccion equivocada.
     $escuchaHttps = Test-PuertoEscuchando -Puerto $puertoHttps
     $escuchaHttp = Test-PuertoEscuchando -Puerto $puertoHttp
@@ -149,25 +159,26 @@ if ($lista) {
     Write-Host '  DIRECCIONES DISPONIBLES' -ForegroundColor White
     Write-Host '  -----------------------'
 
-    $marcaHttps = if ($escuchaHttps) { 'OK' } else { 'NO' }
-    $colorHttps = if ($escuchaHttps) { 'Green' } else { 'Red' }
-    Write-Host "  [$marcaHttps] HTTPS (recomendado) : " -ForegroundColor $colorHttps -NoNewline
-    Write-Host "https://localhost:$puertoHttps" -ForegroundColor Cyan
-
     $marcaHttp = if ($escuchaHttp) { 'OK' } else { 'NO' }
     $colorHttp = if ($escuchaHttp) { 'Green' } else { 'Red' }
-    Write-Host "  [$marcaHttp] HTTP (redirige)     : " -ForegroundColor $colorHttp -NoNewline
-    Write-Host "http://localhost:$puertoHttp" -ForegroundColor DarkCyan
+    Write-Host "  [$marcaHttp] HTTP (recomendado)  : " -ForegroundColor $colorHttp -NoNewline
+    Write-Host "http://localhost:$puertoHttp" -ForegroundColor Cyan
+
+    $marcaHttps = if ($escuchaHttps) { 'OK' } else { 'NO' }
+    $colorHttps = if ($escuchaHttps) { 'Green' } else { 'Red' }
+    Write-Host "  [$marcaHttps] HTTPS (con aviso)   : " -ForegroundColor $colorHttps -NoNewline
+    Write-Host "https://localhost:$puertoHttps" -ForegroundColor DarkCyan
 
     if ($ip) {
         Write-Host '  [OK] Moviles y tele      : ' -ForegroundColor Green -NoNewline
-        Write-Host "https://${ip}:$puertoHttps" -ForegroundColor Cyan
-        Write-Host "                             http://${ip}:$puertoHttp" -ForegroundColor DarkGray
+        Write-Host "http://${ip}:$puertoHttp" -ForegroundColor Cyan
+        Write-Host "                             https://${ip}:$puertoHttps" -ForegroundColor DarkGray
     }
 
     Write-Host ''
-    Write-Host '  El certificado es propio de este equipo, asi que la primera vez el' -ForegroundColor DarkGray
-    Write-Host '  navegador avisa: pulsa "Avanzado" y "Continuar". Es normal.' -ForegroundColor DarkGray
+    Write-Host '  Reparte la direccion HTTP: entra tal cual en cualquier aparato.' -ForegroundColor DarkGray
+    Write-Host '  La de HTTPS usa un certificado propio de este equipo, asi que el' -ForegroundColor DarkGray
+    Write-Host '  navegador avisa (y el iPhone no deja ni aceptar el aviso).' -ForegroundColor DarkGray
     Write-Host ''
     Write-Host "  PID del proceso : $($proceso.Id)"
     Write-Host "  Log             : $log"
@@ -175,9 +186,10 @@ if ($lista) {
     Write-Host ''
 
     if (-not $SinNavegador) {
-        # Por defecto el seguro. -Http abre el otro; -Lan usa la IP de la red.
+        # Por defecto el sin cifrar, que es el que funciona en todos los
+        # aparatos. -Https abre el cifrado; -Lan usa la IP de la red.
         $maquina = if ($Lan -and $ip) { $ip } else { 'localhost' }
-        $destino = if ($Http) { "http://${maquina}:$puertoHttp" } else { "https://${maquina}:$puertoHttps" }
+        $destino = if ($Https) { "https://${maquina}:$puertoHttps" } else { "http://${maquina}:$puertoHttp" }
         Write-Host "  Abriendo $destino ..." -ForegroundColor DarkGray
         Start-Process $destino
     }

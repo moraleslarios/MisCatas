@@ -2,9 +2,19 @@
 # Abre los puertos de MisCatas en el Firewall de Windows para poder entrar
 # desde otros dispositivos de la red local (moviles, tablets, otros PCs).
 #
-#   5443 -> el puerto que usa la app cuando se arranca a mano (Arrancar.cmd)
-#   5080 -> el puerto por el que entran el movil y el televisor cuando la web
-#           la sirve el IIS. Tambien va cifrado.
+#   5081 -> el puerto SIN CIFRAR de la app cuando se arranca a mano
+#           (Arrancar.cmd). Este es el importante: es el que usan el movil y
+#           la tele, porque es el unico por el que puede entrar un iPhone.
+#   5443 -> el puerto cifrado de esa misma app. Sigue abierto para quien
+#           quiera usarlo, pero el certificado lo firmamos nosotros y no todos
+#           los aparatos dejan aceptar el aviso.
+#   5080 -> el puerto por el que se sirve la web cuando la publica el IIS.
+#           Tambien va cifrado.
+#
+# Ojo con el 5080 y el 5081: NO son lo mismo. El 5080 lo ocupa IIS y el 5081 lo
+# ocupa la app arrancada a mano. Antes los dos eran el 5080 y se peleaban por
+# el numero: desde el movil la pagina no cargaba porque contestaba el que
+# hubiera arrancado primero.
 #
 # El nombre de las reglas dice "HTTPS"/"HTTP" por como nacieron; lo que importa
 # es el numero del puerto. tools\desplegar-iis.ps1 crea la del 5080 por su
@@ -21,9 +31,13 @@ $ErrorActionPreference = 'Stop'
 
 $reglas = @(
     @{ Nombre = 'MisCatas (HTTPS 5443)'; Puerto = 5443 }
+    @{ Nombre = 'MisCatas (HTTP 5081)'; Puerto = 5081 }
     @{ Nombre = 'MisCatas (HTTP 5080)'; Puerto = 5080 }
 )
-$puerto = 5443
+# Puerto que se reparte a los invitados. Va SIN cifrar a proposito: el
+# certificado del 5443 lo firmamos nosotros y el Safari del iPhone lo rechaza
+# sin ofrecer siquiera el boton de "Visitar este sitio web".
+$puerto = 5081
 
 Write-Host ''
 Write-Host '=== MisCatas: abrir puertos en el firewall ===' -ForegroundColor Cyan
@@ -83,13 +97,16 @@ Write-Host ''
 Get-NetIPAddress -AddressFamily IPv4 |
     Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } |
     ForEach-Object {
-        Write-Host ("  https://{0}:{1}" -f $_.IPAddress, $puerto) -ForegroundColor White
+        Write-Host ("  http://{0}:{1}" -f $_.IPAddress, $puerto) -ForegroundColor White
         Write-Host ("     (interfaz: {0})" -f $_.InterfaceAlias) -ForegroundColor DarkGray
     }
 
 Write-Host ''
 Write-Host 'Recuerda: el movil en la MISMA red wifi que el PC.' -ForegroundColor Gray
-Write-Host 'La primera vez el navegador avisara de que el certificado no es de' -ForegroundColor Gray
-Write-Host 'fiar (es propio, de casa): acepta y continua. Solo pasa una vez por' -ForegroundColor Gray
-Write-Host 'dispositivo.' -ForegroundColor Gray
+Write-Host 'Esta direccion va sin cifrar y por eso entra en cualquier aparato, sin' -ForegroundColor Gray
+Write-Host 'avisos ni tener que confiar en nada. Es la que hay que repartir.' -ForegroundColor Gray
+Write-Host ''
+Write-Host 'Si prefieres cifrado, arranca con .\Arrancar.ps1 -Https y usa el 5443,' -ForegroundColor Gray
+Write-Host 'pero el navegador avisara del certificado (es propio, de casa) y el' -ForegroundColor Gray
+Write-Host 'iPhone directamente no te dejara aceptarlo.' -ForegroundColor Gray
 Write-Host ''

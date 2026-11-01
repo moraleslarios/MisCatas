@@ -32,7 +32,7 @@
         },
         {
             "label": "■ Parar la web",
-            "detail": "Cierra la app y libera los puertos 5443 (HTTPS) y 5080 (HTTP)",
+            "detail": "Cierra la app y libera los puertos 5081 (HTTP) y 5443 (HTTPS)",
             "type": "shell",
             "command": "powershell",
             "args": [

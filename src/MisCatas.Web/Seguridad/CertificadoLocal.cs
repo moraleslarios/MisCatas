@@ -33,8 +33,21 @@ public static class CertificadoLocal
     /// <summary>Nombre de la copia pública, para instalar en los móviles.</summary>
     private const string NombreCrt = "miscatas-local.crt";
 
-    /// <summary>Años de validez. Más que suficiente para una red doméstica.</summary>
-    private const int AnosValidez = 5;
+    /// <summary>
+    /// Días de validez del certificado.
+    /// </summary>
+    /// <remarks>
+    /// 398 días no es un número caprichoso: es el máximo que aceptan Safari y
+    /// iOS. Un certificado de servidor que dure más lo descartan por norma, y
+    /// lo peor es CÓMO lo descartan: el iPhone corta la conexión sin ofrecer
+    /// siquiera la opción de confiar en el sitio, así que la web resultaba
+    /// inalcanzable desde cualquier iPhone de la casa. Antes esto duraba cinco
+    /// años «para no tener que renovar», y precisamente por eso no funcionaba.
+    ///
+    /// Con la renovación automática de más abajo, que un año pase volando da
+    /// igual: el certificado se rehace solo cuando le quedan pocos días.
+    /// </remarks>
+    private const int DiasValidez = 397;
 
     /// <summary>
     /// Margen por debajo del cual se considera que toca renovar. Evita que el
@@ -99,7 +112,16 @@ public static class CertificadoLocal
             var vigente = candidato.NotAfter - DateTime.Now > MargenRenovacion
                 && candidato.NotBefore <= DateTime.Now;
 
-            if (vigente && CubreTodos(candidato, nombres))
+            // Un certificado demasiado largo no sirve, aunque esté en vigor:
+            // iOS rechaza los que duran más de 398 días y encima no deja
+            // confiar en ellos a mano. Este repaso es el que jubila a los
+            // certificados de cinco años que se fabricaron antes de saberlo;
+            // sin él se reaprovecharían tal cual y el iPhone seguiría sin
+            // poder entrar.
+            var duracionAceptable =
+                (candidato.NotAfter - candidato.NotBefore).TotalDays <= DiasValidez;
+
+            if (vigente && duracionAceptable && CubreTodos(candidato, nombres))
             {
                 certificado = candidato;
                 return true;
@@ -192,9 +214,13 @@ public static class CertificadoLocal
 
         // Un día de margen hacia atrás: evita sustos si el reloj del móvil va
         // ligeramente adelantado respecto al del servidor.
+        //
+        // El total (margen + validez) tiene que quedar por debajo de los 398
+        // días que tolera iOS, por eso el margen se descuenta de la validez en
+        // lugar de sumarse.
         using var recienHecho = peticion.CreateSelfSigned(
             DateTimeOffset.Now.AddDays(-1),
-            DateTimeOffset.Now.AddYears(AnosValidez));
+            DateTimeOffset.Now.AddDays(DiasValidez - 1));
 
         // Paso obligado por PFX. El certificado que sale de CreateSelfSigned
         // lleva la clave privada «en el aire» (efímera), y Windows no acepta

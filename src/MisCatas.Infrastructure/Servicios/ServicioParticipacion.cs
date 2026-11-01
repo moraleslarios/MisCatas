@@ -252,8 +252,34 @@ public class ServicioParticipacion : IServicioParticipacion
                 ajustes.PorcentajeAlertaRoja);
         }
 
-        // 2) Si no hay nada en curso, se revela la última finalizada del día.
+        // 2) Si no hay nada en curso, hay dos cosas que podrían merecer la
+        //    pantalla: el veredicto de una cata que acaba de terminar, o el
+        //    anuncio de una cata que está a punto de empezar.
+        //
+        //    Se busca primero el anuncio, porque es el que manda: si el
+        //    administrador ya ha abierto la cata de esta noche, la sala
+        //    necesita ver cómo entrar a votar, no el podio de la cata
+        //    anterior. Solo cuando no hay ninguna cata esperando se proyecta
+        //    el veredicto.
         var hoy = DateTime.Today;
+
+        var proxima = await db.Catas
+            .AsNoTracking()
+            .Where(c => c.Estado == EstadoCata.Abierta || c.Fecha >= hoy)
+            .Where(c => c.Estado != EstadoCata.Finalizada)
+            .OrderBy(c => c.Fecha).ThenBy(c => c.Id)
+            .Select(c => new CataUsuarioDto(
+                c.Id, c.Nombre, c.Lugar, c.Fecha, c.Estado,
+                c.Vinos.Count, c.Participantes.Count, 0))
+            .FirstOrDefaultAsync(ct);
+
+        // Una cata «abierta» es una cata cuyas puertas ya están abiertas: hay
+        // gente entrando con el móvil y el administrador está a un clic de
+        // empezar. Esa se anuncia siempre, aunque hoy ya se haya catado antes.
+        if (proxima?.Estado == EstadoCata.Abierta)
+        {
+            return CataEscaparateDto.EnEspera(proxima);
+        }
 
         var finalizada = await db.Catas
             .AsNoTracking()
@@ -278,21 +304,15 @@ public class ServicioParticipacion : IServicioParticipacion
                     resultado.Clasificacion.Count,
                     null,
                     resultado,
-                    null);
+                    // El veredicto se queda con el anuncio de la siguiente
+                    // cata: así, cuando la televisión termine la gala y
+                    // alguien pulse «volver al inicio», la pantalla de espera
+                    // ya sabe qué hay previsto y no se queda en blanco.
+                    proxima);
             }
         }
 
-        // 3) Nada que mostrar: bienvenida, anunciando la próxima cata.
-        var proxima = await db.Catas
-            .AsNoTracking()
-            .Where(c => c.Estado == EstadoCata.Abierta || c.Fecha >= hoy)
-            .Where(c => c.Estado != EstadoCata.Finalizada)
-            .OrderBy(c => c.Fecha).ThenBy(c => c.Id)
-            .Select(c => new CataUsuarioDto(
-                c.Id, c.Nombre, c.Lugar, c.Fecha, c.Estado,
-                c.Vinos.Count, c.Participantes.Count, 0))
-            .FirstOrDefaultAsync(ct);
-
+        // 3) Nada que revelar: bienvenida, anunciando lo que haya previsto.
         return CataEscaparateDto.EnEspera(proxima);
     }
 

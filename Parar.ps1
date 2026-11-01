@@ -9,8 +9,8 @@
     O directamente doble clic en  Parar.cmd
 
     Cierra el servidor de MisCatas y libera los dos puertos:
-        5443 -> HTTPS, el seguro, el que atiende de verdad
-        5080 -> HTTP, solo redirige al seguro
+        5081 -> HTTP, el que se usa desde los moviles y la tele
+        5443 -> HTTPS, cifrado pero con aviso de certificado
 #>
 
 [CmdletBinding()]
@@ -19,8 +19,11 @@ param()
 $ErrorActionPreference = 'Stop'
 
 # Los puertos viven en src\MisCatas.Web\Seguridad\PuertosApp.cs.
+#
+# El 5081 NO es el 5080, que es el de IIS. Aqui decia 5080 y por eso el aviso
+# final daba por liberado un puerto que no era el de la app.
 $puertoHttps = 5443
-$puertoHttp = 5080
+$puertoHttp = 5081
 
 Write-Host ''
 Write-Host '=== Parando MisCatas ===' -ForegroundColor Magenta

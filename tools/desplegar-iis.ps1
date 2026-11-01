@@ -73,8 +73,13 @@ $rutaAjustes = Join-Path $proyecto 'appsettings.json'
 $cssMinimoBytes = 14000
 $totalPasos = 8
 
-# Puerto por el que la web responde a los moviles y al televisor. Va sin cifrar
-# y por la IP del equipo, porque el nombre miscatas.es solo existe aqui dentro.
+# Puerto por el que la web responde a los moviles y al televisor. Va por la IP
+# del equipo, porque el nombre miscatas.es solo existe aqui dentro, y SI va
+# cifrado: este script le ata un certificado (ver el paso de los enlaces).
+#
+# No confundir con el 5081: ese es el puerto sin cifrar de la app cuando se
+# arranca a mano con Arrancar.cmd, y existe aparte justo para no chocar con
+# este. Antes los dos eran el 5080 y desde el movil no se podia entrar.
 $puertoRed = 5080
 
 function Escribir-Paso {
@@ -395,16 +400,16 @@ Escribir-Paso 5 'Publicando la aplicacion...'
 # escrita a mano, un dia los QR dejarian de abrirse sin que nadie supiera por
 # que.
 function Ajustar-DireccionPublica {
-    param([string]$Ruta, [string]$Direccion)
+    param([string]$Ruta, [string]$Direccion, [string]$Clave = 'Sitio__UrlPublica')
 
     if (-not (Test-Path $Ruta)) { return $false }
 
     $texto = Get-Content -Path $Ruta -Raw -Encoding UTF8
-    $patron = '(?<inicio><environmentVariable\s+name="Sitio__UrlPublica"\s+value=")(?<valor>[^"]*)(?<fin>")'
+    $patron = '(?<inicio><environmentVariable\s+name="' + [regex]::Escape($Clave) + '"\s+value=")(?<valor>[^"]*)(?<fin>")'
     $coincidencia = [regex]::Match($texto, $patron)
 
     if (-not $coincidencia.Success) {
-        Escribir-Aviso "No se ha encontrado Sitio__UrlPublica en $Ruta."
+        Escribir-Aviso "No se ha encontrado $Clave en $Ruta."
         return $false
     }
 
@@ -415,16 +420,30 @@ function Ajustar-DireccionPublica {
     return $true
 }
 
+# Se reparten DOS direcciones: la de red (la IP, que es la que va en los QR
+# porque es la unica que abre un movil) y la del nombre bonito, que solo
+# funciona en este ordenador y se da como alternativa escrita.
+$direccionEquipo = "https://$Dominio"
+
+function Ajustar-AmbasDirecciones {
+    param([string]$Ruta, [string]$DireccionRed)
+
+    $cambios = @()
+    if (Ajustar-DireccionPublica -Ruta $Ruta -Direccion $DireccionRed) { $cambios += $DireccionRed }
+    if (Ajustar-DireccionPublica -Ruta $Ruta -Direccion $direccionEquipo -Clave 'Sitio__UrlEnEsteEquipo') { $cambios += $direccionEquipo }
+    return $cambios
+}
+
 if (-not $direccionRed) {
     Escribir-Aviso 'No se ha podido averiguar la IP de este equipo: se deja la direccion que ya hubiera en web.config.'
 }
 else {
     $rutaWebConfig = Join-Path $proyecto 'web.config'
-    if (Ajustar-DireccionPublica -Ruta $rutaWebConfig -Direccion $direccionRed) {
-        Escribir-Ok "Direccion de los QR y de WhatsApp actualizada a $direccionRed"
+    if ((Ajustar-AmbasDirecciones -Ruta $rutaWebConfig -DireccionRed $direccionRed).Count -gt 0) {
+        Escribir-Ok "Direcciones actualizadas: QR y WhatsApp a $direccionRed (y $direccionEquipo como alternativa de este equipo)"
     }
     else {
-        Escribir-Info "La direccion de los QR ya era $direccionRed"
+        Escribir-Info "Las direcciones ya eran $direccionRed y $direccionEquipo"
     }
 }
 
@@ -436,8 +455,8 @@ if ($SinPublicar) {
     # Sin publicar no se copia nada, asi que la direccion hay que escribirla
     # tambien en la copia que ya esta servida.
     if ($direccionRed) {
-        if (Ajustar-DireccionPublica -Ruta (Join-Path $Carpeta 'web.config') -Direccion $direccionRed) {
-            Escribir-Ok "Direccion actualizada tambien en la web ya publicada."
+        if ((Ajustar-AmbasDirecciones -Ruta (Join-Path $Carpeta 'web.config') -DireccionRed $direccionRed).Count -gt 0) {
+            Escribir-Ok "Direcciones actualizadas tambien en la web ya publicada."
         }
     }
 }
@@ -821,10 +840,11 @@ if ($codigo -in @('200', '302')) {
         Write-Host "  Los QR y los enlaces de WhatsApp llevan a $direccionRed," -ForegroundColor Green
         Write-Host '  que ya responde: se pueden abrir desde el movil.' -ForegroundColor Green
         Write-Host ''
-        Write-Host '  La primera vez, el movil avisara de que la conexion "no es' -ForegroundColor DarkGray
-        Write-Host '  privada": el certificado lo ha hecho esta casa, no una' -ForegroundColor DarkGray
-        Write-Host '  autoridad de internet. Hay que darle a "Avanzado" y' -ForegroundColor DarkGray
-        Write-Host '  continuar. Solo pasa la primera vez en cada aparato.' -ForegroundColor DarkGray
+        Write-Host "  Junto a esa direccion se reparte tambien $direccionEquipo," -ForegroundColor Green
+        Write-Host '  pero solo como texto y etiquetada como "desde este ordenador":' -ForegroundColor Green
+        Write-Host '  ese nombre no existe fuera de este equipo, asi que NO se mete' -ForegroundColor Green
+        Write-Host '  en ningun QR (un QR se lee siempre con el movil).' -ForegroundColor Green
+        Write-Host ''
     }
     else {
         Write-Host "  OJO: $direccionRed no responde (codigo '$codigoRed')." -ForegroundColor Yellow

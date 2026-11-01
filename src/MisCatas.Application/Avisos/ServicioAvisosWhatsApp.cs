@@ -73,10 +73,15 @@ public class ServicioAvisosWhatsApp : IServicioAvisosWhatsApp
     }
 
     /// <inheritdoc />
-    public string Plantilla(CataDetalleDto detalle, TipoAvisoCata tipo, string? raiz)
+    public string Plantilla(CataDetalleDto detalle, TipoAvisoCata tipo, string? raiz) =>
+        Plantilla(detalle, tipo, new DireccionSitio(raiz, OrigenDireccionSitio.Ninguna));
+
+    /// <inheritdoc />
+    public string Plantilla(CataDetalleDto detalle, TipoAvisoCata tipo, DireccionSitio sitio)
     {
         ArgumentNullException.ThrowIfNull(detalle);
 
+        var raiz = sitio.Raiz;
         var cata = detalle.Cata;
         var texto = new StringBuilder();
 
@@ -133,6 +138,19 @@ public class ServicioAvisosWhatsApp : IServicioAvisosWhatsApp
                 ? "Míralos aquí:"
                 : "Entra desde el móvil:");
             texto.AppendLine(destino);
+
+            // Segunda dirección: el nombre bonito, que solo funciona desde el
+            // ordenador de casa. Se manda etiquetado para que nadie lo intente
+            // en el móvil y crea que la aplicación está caída, que es
+            // exactamente lo que pasaba cuando se repartía ese nombre a secas.
+            if (sitio.TieneAlternativaLocal
+                && Destino(cata.Id, tipo, sitio.SoloEnEsteEquipo) is { } alternativo)
+            {
+                texto.AppendLine();
+                texto.AppendLine("💻 Desde el ordenador de casa:");
+                texto.AppendLine(alternativo);
+            }
+
             texto.AppendLine();
         }
 

@@ -161,6 +161,22 @@
     color: var(--carbon-600, #525252);
 }
 
+/* Segunda dirección: la del nombre que solo vale en este ordenador. Va en gris
+   y separada de la principal para que se vea de un golpe que es secundaria y
+   que no es la que hay que repartir a los invitados. */
+.avisos-direccion-rotulo-local {
+    margin-top: 0.75rem;
+}
+
+.avisos-direccion-rotulo-local > ::deep svg {
+    color: var(--carbon-500, #6B6B6B);
+}
+
+.avisos-direccion-valor-local {
+    font-size: 0.95rem;
+    color: var(--carbon-700, #404040);
+}
+
 /* --- Mensaje editable ----------------------------------------------------- */
 
 .avisos-mensaje {

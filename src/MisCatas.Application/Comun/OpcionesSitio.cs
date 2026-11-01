@@ -25,6 +25,21 @@ public class OpcionesSitio
     public string? UrlPublica { get; set; }
 
     /// <summary>
+    /// Segunda dirección, la que solo vale DENTRO del ordenador donde corre la
+    /// aplicación. Normalmente el nombre bonito (<c>https://miscatas.es</c>).
+    ///
+    /// Por qué existe además de <see cref="UrlPublica"/>: ese nombre está dado
+    /// de alta en el fichero «hosts» de este equipo y en ningún otro sitio, así
+    /// que desde un móvil o desde el televisor no lleva a ninguna parte. Pero
+    /// en este ordenador es la cómoda de teclear, y antes de haber dos campos
+    /// se perdía: al poner la IP (que es la que sí funciona fuera) el nombre
+    /// desaparecía de los QR y de los mensajes.
+    ///
+    /// Nunca se mete en un código QR: los QR se leen siempre con un móvil.
+    /// </summary>
+    public string? UrlEnEsteEquipo { get; set; }
+
+    /// <summary>
     /// Prefijo telefónico del país, sin el «+». España es el 34.
     ///
     /// Hace falta porque los teléfonos se guardan como los escribe la gente
@@ -66,6 +81,30 @@ public class OpcionesSitio
             }
 
             var texto = UrlPublica.Trim().TrimEnd('/');
+
+            if (!Uri.TryCreate(texto, UriKind.Absolute, out var url))
+            {
+                return null;
+            }
+
+            return url.Scheme is "http" or "https" ? texto : null;
+        }
+    }
+
+    /// <summary>
+    /// <see cref="UrlEnEsteEquipo"/> lista para pegar en un mensaje, o
+    /// <c>null</c> si no está configurada o no es una dirección válida.
+    /// </summary>
+    public string? UrlEnEsteEquipoLimpia
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(UrlEnEsteEquipo))
+            {
+                return null;
+            }
+
+            var texto = UrlEnEsteEquipo.Trim().TrimEnd('/');
 
             if (!Uri.TryCreate(texto, UriKind.Absolute, out var url))
             {

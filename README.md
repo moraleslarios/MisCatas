@@ -60,12 +60,12 @@ La forma cómoda, sin tocar la línea de comandos:
 
 | Qué quieres | Qué ejecutas | Dónde abre |
 |---|---|---|
-| Arrancar normal | `Arrancar.cmd` (doble clic) o `.\Arrancar.ps1` | `https://localhost:5443` |
-| Arrancar para móviles y tele | `Arrancar-Red.cmd` o `.\Arrancar.ps1 -Lan` | `https://192.168.x.x:5443` |
-| Arrancar sin HTTPS | `.\Arrancar.ps1 -Http` | `http://localhost:5080` (redirige al seguro) |
+| Arrancar normal | `Arrancar.cmd` (doble clic) o `.\Arrancar.ps1` | `http://localhost:5081` |
+| Arrancar para móviles y tele | `Arrancar-Red.cmd` o `.\Arrancar.ps1 -Lan` | `http://192.168.x.x:5081` |
+| Arrancar con cifrado | `.\Arrancar.ps1 -Https` | `https://localhost:5443` (avisa del certificado) |
 | Arrancar sin abrir navegador | `.\Arrancar.ps1 -SinNavegador` | — |
-| Recompilar antes de arrancar | `.\Arrancar.ps1 -Compilar` | `https://localhost:5443` |
-| Parar | `Parar.cmd` o `.\Parar.ps1` | libera 5443 y 5080 |
+| Recompilar antes de arrancar | `.\Arrancar.ps1 -Compilar` | `http://localhost:5081` |
+| Parar | `Parar.cmd` o `.\Parar.ps1` | libera 5081 y 5443 |
 
 `tools\crear-accesos-directos.ps1` deja esos tres iconos en el Escritorio
 (ARRANCAR, ARRANCAR (RED) y PARAR).
@@ -76,16 +76,37 @@ A mano también vale:
 dotnet run --project src\MisCatas.Web
 ```
 
-La aplicación escucha por **los dos puertos a la vez**:
+La aplicación escucha por **los dos puertos a la vez**, y los dos sirven la web
+de verdad:
 
-- **`https://localhost:5443`** → el seguro, el que atiende de verdad.
-- `http://localhost:5080` → solo redirige al seguro, para que los enlaces y los
-  QR antiguos sigan llevando a algún sitio.
+- **`http://localhost:5081`** → sin cifrar, y es el que conviene repartir.
+- `https://localhost:5443` → cifrado, pero avisa de que el certificado no es de
+  fiar.
+
+### Por qué la dirección recomendada va sin cifrar
+
+Parece al revés, pero es lo que hace que la web funcione en toda la casa. El
+certificado de la red local lo firmamos nosotros, así que cada aparato tiene que
+aceptar un aviso la primera vez. En Android y en el ordenador se acepta y listo.
+En el **iPhone no**: Safari se niega en seco y ni siquiera ofrece la opción de
+confiar, de modo que desde un iPhone la web era simplemente inalcanzable.
+
+Como esto es una red doméstica y lo que viaja son notas de cata, cifrar no aporta
+gran cosa; poder entrar desde cualquier móvil, sí. Quien quiera cifrado lo tiene
+en el 5443, que sigue abierto: lo que se quita es la obligación, no la
+posibilidad. Por eso **la redirección de HTTP a HTTPS solo está activa dentro de
+IIS**, donde las dos direcciones ya van cifradas, y por eso **no se usa
+`UseHsts()`** en ningún sitio: si se usara, el navegador recordaría que el sitio
+es solo-HTTPS y seguiría saltando al puerto cifrado por su cuenta.
+
+El certificado se regenera solo y dura **397 días**. No es un número al azar:
+desde iOS 13, Safari rechaza cualquier certificado de servidor de más de 398 días
+y, cuando eso pasa, no muestra el botón de «Visitar este sitio web». No es que
+desconfíe, es que lo considera malformado.
 
 Escucha en `0.0.0.0`, así que también se abre desde el móvil con la IP de la
-máquina (`https://192.168.x.x:5443`) tras abrir los puertos con
-`tools\abrir-puerto-firewall.ps1`. El certificado es propio del equipo, así que
-la primera vez el navegador avisa: «Avanzado» → «Continuar». Es normal.
+máquina (`http://192.168.x.x:5081`) tras abrir los puertos con
+`tools\abrir-puerto-firewall.ps1`.
 
 Los puertos están en un solo sitio en el código:
 `src\MisCatas.Web\Seguridad\PuertosApp.cs`.
@@ -482,7 +503,7 @@ arrancar**. `Program.cs` llama a `MigrarYSembrarAsync()`, que ejecuta
 | `descargar-tailwind.ps1` | baja el CLI standalone de Tailwind (no está en el repositorio) |
 | `descargar-fuentes.ps1` | baja las fuentes a `wwwroot` para que no dependan de internet |
 | `vigilar-css.ps1` | recompila el CSS al guardar, en modo vigilancia |
-| `abrir-puerto-firewall.ps1` | abre el 5443 (HTTPS) y el 5080 (HTTP) en el firewall para que entren los móviles |
+| `abrir-puerto-firewall.ps1` | abre el 5081 (HTTP), el 5443 (HTTPS) y el 5080 (IIS) en el firewall para que entren los móviles |
 | `crear-accesos-directos.ps1` | deja en el Escritorio los iconos ARRANCAR, ARRANCAR (RED) y PARAR |
 | `validar-accesos-directos.ps1` | comprueba que esos tres iconos apuntan a donde deben |
 | `arrancar-silencioso.ps1` | arranca dejando el log en un fichero (para no inundar el terminal) |

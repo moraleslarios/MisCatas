@@ -57,6 +57,23 @@
                     </p>
                     <p class="avisos-direccion-valor">@destinoQr</p>
 
+                    @* Segunda dirección. Va claramente etiquetada como «solo en
+                       este ordenador» porque el nombre bonito está dado de alta
+                       en el fichero «hosts» de este equipo y en ningún otro: en
+                       un móvil no resuelve y parece que la web está caída. *@
+                    @if (DestinoEnEsteEquipo is { } destinoLocal)
+                    {
+                        <p class="avisos-direccion-rotulo avisos-direccion-rotulo-local">
+                            <IconoVino Nombre="Icono.Casa" Tamano="TamanoIcono.Pequeno" />
+                            <span>Y desde este mismo ordenador:</span>
+                        </p>
+                        <p class="avisos-direccion-valor avisos-direccion-valor-local">@destinoLocal</p>
+                        <p class="avisos-direccion-nota">
+                            Este nombre <strong>solo funciona en este ordenador</strong>, así que
+                            no se pone en el código QR: desde un móvil no llevaría a ninguna parte.
+                        </p>
+                    }
+
                     @if (Sitio.Origen == OrigenDireccionSitio.RedLocal)
                     {
                         <p class="avisos-direccion-nota">
@@ -81,7 +98,7 @@
 
                 <CodigoQr Texto="@destinoQr"
                           Tamano="TamanoQr.Grande"
-                          Pie="Apunta con la cámara"
+                          Pie="Apunta con la cámara (lleva a la dirección de arriba)"
                           TextoAlternativo="@($"Código QR con la dirección {destinoQr}")"
                           Clase="avisos-qr" />
             </div>

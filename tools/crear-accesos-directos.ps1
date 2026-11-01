@@ -29,7 +29,7 @@ $iconos = Join-Path $env:SystemRoot 'System32\imageres.dll'
 $atajos = @(
     @{ Nombre = 'MisCatas - ARRANCAR';       Destino = 'Arrancar.cmd';     Icono = "$iconos,100"; Descripcion = 'Levanta la web de MisCatas en https://localhost:5443 y abre el navegador' }
     @{ Nombre = 'MisCatas - ARRANCAR (RED)'; Destino = 'Arrancar-Red.cmd'; Icono = "$iconos,165"; Descripcion = 'Levanta la web y abre la direccion HTTPS de la red local (moviles y tele)' }
-    @{ Nombre = 'MisCatas - PARAR';          Destino = 'Parar.cmd';        Icono = "$iconos,98";  Descripcion = 'Cierra la web de MisCatas y libera los puertos 5443 y 5080' }
+    @{ Nombre = 'MisCatas - PARAR';          Destino = 'Parar.cmd';        Icono = "$iconos,98";  Descripcion = 'Cierra la web de MisCatas y libera los puertos 5443 y 5081' }
 )
 
 Write-Host ''

@@ -124,6 +124,16 @@ else
                                   Pie="@($"¿Te incorporas? {DireccionEntrada}")"
                                   TextoAlternativo="@($"Código QR para entrar en {DireccionEntrada}")"
                                   Clase="tv-resumen-qr" />
+
+                        @* La otra dirección, en pequeño: aquí el QR es lo que
+                           usa todo el mundo, pero conviene que esté escrita
+                           para quien esté en el ordenador de casa. *@
+                        @if (DireccionEnEsteEquipo is { } equipoResumen)
+                        {
+                            <p class="tv-resumen-alternativa">
+                                En el ordenador: @equipoResumen
+                            </p>
+                        }
                     }
                 </div>
             </div>
@@ -278,7 +288,7 @@ else
                 @if (Datos.ProximaCata is { } proxima)
                 {
                     <div class="tv-espera-proxima">
-                        <p class="tv-rotulo">@(Datos.CataAnunciadaActiva ? "Cata en marcha" : "Próxima cata")</p>
+                        <p class="tv-rotulo">@Datos.RotuloCataAnunciada</p>
                         <p class="tv-espera-proxima-nombre">@proxima.Nombre</p>
                         <p class="tv-espera-proxima-datos">
                             @proxima.Fecha.ToString("dddd d 'de' MMMM")
@@ -294,13 +304,30 @@ else
                                apuntar la cámara al código. En una tele, lo
                                segundo es mucho más cómodo. *@
                             <div class="tv-espera-acceso">
-                                <p class="tv-espera-entrar">
-                                    Ya puedes entrar: abre <strong>@DireccionEntrada</strong> en el móvil
-                                    y accede con tu teléfono.
-                                </p>
+                                <div class="tv-espera-textos">
+                                    <p class="tv-espera-entrar">
+                                        Ya puedes entrar: abre <strong>@DireccionEntrada</strong> en el móvil
+                                        y accede con tu teléfono.
+                                    </p>
+
+                                    @* Segunda dirección: el nombre corto, que solo
+                                       funciona en el ordenador de casa. Se dice
+                                       expresamente para que nadie lo teclee en el
+                                       móvil y piense que la web no va. *@
+                                    @if (DireccionEnEsteEquipo is { } direccionEquipo)
+                                    {
+                                        <p class="tv-espera-alternativa">
+                                            Desde el ordenador de casa: <strong>@direccionEquipo</strong>
+                                        </p>
+                                    }
+                                </div>
 
                                 @if (UrlEntrada is { } urlQr)
                                 {
+                                    @* El QR lleva la dirección de red (la IP), nunca
+                                       el nombre corto: un QR se escanea siempre con un
+                                       móvil, y ese nombre solo existe en el ordenador
+                                       de casa, así que no se abriría. *@
                                     <CodigoQr Texto="@urlQr"
                                               Tamano="TamanoQr.Escaparate"
                                               Pie="O apunta con la cámara del móvil"
@@ -309,19 +336,17 @@ else
                                 }
                             </div>
                         }
-
-                        @* Anticipo de lo que hay sobre la mesa: cuántas
-                           botellas y cuántos catadores esperan. *@
-                        <div class="tv-espera-cifras">
-                            <article class="tv-cifra">
-                                <span class="tv-cifra-valor">@proxima.NumeroVinos</span>
-                                <span class="tv-cifra-rotulo">Vinos a ciegas</span>
-                            </article>
-                            <article class="tv-cifra">
-                                <span class="tv-cifra-valor">@proxima.NumeroParticipantes</span>
-                                <span class="tv-cifra-rotulo">Catadores</span>
-                            </article>
-                        </div>
+                        else if (Datos.EsperaCataAnunciada is { } aviso)
+                        {
+                            @* La cata está montada pero sin abrir: aquí no se
+                               pone el QR a propósito, porque llevaría a una
+                               pantalla donde todavía no hay nada que votar y
+                               la gente volvería a preguntar. *@
+                            <p class="tv-espera-pendiente">
+                                <IconoVino Nombre="Icono.Reloj" Tamano="TamanoIcono.Heredado" />
+                                <span>@aviso</span>
+                            </p>
+                        }
                     </div>
                 }
             </div>

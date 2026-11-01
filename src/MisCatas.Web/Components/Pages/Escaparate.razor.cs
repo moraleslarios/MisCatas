@@ -117,6 +117,34 @@ public partial class Escaparate : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Segunda dirección, sin el <c>https://</c>: la del nombre que solo
+    /// funciona en el ordenador donde corre la aplicación.
+    ///
+    /// En la tele se enseña como alternativa para quien esté en ese equipo,
+    /// pero NUNCA se mete en el QR: el QR se lee con un móvil y ahí ese nombre
+    /// no resuelve.
+    /// </summary>
+    private string? DireccionEnEsteEquipo
+    {
+        get
+        {
+            if (!Sitio.TieneAlternativaLocal || Sitio.SoloEnEsteEquipo is not { } texto)
+            {
+                return null;
+            }
+
+            if (!Uri.TryCreate(texto, UriKind.Absolute, out var uri))
+            {
+                return texto;
+            }
+
+            var puerto = uri.IsDefaultPort ? string.Empty : $":{uri.Port}";
+
+            return $"{uri.Host}{puerto}";
+        }
+    }
+
     private CataEscaparateDto Datos { get; set; } = CataEscaparateDto.EnEspera();
 
     private EstadoVivoDto? Estado => Vivo.Estado;

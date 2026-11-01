@@ -39,6 +39,9 @@ public class ServicioDireccionSitio : IServicioDireccionSitio
     public string? Configurada => _sitio.Value.UrlPublicaLimpia;
 
     /// <inheritdoc />
+    public string? EnEsteEquipo => _sitio.Value.UrlEnEsteEquipoLimpia;
+
+    /// <inheritdoc />
     public string? IpRedLocal => _ipRedLocal.Value;
 
     /// <inheritdoc />
@@ -48,13 +51,13 @@ public class ServicioDireccionSitio : IServicioDireccionSitio
         //    un puerto redirigido, cosas que no hay forma de deducir.
         if (Configurada is { } configurada)
         {
-            return new DireccionSitio(configurada, OrigenDireccionSitio.Configurada);
+            return Componer(configurada, OrigenDireccionSitio.Configurada);
         }
 
         if (!Uri.TryCreate(direccionNavegador, UriKind.Absolute, out var url)
             || url.Scheme is not ("http" or "https"))
         {
-            return new DireccionSitio(null, OrigenDireccionSitio.Ninguna);
+            return Componer(null, OrigenDireccionSitio.Ninguna);
         }
 
         var puerto = url.IsDefaultPort ? string.Empty : $":{url.Port}";
@@ -63,7 +66,7 @@ public class ServicioDireccionSitio : IServicioDireccionSitio
         //    se reparte esa misma.
         if (!EsSoloDeEsteEquipo(url.Host))
         {
-            return new DireccionSitio(
+            return Componer(
                 $"{url.Scheme}://{url.Host}{puerto}",
                 OrigenDireccionSitio.Navegador);
         }
@@ -72,12 +75,12 @@ public class ServicioDireccionSitio : IServicioDireccionSitio
         //    del equipo en la red, conservando esquema y puerto.
         if (IpRedLocal is { } ip)
         {
-            return new DireccionSitio(
+            return Componer(
                 $"{url.Scheme}://{ip}{puerto}",
                 OrigenDireccionSitio.RedLocal);
         }
 
-        return new DireccionSitio(null, OrigenDireccionSitio.Ninguna);
+        return Componer(null, OrigenDireccionSitio.Ninguna);
     }
 
     /// <summary>
@@ -161,4 +164,14 @@ public class ServicioDireccionSitio : IServicioDireccionSitio
             return null;
         }
     }
+
+    /// <summary>
+    /// Monta el resultado pegándole la segunda dirección (la del nombre que
+    /// solo existe en este equipo).
+    ///
+    /// Se hace en un sitio único porque hay cuatro salidas distintas en
+    /// <see cref="Resolver"/> y antes era fácil olvidarse de una.
+    /// </summary>
+    private DireccionSitio Componer(string? raiz, OrigenDireccionSitio origen) =>
+        new(raiz, origen) { SoloEnEsteEquipo = EnEsteEquipo };
 }

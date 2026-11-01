@@ -394,6 +394,16 @@
     color: rgb(247 242 236 / 78%);
 }
 
+/* La otra dirección se pone en una línea propia debajo de todo: aquí el QR es
+   lo que usa la mesa, y esto es solo para quien esté en el ordenador. */
+.tv-resumen-alternativa {
+    flex: 0 0 100%;
+    margin: 0;
+    font-size: 1.5vmin;
+    text-align: center;
+    color: rgb(247 242 236 / 62%);
+}
+
 /* --- Revelación ----------------------------------------------------------- */
 
 /* Tres franjas en vertical: rótulo, cuerpo (ganador + clasificación) y la
@@ -727,4 +737,51 @@
 .tv-resumen > ::deep .tv-vitrina .vitrina-rejilla {
     min-height: 0;
     grid-auto-rows: minmax(0, 1fr);
+}
+
+/* Aviso de cata montada pero todavía sin abrir. Ocupa el hueco que en la cata
+   en marcha llenan la dirección y el QR, pero con mucho menos peso visual: no
+   es una llamada a la acción, es un «todavía no». */
+.tv-espera-pendiente {
+    display: flex;
+    gap: 1.4vmin;
+    align-items: center;
+    justify-content: center;
+    max-width: 52vmin;
+    margin: 2.2vmin auto 0;
+    font-size: 2.2vmin;
+    line-height: 1.35;
+    color: rgb(247 242 236 / 88%);
+}
+
+.tv-espera-pendiente ::deep svg {
+    flex: 0 0 auto;
+    width: 3.2vmin;
+    height: 3.2vmin;
+    color: #E3C65E;
+}
+
+/* Las dos direcciones van apiladas en su propia columna, para que el QR siga
+   quedando a la derecha y no se cuele entre los dos textos. */
+.tv-espera-textos {
+    display: flex;
+    flex-direction: column;
+    gap: 1vmin;
+    max-width: 34vmin;
+}
+
+/* La alternativa (el nombre que solo vale en el ordenador de casa) va más
+   pequeña y apagada: no es la que tiene que usar la gente de la mesa. */
+.tv-espera-alternativa {
+    margin: 0;
+    font-size: 1.9vmin;
+    line-height: 1.35;
+    text-align: left;
+    color: rgb(247 242 236 / 70%);
+}
+
+.tv-espera-alternativa strong {
+    font-weight: 600;
+    white-space: nowrap;
+    color: rgb(247 242 236 / 88%);
 }

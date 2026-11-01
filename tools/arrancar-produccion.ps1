@@ -12,7 +12,7 @@
 #      (ver el target "CompilarTailwind" de MisCatas.Web.csproj).
 #   3. Comprueba que están el CSS y los ficheros estáticos clave.
 #   4. Arranca el .exe publicado con ASPNETCORE_ENVIRONMENT=Production,
-#      escuchando en 0.0.0.0:5443 (HTTPS) y 0.0.0.0:5080 (solo redirige al
+#      escuchando en 0.0.0.0:5443 (HTTPS) y 0.0.0.0:5081 (solo redirige al
 #      seguro), accesible desde los móviles.
 #
 # Las migraciones de base de datos y la semilla las aplica la propia app al
@@ -57,7 +57,8 @@ else {
 }
 
 # Si alguno de los dos puertos sigue ocupado por otra cosa, mejor saberlo ya.
-foreach ($p in @(5443, 5080)) {
+# Aquí NO se mira el 5080: ese es el de IIS y es normal que esté escuchando.
+foreach ($p in @(5443, 5081)) {
     $ocupado = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue
     if ($ocupado) {
         $pids = ($ocupado.OwningProcess | Sort-Object -Unique) -join ', '
@@ -110,11 +111,14 @@ $ip = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
 
 Write-Host '[4/4] Arrancando...' -ForegroundColor Cyan
 Write-Host ''
-Write-Host '  Este equipo : https://localhost:5443' -ForegroundColor White
+Write-Host '  Este equipo : http://localhost:5081' -ForegroundColor White
 if ($ip) {
-    Write-Host "  Moviles/TVs : https://${ip}:5443" -ForegroundColor White
+    Write-Host "  Moviles/TVs : http://${ip}:5081" -ForegroundColor White
 }
-Write-Host '  (el viejo http://...:5080 sigue valiendo: redirige al seguro)' -ForegroundColor DarkGray
+# El sin cifrar es el bueno: sirve la web de verdad y entra en cualquier
+# aparato. El certificado de HTTPS lo firmamos nosotros y el iPhone ni ofrece
+# la opcion de confiar, asi que por ahi la web era inalcanzable.
+Write-Host '  (el https://...:5443 tambien vale, pero avisa del certificado)' -ForegroundColor DarkGray
 Write-Host '  Entorno     : Production (errores genericos, sin detalles tecnicos)' -ForegroundColor DarkGray
 Write-Host ''
 Write-Host '  Ctrl+C para parar.' -ForegroundColor DarkGray
@@ -125,9 +129,9 @@ if (-not $SinNavegador) {
     Start-Job -ScriptBlock {
         for ($i = 0; $i -lt 60; $i++) {
             Start-Sleep -Milliseconds 500
-            if (Get-NetTCPConnection -LocalPort 5443 -State Listen -ErrorAction SilentlyContinue) {
+            if (Get-NetTCPConnection -LocalPort 5081 -State Listen -ErrorAction SilentlyContinue) {
                 # Kestrel escucha en 0.0.0.0, que no es una direccion navegable.
-                Start-Process 'https://localhost:5443'
+                Start-Process 'http://localhost:5081'
                 return
             }
         }

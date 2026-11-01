@@ -56,6 +56,14 @@ public partial class AvisosWhatsApp
         : null;
 
     /// <summary>
+    /// Segunda dirección a la que lleva el aviso: la del nombre que solo
+    /// funciona en este ordenador. Se enseña como texto, nunca en el QR.
+    /// </summary>
+    private string? DestinoEnEsteEquipo => Detalle is { } detalle && Sitio.TieneAlternativaLocal
+        ? Avisos.Destino(detalle.Cata.Id, Tipo, Sitio.SoloEnEsteEquipo)
+        : null;
+
+    /// <summary>
     /// Texto que se va a enviar. Arranca con la propuesta del servicio y el
     /// organizador puede retocarlo antes de repartirlo.
     /// </summary>
@@ -96,7 +104,7 @@ public partial class AvisosWhatsApp
     {
         if (Detalle is { } detalle)
         {
-            Texto = Avisos.Plantilla(detalle, Tipo, Sitio.Raiz);
+            Texto = Avisos.Plantilla(detalle, Tipo, Sitio);
         }
     }
 

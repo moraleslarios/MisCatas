@@ -142,31 +142,45 @@ builder.Services.AddAntiforgery(opciones =>
     opciones.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
-// Destino de la redirección a HTTPS. Hay que decirle el puerto a mano: los
-// puertos de la aplicación no son los estándar (443), y sin esto la
-// redirección llevaría a una dirección donde no hay nadie escuchando.
+// Destino de la redirección a HTTPS. Solo tiene sentido dentro de IIS, donde
+// el sitio usa el 443 de siempre y el propio módulo le cuenta a la aplicación
+// por dónde ha entrado la visita.
 //
-// En IIS no se fija puerto: el sitio usa el 443 de siempre y el propio módulo
-// de IIS le cuenta a la aplicación por dónde ha entrado la visita. Si aquí
-// forzásemos el 5443, quien llegara por http acabaría en un puerto vacío.
-if (!enIis)
+// Arrancada a mano NO se registra: ahí el puerto sin cifrar sirve la web de
+// verdad (ver más abajo el motivo, que tiene nombre y apellidos: el iPhone).
+if (enIis)
 {
     builder.Services.AddHttpsRedirection(opciones =>
     {
-        opciones.HttpsPort = PuertosApp.Https;
         opciones.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
     });
 }
 
 var app = builder.Build();
 
-// Todo lo que entre por HTTP se manda a HTTPS.
+// Redirección de HTTP a HTTPS: SOLO dentro de IIS, donde las dos direcciones
+// por las que se usa la web ya van cifradas.
 //
-// Dentro de IIS esto casi nunca entra en juego, porque las dos direcciones por
-// las que se usa la web (el nombre bonito de este equipo y la IP con el puerto
-// 5080 de los moviles) ya van cifradas; solo actua si alguien escribe la
-// direccion a mano sin la "s".
-app.UseHttpsRedirection();
+// Por qué fuera de IIS se sirve HTTP tal cual, sin redirigir:
+//
+// El certificado de la red local está firmado por nosotros mismos, así que
+// cada aparato tiene que aceptar un aviso la primera vez. En Android y en el
+// ordenador se acepta y listo. En el iPhone NO: Safari se niega en seco y
+// encima no ofrece la opción de confiar, de modo que desde un iPhone la web
+// era simplemente inalcanzable.
+//
+// Como esto es una red doméstica y lo que viaja son notas de cata, cifrar no
+// aporta gran cosa; poder entrar desde cualquier móvil, sí. Quien quiera
+// cifrado lo tiene en el puerto de HTTPS, que sigue abierto: lo que se quita
+// es la obligación, no la posibilidad.
+//
+// Importante: aquí NO se usa UseHsts(). Si se usara, el navegador recordaría
+// que este sitio es solo-HTTPS y seguiría saltando al puerto cifrado por su
+// cuenta, dejando este arreglo en nada.
+if (enIis)
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

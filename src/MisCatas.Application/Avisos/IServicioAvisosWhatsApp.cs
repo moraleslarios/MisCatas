@@ -51,6 +51,15 @@ public interface IServicioAvisosWhatsApp
     string? Destino(int cataId, TipoAvisoCata tipo, string? raiz);
 
     /// <summary>
+    /// Arma el texto del aviso igual que
+    /// <see cref="Plantilla(CataDetalleDto, TipoAvisoCata, string?)"/>, pero
+    /// añadiendo la segunda dirección (la que solo vale en el ordenador donde
+    /// corre la aplicación) como alternativa cómoda.
+    /// </summary>
+    /// <param name="sitio">Las dos direcciones ya resueltas.</param>
+    string Plantilla(CataDetalleDto detalle, TipoAvisoCata tipo, DireccionSitio sitio);
+
+    /// <summary>
     /// Sustituye el hueco <c>{usuario}</c> de la plantilla por el usuario del
     /// participante indicado.
     /// </summary>

@@ -20,6 +20,17 @@ public interface IServicioDireccionSitio
     string? Configurada { get; }
 
     /// <summary>
+    /// Dirección alternativa que SOLO funciona en el ordenador donde corre la
+    /// aplicación (el nombre bonito, por ejemplo <c>https://miscatas.es</c>), o
+    /// <c>null</c> si no se ha puesto ninguna.
+    ///
+    /// Se reparte como dato informativo junto a la principal, pero jamás se
+    /// mete en un código QR: el QR se lee con un móvil, y ahí ese nombre no
+    /// resuelve.
+    /// </summary>
+    string? EnEsteEquipo { get; }
+
+    /// <summary>
     /// Dirección del equipo en la red local (por ejemplo <c>192.168.1.50</c>),
     /// o <c>null</c> si no se ha podido averiguar.
     /// </summary>
@@ -49,6 +60,18 @@ public readonly record struct DireccionSitio(string? Raiz, OrigenDireccionSitio 
 {
     /// <summary>Hay una dirección que se puede repartir.</summary>
     public bool EsUtil => Raiz is not null;
+
+    /// <summary>
+    /// Segunda dirección, solo válida en el equipo donde corre la aplicación.
+    /// Se enseña como alternativa cómoda para quien esté delante de ese
+    /// ordenador, nunca como destino de un QR.
+    /// </summary>
+    public string? SoloEnEsteEquipo { get; init; }
+
+    /// <summary>¿Hay una segunda dirección distinta de la principal?</summary>
+    public bool TieneAlternativaLocal =>
+        SoloEnEsteEquipo is { } otra
+        && !string.Equals(otra, Raiz, StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>De dónde sale la dirección que se reparte a los invitados.</summary>
